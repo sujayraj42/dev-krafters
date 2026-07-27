@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #0F4C4C;
+  --color-primary-dark: #0A3838;
+  --color-accent: #E85A3C;
+  --color-accent-dark: #C94A2F;
+  --color-bg: #FFFFFF;
+  --color-bg-alt: #F7F9F9;
+  --color-text-muted: #5C6B6B;
+}
+
+body {
+  color: var(--color-primary);
+  background-color: var(--color-bg);
+  font-family: var(--font-poppins), sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+/* Custom utility for smooth transitions and focus rings */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+}
