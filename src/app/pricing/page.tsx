@@ -201,42 +201,114 @@ const faqs = [
 function PricingCard({ pkg }: { pkg: PricingPackage }) {
   const [expanded, setExpanded] = useState(true);
 
-  // Custom icon per package
+  const isFeatured = pkg.popular;
+
+  // Custom per-package color theme tokens
+  const theme = {
+    'starter-page': {
+      cardBg: 'bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 text-gray-900',
+      badgeBg: 'bg-emerald-600 text-white',
+      iconBg: 'bg-emerald-100 text-emerald-600',
+      iconColor: 'text-emerald-600',
+      priceColor: 'text-emerald-700',
+      accentText: 'text-emerald-700',
+      checkColor: 'text-emerald-600',
+      buttonBg: 'bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-emerald-500/20',
+      border: 'border-emerald-200/80 hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10',
+      pillBg: 'bg-emerald-100/80 text-emerald-800 border-emerald-200',
+      boxBg: 'bg-emerald-50/60 border-emerald-100',
+    },
+    'landing-page': {
+      cardBg: 'bg-gradient-to-b from-violet-50/70 via-white to-violet-50/30 text-gray-900',
+      badgeBg: 'bg-violet-600 text-white',
+      iconBg: 'bg-violet-100 text-violet-600',
+      iconColor: 'text-violet-600',
+      priceColor: 'text-violet-700',
+      accentText: 'text-violet-700',
+      checkColor: 'text-violet-600',
+      buttonBg: 'bg-violet-600 hover:bg-violet-700 text-white border-none shadow-violet-500/20',
+      border: 'border-violet-200/80 hover:border-violet-400 hover:shadow-xl hover:shadow-violet-500/10',
+      pillBg: 'bg-violet-100/80 text-violet-800 border-violet-200',
+      boxBg: 'bg-violet-50/60 border-violet-100',
+    },
+    'business-website': {
+      cardBg: 'bg-gradient-to-b from-primary via-primary-dark to-gray-950 text-white ring-2 ring-accent shadow-2xl shadow-accent/25 lg:-translate-y-3 z-10',
+      badgeBg: 'bg-gradient-to-r from-accent to-accent-dark text-white shadow-md',
+      iconBg: 'bg-white/10 text-amber-400 border border-white/10',
+      iconColor: 'text-amber-400',
+      priceColor: 'text-accent',
+      accentText: 'text-accent',
+      checkColor: 'text-emerald-400',
+      buttonBg: 'bg-accent hover:bg-accent-dark text-white border-none shadow-lg shadow-accent/30',
+      border: 'border-transparent',
+      pillBg: 'bg-white/10 text-amber-300 border-white/10',
+      boxBg: 'bg-white/10 border-white/10',
+    },
+    'ecommerce': {
+      cardBg: 'bg-gradient-to-b from-blue-50/70 via-white to-blue-50/30 text-gray-900',
+      badgeBg: 'bg-blue-600 text-white',
+      iconBg: 'bg-blue-100 text-blue-600',
+      iconColor: 'text-blue-600',
+      priceColor: 'text-blue-700',
+      accentText: 'text-blue-700',
+      checkColor: 'text-blue-600',
+      buttonBg: 'bg-blue-600 hover:bg-blue-700 text-white border-none shadow-blue-500/20',
+      border: 'border-blue-200/80 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/10',
+      pillBg: 'bg-blue-100/80 text-blue-800 border-blue-200',
+      boxBg: 'bg-blue-50/60 border-blue-100',
+    },
+    'maintenance': {
+      cardBg: 'bg-gradient-to-b from-amber-50/70 via-white to-amber-50/30 text-gray-900',
+      badgeBg: 'bg-amber-600 text-white',
+      iconBg: 'bg-amber-100 text-amber-600',
+      iconColor: 'text-amber-600',
+      priceColor: 'text-amber-700',
+      accentText: 'text-amber-700',
+      checkColor: 'text-amber-600',
+      buttonBg: 'bg-amber-600 hover:bg-amber-700 text-white border-none shadow-amber-500/20',
+      border: 'border-amber-200/80 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/10',
+      pillBg: 'bg-amber-100/80 text-amber-800 border-amber-200',
+      boxBg: 'bg-amber-50/60 border-amber-100',
+    },
+  }[pkg.id] || {
+    cardBg: 'bg-white text-gray-900',
+    badgeBg: 'bg-primary text-white',
+    iconBg: 'bg-accent/10 text-accent',
+    iconColor: 'text-accent',
+    priceColor: 'text-accent',
+    accentText: 'text-accent',
+    checkColor: 'text-accent',
+    buttonBg: 'bg-accent text-white',
+    border: 'border-gray-200',
+    pillBg: 'bg-gray-100 text-primary',
+    boxBg: 'bg-surface-alt',
+  };
+
   const getPackageIcon = (id: string) => {
     switch (id) {
       case 'starter-page':
-        return <Zap className="w-5 h-5 text-emerald-500" />;
+        return <Zap className="w-5 h-5" />;
       case 'landing-page':
-        return <Sparkles className="w-5 h-5 text-accent" />;
+        return <Sparkles className="w-5 h-5" />;
       case 'business-website':
-        return <Flame className="w-5 h-5 text-amber-400 animate-pulse" />;
+        return <Flame className="w-5 h-5 animate-pulse" />;
       case 'ecommerce':
-        return <ShoppingBag className="w-5 h-5 text-blue-500" />;
+        return <ShoppingBag className="w-5 h-5" />;
       case 'maintenance':
-        return <ShieldCheck className="w-5 h-5 text-teal-500" />;
+        return <ShieldCheck className="w-5 h-5" />;
       default:
-        return <Sparkles className="w-5 h-5 text-accent" />;
+        return <Sparkles className="w-5 h-5" />;
     }
   };
 
-  const isFeatured = pkg.popular;
-
   return (
     <div
-      className={`flex flex-col justify-between relative rounded-card transition-all duration-300 overflow-hidden ${
-        isFeatured
-          ? 'bg-gradient-to-b from-primary via-primary-dark to-gray-950 text-white ring-2 ring-accent shadow-2xl shadow-accent/20 lg:-translate-y-3 z-10'
-          : 'bg-white text-gray-900 border border-gray-200/90 shadow-md hover:shadow-2xl hover:border-accent/40 hover:-translate-y-1.5'
-      }`}
+      className={`flex flex-col justify-between relative rounded-card transition-all duration-300 overflow-hidden shadow-md ${theme.cardBg} ${theme.border} hover:-translate-y-1.5`}
     >
       {/* Top Banner / Badge */}
       {pkg.badge && (
         <div
-          className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest shadow-md ${
-            isFeatured
-              ? 'bg-gradient-to-r from-accent to-accent-dark text-white'
-              : 'bg-primary/10 text-primary border-l border-b border-primary/10'
-          }`}
+          className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest ${theme.badgeBg}`}
         >
           {pkg.badge}
         </div>
@@ -247,18 +319,14 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
         {/* Header Title + Icon */}
         <div className="space-y-2 pt-1">
           <div className="flex items-center gap-2.5">
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                isFeatured ? 'bg-white/10 text-accent border border-white/10' : 'bg-surface-alt text-accent'
-              }`}
-            >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme.iconBg}`}>
               {getPackageIcon(pkg.id)}
             </div>
             <div>
               <h3 className={`font-heading font-extrabold text-2xl tracking-tight ${isFeatured ? 'text-white' : 'text-primary'}`}>
                 {pkg.name}
               </h3>
-              <div className="flex items-center gap-1.5 text-[11px] font-heading font-semibold text-accent">
+              <div className={`flex items-center gap-1.5 text-[11px] font-heading font-semibold ${theme.accentText}`}>
                 <Clock size={12} />
                 <span>{pkg.delivery}</span>
               </div>
@@ -271,15 +339,9 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
         </div>
 
         {/* Price Tag Box */}
-        <div
-          className={`p-4 rounded-2xl border flex items-baseline justify-between ${
-            isFeatured
-              ? 'bg-white/10 border-white/10 text-white'
-              : 'bg-surface-alt/70 border-gray-100'
-          }`}
-        >
+        <div className={`p-4 rounded-2xl border flex items-baseline justify-between ${theme.boxBg}`}>
           <div>
-            <span className="font-heading font-extrabold text-4xl sm:text-5xl tracking-tight text-accent">
+            <span className={`font-heading font-extrabold text-4xl sm:text-5xl tracking-tight ${theme.priceColor}`}>
               {pkg.price}
             </span>
             <span className={`font-body text-xs font-medium ml-1 ${isFeatured ? 'text-gray-300' : 'text-muted'}`}>
@@ -287,22 +349,14 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
             </span>
           </div>
 
-          <span className={`text-[10px] font-heading font-bold px-2.5 py-1 rounded-full uppercase ${
-            isFeatured ? 'bg-accent/20 text-accent border border-accent/30' : 'bg-primary/5 text-primary'
-          }`}>
+          <span className={`text-[10px] font-heading font-bold px-2.5 py-1 rounded-full uppercase border ${theme.pillBg}`}>
             100% Fixed Quote
           </span>
         </div>
 
         {/* Ideal For Audience Pill */}
-        <div
-          className={`p-3 rounded-xl border text-[11px] leading-snug ${
-            isFeatured
-              ? 'bg-white/5 border-white/10 text-gray-200'
-              : 'bg-surface-alt/50 border-gray-100 text-muted'
-          }`}
-        >
-          <span className={`font-bold ${isFeatured ? 'text-amber-300' : 'text-primary'}`}>Best for:</span> {pkg.idealFor}
+        <div className={`p-3 rounded-xl border text-[11px] leading-snug ${theme.boxBg}`}>
+          <span className={`font-bold ${theme.accentText}`}>Best for:</span> {pkg.idealFor}
         </div>
 
         {/* Included List Breakdown */}
@@ -314,9 +368,7 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className={`text-[11px] font-heading font-semibold hover:underline flex items-center gap-1 ${
-                isFeatured ? 'text-accent' : 'text-accent'
-              }`}
+              className={`text-[11px] font-heading font-semibold hover:underline flex items-center gap-1 ${theme.accentText}`}
             >
               {expanded ? 'Collapse' : 'Expand All'}
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -326,9 +378,9 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
           {expanded && (
             <ul className="space-y-2.5 font-body text-xs animate-fade-in-up">
               {pkg.included.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                  <span className="leading-snug">{item}</span>
+                <li key={idx} className="flex items-start gap-2.5">
+                  <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${theme.checkColor}`} />
+                  <span className={`leading-snug ${isFeatured ? 'text-gray-100' : 'text-primary/90'}`}>{item}</span>
                 </li>
               ))}
             </ul>
