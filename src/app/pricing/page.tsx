@@ -25,6 +25,7 @@ import {
   Calendar,
   Layers,
   Star,
+  ShoppingBag,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -198,22 +199,42 @@ const faqs = [
 // PRICING CARD COMPONENT
 // ─────────────────────────────────────────────
 function PricingCard({ pkg }: { pkg: PricingPackage }) {
-  const [expanded, setExpanded] = useState(pkg.popular);
+  const [expanded, setExpanded] = useState(true);
+
+  // Custom icon per package
+  const getPackageIcon = (id: string) => {
+    switch (id) {
+      case 'starter-page':
+        return <Zap className="w-5 h-5 text-emerald-500" />;
+      case 'landing-page':
+        return <Sparkles className="w-5 h-5 text-accent" />;
+      case 'business-website':
+        return <Flame className="w-5 h-5 text-amber-400 animate-pulse" />;
+      case 'ecommerce':
+        return <ShoppingBag className="w-5 h-5 text-blue-500" />;
+      case 'maintenance':
+        return <ShieldCheck className="w-5 h-5 text-teal-500" />;
+      default:
+        return <Sparkles className="w-5 h-5 text-accent" />;
+    }
+  };
+
+  const isFeatured = pkg.popular;
 
   return (
-    <Card
-      variant={pkg.popular ? 'highlighted' : 'default'}
-      hoverEffect={true}
-      className={`flex flex-col justify-between relative transition-all duration-300 ${
-        pkg.popular ? 'ring-2 ring-accent shadow-xl scale-[1.02] bg-white z-10' : 'border border-gray-200/80'
+    <div
+      className={`flex flex-col justify-between relative rounded-card transition-all duration-300 overflow-hidden ${
+        isFeatured
+          ? 'bg-gradient-to-b from-primary via-primary-dark to-gray-950 text-white ring-2 ring-accent shadow-2xl shadow-accent/20 lg:-translate-y-3 z-10'
+          : 'bg-white text-gray-900 border border-gray-200/90 shadow-md hover:shadow-2xl hover:border-accent/40 hover:-translate-y-1.5'
       }`}
     >
       {/* Top Banner / Badge */}
       {pkg.badge && (
         <div
-          className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1 rounded-bl-xl uppercase tracking-wider ${
-            pkg.popular
-              ? 'bg-accent text-white shadow-md'
+          className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest shadow-md ${
+            isFeatured
+              ? 'bg-gradient-to-r from-accent to-accent-dark text-white'
               : 'bg-primary/10 text-primary border-l border-b border-primary/10'
           }`}
         >
@@ -221,67 +242,89 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
         </div>
       )}
 
-      <div className="space-y-5">
-        {/* Header */}
-        <div className="space-y-1.5 pt-1">
-          <h3 className="font-heading font-bold text-2xl text-primary flex items-center gap-2">
-            {pkg.name}
-            {pkg.popular && <Flame className="w-5 h-5 text-accent animate-pulse" />}
-          </h3>
-          <p className="font-body text-xs text-muted leading-relaxed min-h-[38px]">
+      {/* Main Content Body */}
+      <div className="p-6 sm:p-7 space-y-6">
+        {/* Header Title + Icon */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                isFeatured ? 'bg-white/10 text-accent border border-white/10' : 'bg-surface-alt text-accent'
+              }`}
+            >
+              {getPackageIcon(pkg.id)}
+            </div>
+            <div>
+              <h3 className={`font-heading font-extrabold text-2xl tracking-tight ${isFeatured ? 'text-white' : 'text-primary'}`}>
+                {pkg.name}
+              </h3>
+              <div className="flex items-center gap-1.5 text-[11px] font-heading font-semibold text-accent">
+                <Clock size={12} />
+                <span>{pkg.delivery}</span>
+              </div>
+            </div>
+          </div>
+
+          <p className={`font-body text-xs leading-relaxed min-h-[38px] ${isFeatured ? 'text-gray-300' : 'text-muted'}`}>
             {pkg.tagline}
           </p>
         </div>
 
-        {/* Delivery Pill & Ideal For */}
-        <div className="flex flex-wrap items-center gap-2 text-[11px]">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-alt border border-gray-200 text-primary font-heading font-semibold">
-            <Clock className="w-3 h-3 text-accent" />
-            {pkg.delivery}
+        {/* Price Tag Box */}
+        <div
+          className={`p-4 rounded-2xl border flex items-baseline justify-between ${
+            isFeatured
+              ? 'bg-white/10 border-white/10 text-white'
+              : 'bg-surface-alt/70 border-gray-100'
+          }`}
+        >
+          <div>
+            <span className="font-heading font-extrabold text-4xl sm:text-5xl tracking-tight text-accent">
+              {pkg.price}
+            </span>
+            <span className={`font-body text-xs font-medium ml-1 ${isFeatured ? 'text-gray-300' : 'text-muted'}`}>
+              {pkg.pricePeriod || '/ fixed'}
+            </span>
+          </div>
+
+          <span className={`text-[10px] font-heading font-bold px-2.5 py-1 rounded-full uppercase ${
+            isFeatured ? 'bg-accent/20 text-accent border border-accent/30' : 'bg-primary/5 text-primary'
+          }`}>
+            100% Fixed Quote
           </span>
         </div>
 
-        {/* Price display */}
-        <div className="py-4 border-y border-gray-100 flex items-baseline gap-1.5">
-          <span className="font-heading font-extrabold text-4xl sm:text-5xl text-accent tracking-tight">
-            {pkg.price}
-          </span>
-          {pkg.pricePeriod ? (
-            <span className="font-body text-xs text-muted font-medium">
-              {pkg.pricePeriod}
-            </span>
-          ) : (
-            <span className="font-body text-xs text-muted font-medium">
-              / one-time
-            </span>
-          )}
+        {/* Ideal For Audience Pill */}
+        <div
+          className={`p-3 rounded-xl border text-[11px] leading-snug ${
+            isFeatured
+              ? 'bg-white/5 border-white/10 text-gray-200'
+              : 'bg-surface-alt/50 border-gray-100 text-muted'
+          }`}
+        >
+          <span className={`font-bold ${isFeatured ? 'text-amber-300' : 'text-primary'}`}>Best for:</span> {pkg.idealFor}
         </div>
 
-        {/* Target audience pill */}
-        <div className="p-2.5 bg-surface-alt/70 rounded-lg border border-gray-100/80 text-[11px] text-muted leading-snug">
-          <span className="font-semibold text-primary">Best for:</span> {pkg.idealFor}
-        </div>
-
-        {/* Toggle Inclusions Accordion */}
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center justify-between py-2 text-xs font-heading font-bold text-primary hover:text-accent transition-colors focus-ring rounded-md"
-          >
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-accent" />
-              {expanded ? 'Hide full package breakdown' : `What's included (${pkg.included.length} items)`}
+        {/* Included List Breakdown */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <span className={`font-heading font-bold text-xs uppercase tracking-wider ${isFeatured ? 'text-gray-200' : 'text-primary'}`}>
+              Package Features:
             </span>
-            {expanded ? (
-              <ChevronUp className="w-4 h-4 text-accent" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-muted" />
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className={`text-[11px] font-heading font-semibold hover:underline flex items-center gap-1 ${
+                isFeatured ? 'text-accent' : 'text-accent'
+              }`}
+            >
+              {expanded ? 'Collapse' : 'Expand All'}
+              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          </div>
 
           {expanded && (
-            <ul className="space-y-2 font-body text-xs text-primary/90 bg-surface-alt/80 p-4 rounded-xl border border-gray-100 animate-fade-in-up">
+            <ul className="space-y-2.5 font-body text-xs animate-fade-in-up">
               {pkg.included.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
@@ -293,19 +336,23 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
         </div>
       </div>
 
-      {/* CTA Button */}
-      <div className="pt-6">
+      {/* Action CTA Button Container */}
+      <div className={`p-6 sm:p-7 pt-4 ${isFeatured ? 'bg-gray-950/40 border-t border-white/10' : 'bg-gray-50/50 border-t border-gray-100'}`}>
         <Button
           href={`/contact?package=${pkg.id}`}
-          variant={pkg.popular ? 'primary' : 'secondary'}
-          size="md"
-          className="w-full shadow-sm"
+          variant={isFeatured ? 'primary' : 'secondary'}
+          size="lg"
+          className={`w-full shadow-md font-bold text-sm ${
+            isFeatured
+              ? 'bg-accent hover:bg-accent-dark border-none shadow-accent/30 text-white'
+              : 'bg-white border-gray-200 hover:border-accent hover:text-accent'
+          }`}
         >
-          <span>Select {pkg.name}</span>
-          <ArrowRight className="w-4 h-4 ml-1" />
+          <span>Claim {pkg.name}</span>
+          <ArrowRight className="w-4 h-4 ml-1.5" />
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }
 
