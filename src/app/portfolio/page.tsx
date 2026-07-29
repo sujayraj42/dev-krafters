@@ -154,61 +154,79 @@ export default function ShowcasePage() {
 
           {/* Template cards grid */}
           {filteredTemplates.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
               {filteredTemplates.map((template) => (
                 <Link
                   key={template.slug}
                   href={`/portfolio/${template.slug}`}
-                  className="group flex flex-col justify-between bg-white rounded-card border border-gray-200/80 overflow-hidden hover:border-accent/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  className="group flex flex-col justify-between bg-white rounded-card border border-gray-200/90 overflow-hidden hover:border-accent/60 hover:shadow-2xl hover:shadow-accent/15 transition-all duration-300 ease-out hover:-translate-y-2 relative"
                 >
-                  {/* Color Banner */}
+                  {/* Color Banner with Animated Shimmer */}
                   <div
-                    className="h-36 relative overflow-hidden flex items-center justify-center"
+                    className="h-40 relative overflow-hidden flex items-center justify-center"
                     style={{
-                      background: `linear-gradient(135deg, ${template.accentColor}, ${template.secondaryColor || template.accentColor}99)`,
+                      background: `linear-gradient(135deg, ${template.accentColor}, ${template.secondaryColor || template.accentColor}dd)`,
                     }}
                   >
-                    <span className="font-heading font-extrabold text-3xl text-white/20 uppercase tracking-widest group-hover:scale-110 transition-transform duration-300">
+                    {/* Shimmer Light Beam */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none z-10" />
+
+                    {/* Watermark Name Initials */}
+                    <span className="font-heading font-black text-4xl text-white/25 uppercase tracking-widest group-hover:scale-125 group-hover:rotate-3 transition-transform duration-500 select-none">
                       {template.name.slice(0, 3)}
                     </span>
 
-                    {/* Preview Hover Overlay */}
-                    <div className="absolute inset-0 bg-primary/40 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-primary font-heading text-xs font-bold shadow-md">
-                        <Eye size={14} className="text-accent" /> Live Preview
+                    {/* Category Floating Pill inside Banner */}
+                    <div className="absolute top-3 left-3 z-20">
+                      <span className="px-2.5 py-1 rounded-full font-heading text-[10px] font-extrabold uppercase tracking-wider bg-black/30 backdrop-blur-md text-white border border-white/20 shadow-xs">
+                        {template.category}
+                      </span>
+                    </div>
+
+                    {/* Live Preview Glassmorphic Hover Overlay */}
+                    <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-primary font-heading text-xs font-extrabold shadow-xl group-hover:scale-105 transition-transform duration-300">
+                        <Eye size={15} className="text-accent animate-pulse" />
+                        <span>Live Preview</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Card Content */}
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
                         <span
-                          className="px-2.5 py-0.5 rounded-full font-heading text-[10px] font-bold uppercase tracking-wider"
+                          className="px-2.5 py-0.5 rounded-full font-heading text-[10px] font-extrabold uppercase tracking-wider"
                           style={{
                             backgroundColor: template.accentColor + '15',
                             color: template.accentColor,
                           }}
                         >
-                          {template.category}
+                          Template
+                        </span>
+                        <span className="text-[10px] font-heading font-semibold text-muted">
+                          React 19 / Tailwind
                         </span>
                       </div>
-                      <h3 className="font-heading font-bold text-lg text-primary group-hover:text-accent transition-colors">
+
+                      <h3 className="font-heading font-extrabold text-xl text-primary group-hover:text-accent transition-colors duration-200">
                         {template.name}
                       </h3>
-                      <p className="font-body text-xs text-muted leading-relaxed line-clamp-2 mt-1">
+
+                      <p className="font-body text-xs text-muted leading-relaxed line-clamp-2">
                         {template.description}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between font-heading text-xs font-semibold text-accent group-hover:text-accent-dark">
-                      <span>View Template</span>
-                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    {/* Action Link Footer */}
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between font-heading text-xs font-bold text-accent group-hover:text-accent-dark">
+                      <span className="group-hover:underline">Explore Template</span>
+                      <ArrowRight size={15} className="group-hover:translate-x-1.5 transition-transform duration-300" />
                     </div>
                   </div>
                 </Link>
-              ))}
+                ))}
             </div>
           ) : (
             <div className="text-center py-16 bg-surface-alt rounded-card border border-gray-200/80">
