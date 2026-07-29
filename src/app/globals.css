@@ -27,3 +27,198 @@ h1, h2, h3, h4, h5, h6 {
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
 }
+
+/* ===== STEP WIZARD TRANSITIONS ===== */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ===== SUCCESS CHECKMARK ===== */
+@keyframes scaleBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-success-bounce {
+  animation: scaleBounce 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ===== PROGRESS BAR ===== */
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+}
+
+.animate-progress-fill {
+  animation: progressFill 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ===== FLOATING LABEL ===== */
+.floating-label-group {
+  position: relative;
+}
+
+.floating-label-group input,
+.floating-label-group textarea,
+.floating-label-group select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.floating-label-group label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: #9ca3af;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  padding: 0 4px;
+}
+
+.floating-label-group textarea ~ label {
+  top: 1rem;
+  transform: translateY(0);
+}
+
+.floating-label-group input:focus ~ label,
+.floating-label-group input:not(:placeholder-shown) ~ label,
+.floating-label-group textarea:focus ~ label,
+.floating-label-group textarea:not(:placeholder-shown) ~ label,
+.floating-label-group select:focus ~ label,
+.floating-label-group .has-value ~ label {
+  top: -0.5rem;
+  left: 0.75rem;
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  background: white;
+  font-weight: 600;
+}
+
+/* ===== PULSING BORDER FOR CALENDLY CTA ===== */
+@keyframes pulseBorder {
+  0%, 100% {
+    border-color: rgba(232, 90, 60, 0.4);
+    box-shadow: 0 0 0 0 rgba(232, 90, 60, 0.1);
+  }
+  50% {
+    border-color: rgba(232, 90, 60, 0.7);
+    box-shadow: 0 0 0 6px rgba(232, 90, 60, 0);
+  }
+}
+
+.animate-pulse-border {
+  animation: pulseBorder 2.5s ease-in-out infinite;
+}
+
+/* ===== GLASSMORPHISM CARD ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 24px rgba(15, 76, 76, 0.06),
+    0 1px 3px rgba(15, 76, 76, 0.04);
+}
+
+/* ===== COUNT-UP FADE ===== */
+@keyframes countFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-count-fade {
+  animation: countFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ===== TRUST BADGES ===== */
+.trust-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium;
+  background: rgba(15, 76, 76, 0.04);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(15, 76, 76, 0.08);
+}
+
+/* ===== DRAG & DROP ZONE ===== */
+.dropzone {
+  border: 2px dashed rgba(15, 76, 76, 0.2);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.dropzone:hover,
+.dropzone.drag-over {
+  border-color: var(--color-accent);
+  background: rgba(232, 90, 60, 0.03);
+}
+
+/* ===== HERO GRADIENT TEXT ===== */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

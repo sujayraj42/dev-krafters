@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     // Rate limit check (5 requests per 60 seconds per IP)

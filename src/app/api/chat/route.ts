@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { Resend } from 'resend';
 
+export const dynamic = 'force-dynamic';
+
 const SYSTEM_PROMPT = `
 You are the helpful AI assistant for Dev Krafters — a web development studio specializing in affordable, fast, AI-powered websites and digital tools for small and local businesses (clinics, salons, restaurants, shops, and service professionals).
 
@@ -26,16 +28,16 @@ Guidelines:
 1. Keep your answers brief, polite, and conversational (max 2-3 short paragraphs).
 2. Avoid complex technical jargon (do not use terms like "headless CMS" or "serverless architecture").
 3. Always provide accurate pricing from the spec. Never hallucinate fake discounts or custom prices.
-4. Encourage visitors to request a free quote by visiting the Contact page (/contact).
+4. Encourage visitors to start a project by visiting the Contact page (/contact).
 5. If a visitor asks off-topic questions (e.g. weather, sports, general coding help), politely redirect them back to Dev Krafters' web design & AI services.
-6. If the visitor expresses direct interest in starting a project or getting a quote, ask for their Name and Email or Phone number so our team can follow up directly.
+6. If the visitor expresses direct interest in starting a project, ask for their Name and Email or Phone number so our team can follow up directly.
 `;
 
 function getLocalFallbackReply(lastUserMessage: string): string {
   const query = lastUserMessage.toLowerCase();
 
   if (query.includes('price') || query.includes('cost') || query.includes('package') || query.includes('rate') || query.includes('how much')) {
-    return "Our fixed pricing packages start at ₹5,000 for a Starter Page, ₹9,000 for a Landing Page, ₹25,000 for a Business Website (5-8 pages), and ₹75,000 for an E-commerce Site. Monthly maintenance is ₹3,000/mo. You can view all package details on our /pricing page or request a custom quote at /contact!";
+    return "Our fixed pricing packages start at ₹5,000 for a Starter Page, ₹9,000 for a Landing Page, ₹25,000 for a Business Website (5-8 pages), and ₹75,000 for an E-commerce Site. Monthly maintenance is ₹3,000/mo. You can view all package details on our /pricing page or start a project at /contact!";
   } else if (query.includes('service') || query.includes('build') || query.includes('bot') || query.includes('seo') || query.includes('what do you do')) {
     return "We offer custom Business Websites, E-commerce Stores, Database & Backend Setup, SEO, AI Chatbots, Branding, and Maintenance. Check out our full offerings on the /services page!";
   } else if (query.includes('contact') || query.includes('quote') || query.includes('hire') || query.includes('start') || query.includes('book') || query.includes('call')) {
@@ -79,7 +81,7 @@ export async function POST(request: Request) {
 
         const formattedContents = [
           { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-          { role: 'model', parts: [{ text: "Understood! I am Dev Krafters' official AI assistant. I will provide accurate pricing, services, and redirect visitors to get a free quote at /contact." }] },
+          { role: 'model', parts: [{ text: "Understood! I am Dev Krafters' official AI assistant. I will provide accurate pricing, services, and redirect visitors to start a project at /contact." }] },
           ...messages.slice(-8).map((m: { role: string; content: string }) => ({
             role: m.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: m.content }],
@@ -152,7 +154,7 @@ export async function POST(request: Request) {
 
     // Step 5: Return fallback reply so user always gets a response instead of silence
     return NextResponse.json({
-      reply: "Hi there! I'm Dev Krafters' AI assistant. You can check our fixed package pricing on the /pricing page or request a custom quote at /contact!",
+      reply: "Hi there! I'm Dev Krafters' AI assistant. You can check our fixed package pricing on the /pricing page or start a project at /contact!",
     });
   }
 }

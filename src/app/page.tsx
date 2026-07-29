@@ -91,7 +91,7 @@ export default function Home() {
               {/* CTAs */}
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Button href="/contact" variant="primary" size="lg" className="w-full sm:w-auto">
-                  <span>Get a Free Quote</span>
+                  <span>Start Your Project</span>
                   <ArrowRight className="w-5 h-5 ml-1" />
                 </Button>
                 <Button href="/portfolio" variant="ghost" size="lg" className="w-full sm:w-auto group">
@@ -292,7 +292,7 @@ export default function Home() {
           </p>
           <div className="pt-4">
             <Button href="/contact" variant="primary" size="lg">
-              <span>Get a Free Quote</span>
+              <span>Start Your Project</span>
               <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
           </div>

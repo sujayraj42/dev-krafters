@@ -7,7 +7,7 @@ const footerNav = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
-  { name: 'Portfolio', href: '/portfolio' },
+  { name: 'Showcase', href: '/portfolio' },
   { name: 'Components', href: '/components' },
   { name: 'Contact', href: '/contact' },
 ];

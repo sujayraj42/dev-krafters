@@ -101,7 +101,7 @@ export const ChatWidget: React.FC = () => {
       const data = await res.json();
       const botResponseText =
         data.reply ||
-        "I'd be happy to help! You can view our pricing on the /pricing page or get a quote at /contact.";
+        "I'd be happy to help! You can view our pricing on the /pricing page or start a project at /contact.";
 
       setMessages((prev) => [
         ...prev,

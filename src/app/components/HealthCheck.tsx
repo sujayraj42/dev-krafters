@@ -357,7 +357,7 @@ export const HealthCheck: React.FC = () => {
                     size="sm"
                     className="w-full sm:w-auto"
                   >
-                    <span>Get a Quote</span>
+                    <span>Start Your Project</span>
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </div>

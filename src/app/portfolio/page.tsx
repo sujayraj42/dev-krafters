@@ -1,8 +1,13 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Button } from '@/components/Button';
-import { ArrowRight, Sparkles, Clock } from 'lucide-react';
+import { ArrowRight, Sparkles, LayoutGrid, Eye, Search, Layers, CheckCircle2 } from 'lucide-react';
+import { TEMPLATES, CATEGORIES, type TemplateCategory } from './templates';
 
+// ─── Existing client projects ───
 interface PortfolioItem {
   title: string;
   category: string;
@@ -45,28 +50,191 @@ const portfolioProjects: PortfolioItem[] = [
   },
 ];
 
-export default function PortfolioPage() {
+export default function ShowcasePage() {
+  const [activeCategory, setActiveCategory] = useState<TemplateCategory | 'All'>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredTemplates = TEMPLATES.filter((template) => {
+    const matchesCategory = activeCategory === 'All' || template.category === activeCategory;
+    const matchesSearch =
+      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* SECTION 1: HERO (SURFACE-ALT BG) */}
-      <section className="bg-surface-alt py-16 sm:py-24">
-        <div className="max-w-content mx-auto px-6 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-body text-xs font-semibold">
+    <div className="flex flex-col min-h-screen font-body bg-white text-gray-900">
+      {/* ─── HERO (DEV KRAFTERS BRANDED SURFACE-ALT BG) ─── */}
+      <section className="bg-surface-alt py-16 sm:py-24 border-b border-gray-200/60 relative overflow-hidden">
+        {/* Subtle background brand glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="relative max-w-content mx-auto px-6 text-center space-y-5">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold tracking-wide">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Proven Results for Local Businesses</span>
+            <span>20 Distinct Production Templates</span>
           </div>
-          <h1 className="font-heading font-extrabold text-4xl sm:text-5xl text-primary tracking-tight">
-            Our Portfolio & Work
+
+          <h1 className="font-heading font-extrabold text-4xl sm:text-5xl lg:text-6xl text-primary tracking-tight leading-[1.15]">
+            Our Showcase &{' '}
+            <span className="text-accent">
+              Web Templates
+            </span>
           </h1>
-          <p className="font-body text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Real client projects and custom digital solutions built for growing businesses.
+
+          <p className="font-body text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+            Explore our library of production-quality UI templates and real client projects. 
+            Each design system is tailored for speed, aesthetics, and high conversion.
           </p>
+
+          {/* Quick stats pills */}
+          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs font-heading font-semibold text-primary/80">
+            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
+              <CheckCircle2 size={15} className="text-accent" /> 20 Web Templates
+            </span>
+            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
+              <CheckCircle2 size={15} className="text-accent" /> 100% Responsive
+            </span>
+            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
+              <CheckCircle2 size={15} className="text-accent" /> Next.js + React 19
+            </span>
+          </div>
         </div>
       </section>
 
-      {/* SECTION 2: PORTFOLIO GRID (WHITE BG) */}
-      <section className="py-20 bg-white">
+      {/* ─── TEMPLATE GALLERY SECTION ─── */}
+      <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-content mx-auto px-6">
+          
+          {/* Search bar & Category filters */}
+          <div className="space-y-6 mb-12">
+            {/* Search Input */}
+            <div className="max-w-md mx-auto relative">
+              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="text"
+                placeholder="Search templates by keyword or style..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-4 py-2.5 bg-surface-alt border border-gray-200 rounded-btn font-body text-sm text-primary placeholder:text-muted outline-none focus:border-accent focus:bg-white transition-colors"
+              />
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              <button
+                onClick={() => setActiveCategory('All')}
+                className={`px-4 py-2 rounded-full font-heading text-xs font-bold tracking-wide transition-all duration-200 ${
+                  activeCategory === 'All'
+                    ? 'bg-primary text-white shadow-xs'
+                    : 'bg-surface-alt text-muted hover:bg-gray-200/80 hover:text-primary'
+                }`}
+              >
+                All ({TEMPLATES.length})
+              </button>
+              {CATEGORIES.map((cat) => {
+                const count = TEMPLATES.filter((t) => t.category === cat).length;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 rounded-full font-heading text-xs font-bold tracking-wide transition-all duration-200 ${
+                      activeCategory === cat
+                        ? 'bg-primary text-white shadow-xs'
+                        : 'bg-surface-alt text-muted hover:bg-gray-200/80 hover:text-primary'
+                    }`}
+                  >
+                    {cat} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Template cards grid */}
+          {filteredTemplates.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredTemplates.map((template) => (
+                <Link
+                  key={template.slug}
+                  href={`/portfolio/${template.slug}`}
+                  className="group flex flex-col justify-between bg-white rounded-card border border-gray-200/80 overflow-hidden hover:border-accent/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  {/* Color Banner */}
+                  <div
+                    className="h-36 relative overflow-hidden flex items-center justify-center"
+                    style={{
+                      background: `linear-gradient(135deg, ${template.accentColor}, ${template.secondaryColor || template.accentColor}99)`,
+                    }}
+                  >
+                    <span className="font-heading font-extrabold text-3xl text-white/20 uppercase tracking-widest group-hover:scale-110 transition-transform duration-300">
+                      {template.name.slice(0, 3)}
+                    </span>
+
+                    {/* Preview Hover Overlay */}
+                    <div className="absolute inset-0 bg-primary/40 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-primary font-heading text-xs font-bold shadow-md">
+                        <Eye size={14} className="text-accent" /> Live Preview
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span
+                          className="px-2.5 py-0.5 rounded-full font-heading text-[10px] font-bold uppercase tracking-wider"
+                          style={{
+                            backgroundColor: template.accentColor + '15',
+                            color: template.accentColor,
+                          }}
+                        >
+                          {template.category}
+                        </span>
+                      </div>
+                      <h3 className="font-heading font-bold text-lg text-primary group-hover:text-accent transition-colors">
+                        {template.name}
+                      </h3>
+                      <p className="font-body text-xs text-muted leading-relaxed line-clamp-2 mt-1">
+                        {template.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between font-heading text-xs font-semibold text-accent group-hover:text-accent-dark">
+                      <span>View Template</span>
+                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-surface-alt rounded-card border border-gray-200/80">
+              <Layers className="w-10 h-10 text-muted mx-auto mb-3" />
+              <h3 className="font-heading font-bold text-lg text-primary">No templates found</h3>
+              <p className="font-body text-sm text-muted">Try adjusting your search or category filter.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ─── REAL CLIENT PROJECTS SECTION ─── */}
+      <section className="py-20 bg-surface-alt border-t border-gray-200/60">
+        <div className="max-w-content mx-auto px-6">
+          <div className="text-center mb-12 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-heading text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-accent" />
+              <span>Proven Local Client Case Studies</span>
+            </div>
+            <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
+              Client Projects
+            </h2>
+            <p className="font-body text-base text-muted max-w-2xl mx-auto leading-relaxed">
+              Custom web applications and digital platforms designed for real business growth.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {portfolioProjects.map((project, idx) => (
               <ProjectCard
@@ -82,23 +250,23 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      {/* SECTION 3: PLACEHOLDER NOTE (SURFACE-ALT BG) */}
-      <section className="py-16 bg-surface-alt border-t border-gray-100">
+      {/* ─── DEV KRAFTERS BRANDED CTA BANNER ─── */}
+      <section className="py-16 bg-white border-t border-gray-100">
         <div className="max-w-content mx-auto px-6">
-          <div className="bg-white rounded-card p-8 border border-gray-200/80 text-center max-w-2xl mx-auto space-y-4 shadow-xs">
-            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-              <Clock className="w-6 h-6" />
-            </div>
-            <h3 className="font-heading font-bold text-xl text-primary">
-              New work coming soon — here&apos;s what we&apos;re building.
+          <div className="bg-primary rounded-card p-10 text-center max-w-3xl mx-auto space-y-5 shadow-xl relative overflow-hidden">
+            {/* Subtle background glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-[80px] pointer-events-none" />
+
+            <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
+              Need a custom web solution built for your business?
             </h3>
-            <p className="font-body text-sm text-muted">
-              We update our portfolio regularly with client case studies. Want your project featured here next?
+            <p className="font-body text-sm sm:text-base text-gray-200 max-w-xl mx-auto leading-relaxed">
+              Whether you need a custom landing page, e-commerce store, or fullstack web app — our team is ready to deliver.
             </p>
             <div className="pt-2">
-              <Button href="/contact" variant="primary" size="md">
+              <Button href="/contact" variant="primary" size="lg">
                 <span>Start Your Project</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
+                <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </div>
           </div>

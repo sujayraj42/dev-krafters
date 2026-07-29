@@ -11,7 +11,7 @@ const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
-  { name: 'Portfolio', href: '/portfolio' },
+  { name: 'Showcase', href: '/portfolio' },
   { name: 'Components', href: '/components' },
   { name: 'Contact', href: '/contact' },
 ];
@@ -52,7 +52,7 @@ export const Header: React.FC = () => {
         {/* Desktop CTA Button */}
         <div className="hidden md:flex items-center gap-4">
           <Button href="/contact" variant="primary" size="sm">
-            <span>Get a Quote</span>
+            <span>Start a Project</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
@@ -98,7 +98,7 @@ export const Header: React.FC = () => {
               className="w-full"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <span>Get a Free Quote</span>
+              <span>Start Your Project</span>
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
