@@ -90,23 +90,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Run Heuristic Checks on Raw HTML / Response
+    // 4. Run Genuine 8-Parameter Inspection on HTML & Response
     const lowerHtml = html.toLowerCase();
 
-    // Check A: Mobile-friendly (viewport meta tag)
+    // Parameter 1: Mobile Viewport
     const hasViewport = /<meta[^>]*name=["']viewport["']/i.test(html);
 
-    // Check B: SEO Basics
-    const hasTitle = /<title[^>]*>([^<]+)<\/title>/i.test(html);
-    const hasMetaDescription =
-      /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i.test(html) ||
-      /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i.test(html);
-    const hasH1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i.test(html);
+    // Parameter 2: SSL / HTTPS Security Encryption
+    const isHttps = parsedUrl.protocol === 'https:';
 
-    const seoPassCount = (hasTitle ? 1 : 0) + (hasMetaDescription ? 1 : 0) + (hasH1 ? 1 : 0);
-    const seoBasicsPass = seoPassCount >= 2;
-
-    // Check C: Page Speed Proxy
+    // Parameter 3: Page Load Speed
     let speedStatus: 'fast' | 'moderate' | 'slow' = 'fast';
     let speedScore = 2;
     if (fetchTimeMs <= 1500) {
@@ -120,27 +113,35 @@ export async function POST(request: Request) {
       speedScore = 0;
     }
 
-    // Check D: Modern Design Signals
-    const isHttps = parsedUrl.protocol === 'https:';
-    const hasModernDoctype = lowerHtml.startsWith('<!doctype html');
-    const modernSignalsPass = isHttps && hasViewport && (hasModernDoctype || lowerHtml.includes('<html'));
+    // Parameter 4: Title Tag
+    const hasTitle = /<title[^>]*>([^<]+)<\/title>/i.test(html);
 
-    // 5. Compute Weighted Overall Score (out of 10)
-    // - Mobile Viewport: 2 points
-    // - HTTPS: 2 points
-    // - SEO Title: 2 points
-    // - SEO Meta Desc & H1: 2 points (1 point each)
-    // - Page Speed Proxy: 2 points max (2 for fast, 1 for moderate, 0 for slow)
+    // Parameter 5: Meta Description Tag
+    const hasMetaDescription =
+      /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i.test(html) ||
+      /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i.test(html);
+
+    // Parameter 6: Main H1 Heading Tag
+    const hasH1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i.test(html);
+
+    // Parameter 7: Modern HTML5 Doctype
+    const hasModernDoctype = lowerHtml.startsWith('<!doctype html');
+
+    // Parameter 8: OpenGraph Social Sharing Meta Tags
+    const hasOpenGraph = /<meta[^>]*property=["']og:/i.test(html) || /<meta[^>]*name=["']og:/i.test(html);
+
+    // 5. Compute Weighted Overall Score out of 10
     let score = 0;
-    if (hasViewport) score += 2;
-    if (isHttps) score += 2;
-    if (hasTitle) score += 2;
+    if (hasViewport) score += 1.5;
+    if (isHttps) score += 1.5;
+    if (speedStatus === 'fast') score += 1.5; else if (speedStatus === 'moderate') score += 1;
+    if (hasTitle) score += 1.5;
     if (hasMetaDescription) score += 1;
     if (hasH1) score += 1;
-    score += speedScore;
+    if (hasModernDoctype) score += 1;
+    if (hasOpenGraph) score += 1;
 
-    // Clamp score 0 to 10
-    score = Math.max(0, Math.min(10, score));
+    score = Math.min(10, Math.max(1, Math.round(score * 10) / 10));
 
     // 6. Generate AI Summary using Gemini API
     const apiKey = process.env.GEMINI_API_KEY;
@@ -149,13 +150,14 @@ export async function POST(request: Request) {
     const findingsData = {
       url: targetUrl,
       score: `${score}/10`,
-      mobileFriendlyViewport: hasViewport ? 'Present' : 'Missing',
-      httpsSecured: isHttps ? 'Yes (HTTPS)' : 'No (HTTP only)',
-      fetchResponseTimeMs: `${fetchTimeMs}ms (${speedStatus})`,
-      seoTitleTag: hasTitle ? 'Found' : 'Missing',
-      seoMetaDescriptionTag: hasMetaDescription ? 'Found' : 'Missing',
-      seoH1Tag: hasH1 ? 'Found' : 'Missing',
-      modernHtmlDoctype: hasModernDoctype ? 'Found' : 'Missing',
+      mobileViewport: hasViewport ? 'Present' : 'Missing',
+      https: isHttps ? 'HTTPS Secure' : 'Insecure HTTP',
+      speed: `${fetchTimeMs}ms (${speedStatus})`,
+      title: hasTitle ? 'Found' : 'Missing',
+      metaDesc: hasMetaDescription ? 'Found' : 'Missing',
+      h1: hasH1 ? 'Found' : 'Missing',
+      doctype: hasModernDoctype ? 'HTML5 Doctype' : 'Legacy Doctype',
+      openGraph: hasOpenGraph ? 'Present' : 'Missing',
     };
 
     let aiSummary = '';
@@ -166,15 +168,16 @@ export async function POST(request: Request) {
         const prompt = `You are a helpful web development expert at Dev Krafters auditing a small business website.
 Given these audit findings for "${targetUrl}":
 - Score: ${findingsData.score}
-- Mobile Viewport: ${findingsData.mobileFriendlyViewport}
-- Security: ${findingsData.httpsSecured}
-- Server Speed Estimate: ${findingsData.fetchResponseTimeMs}
-- SEO Title: ${findingsData.seoTitleTag}
-- SEO Description: ${findingsData.seoMetaDescriptionTag}
-- H1 Heading: ${findingsData.seoH1Tag}
-- Modern HTML Doctype: ${findingsData.modernHtmlDoctype}
+- Mobile Viewport: ${findingsData.mobileViewport}
+- Security: ${findingsData.https}
+- Server Speed: ${findingsData.speed}
+- SEO Title: ${findingsData.title}
+- SEO Meta Description: ${findingsData.metaDesc}
+- H1 Heading: ${findingsData.h1}
+- HTML5 Doctype: ${findingsData.doctype}
+- OpenGraph Social Tags: ${findingsData.openGraph}
 
-Write a 2-3 sentence plain-English summary for the small business owner. Highlight the biggest missing features or issues found and explain what fixing them would mean for their business (e.g. more Google traffic, better mobile conversions, faster load speed). Keep the tone encouraging, helpful, non-alarmist, and clear for a non-technical reader. Do not use bullet points or code blocks.`;
+Write a 2-3 sentence plain-English summary for the business owner. Highlight missing features and explain what fixing them means for their Google traffic and sales. Keep it clear, non-technical, encouraging, and actionable. Do not use bullet points or code.`;
 
         const response = await ai.models.generateContent({
           model: 'gemini-2.0-flash',
@@ -191,20 +194,18 @@ Write a 2-3 sentence plain-English summary for the small business owner. Highlig
       }
     }
 
-    // Heuristic Fallback Summary if Gemini key isn't available or fails
     if (!aiSummary) {
       const issues: string[] = [];
-      if (!hasViewport) issues.push('mobile responsiveness setup');
-      if (!isHttps) issues.push('HTTPS security encryption');
-      if (!hasMetaDescription || !hasTitle) issues.push('basic search engine optimization tags');
-      if (speedStatus === 'slow') issues.push('server response latency');
+      if (!hasViewport) issues.push('mobile responsiveness');
+      if (!isHttps) issues.push('HTTPS encryption');
+      if (!hasMetaDescription || !hasTitle) issues.push('Google search meta tags');
+      if (speedStatus === 'slow') issues.push('page load latency');
+      if (!hasOpenGraph) issues.push('social media previews');
 
       if (issues.length === 0) {
-        aiSummary = `Your website performs well on basic automated metrics with a solid ${score}/10 score! To further boost sales and customer engagement, consider adding modern AI features like an instant chatbot, faster asset delivery, and targeted local SEO.`;
+        aiSummary = `Great job! Your website scored ${score}/10 on our 8-parameter health check. To double your leads, consider adding custom AI booking widgets and local SEO optimizations.`;
       } else {
-        aiSummary = `Your website scored ${score}/10, indicating room for improvement in key areas like ${issues.join(
-          ', '
-        )}. Resolving these essential elements will significantly improve your Google search visibility, mobile visitor experience, and customer conversions.`;
+        aiSummary = `Your website scored ${score}/10, with room for improvement in ${issues.slice(0, 3).join(', ')}. Fixing these will significantly boost your Google ranking and customer conversion rate.`;
       }
     }
 
@@ -217,43 +218,45 @@ Write a 2-3 sentence plain-English summary for the small business owner. Highlig
       checks: {
         mobileFriendly: {
           pass: hasViewport,
-          label: 'Mobile-Friendly',
-          statusText: hasViewport ? 'Viewport meta tag detected' : 'Missing viewport tag (may render poorly on phones)',
+          label: 'Mobile Responsiveness',
+          statusText: hasViewport ? 'Viewport tag detected (Renders properly on mobile)' : 'Missing viewport meta tag (Renders broken on mobile)',
+        },
+        https: {
+          pass: isHttps,
+          label: 'SSL Security & HTTPS',
+          statusText: isHttps ? 'Encrypted via HTTPS certificate' : 'Insecure HTTP (Browser shows Not Secure warning)',
         },
         pageSpeed: {
           pass: speedStatus !== 'slow',
           status: speedStatus,
           timeMs: fetchTimeMs,
-          label: 'Page Speed Estimate',
-          statusText:
-            speedStatus === 'fast'
-              ? `Fast response time (${fetchTimeMs}ms)`
-              : speedStatus === 'moderate'
-              ? `Moderate response time (${fetchTimeMs}ms)`
-              : `Slow server response (${fetchTimeMs}ms)`,
+          label: 'Server Load Speed',
+          statusText: speedStatus === 'fast' ? `Fast response (${fetchTimeMs}ms)` : speedStatus === 'moderate' ? `Moderate response (${fetchTimeMs}ms)` : `Slow response (${fetchTimeMs}ms)`,
         },
-        seoBasics: {
-          pass: seoBasicsPass,
-          hasTitle,
-          hasDescription: hasMetaDescription,
-          hasH1,
-          label: 'SEO Basics',
-          statusText:
-            seoPassCount === 3
-              ? 'Title, Meta Description, and H1 header found'
-              : `${seoPassCount}/3 key SEO elements detected (${!hasTitle ? 'missing Title' : ''}${
-                  !hasMetaDescription ? ' missing Meta Description' : ''
-                }${!hasH1 ? ' missing H1' : ''})`.trim(),
+        title: {
+          pass: hasTitle,
+          label: 'Google Title Tag',
+          statusText: hasTitle ? 'HTML Title tag found for Google Search' : 'Missing <title> tag (Invisble in Google search results)',
         },
-        modernSignals: {
-          pass: modernSignalsPass,
-          hasHttps: isHttps,
-          hasViewport,
-          hasDoctype: hasModernDoctype,
-          label: 'Modern Design Signals',
-          statusText: `${isHttps ? 'HTTPS secure' : 'Insecure HTTP'}, ${
-            hasModernDoctype ? 'modern HTML5 doctype' : 'legacy doctype'
-          }`,
+        metaDescription: {
+          pass: hasMetaDescription,
+          label: 'Meta Description Tag',
+          statusText: hasMetaDescription ? 'Meta description tag found' : 'Missing meta description (No snippet preview in Google)',
+        },
+        h1Heading: {
+          pass: hasH1,
+          label: 'H1 Main Heading',
+          statusText: hasH1 ? 'Main <h1> heading found' : 'Missing <h1> tag (Hard for Google to index main topic)',
+        },
+        html5Doctype: {
+          pass: hasModernDoctype,
+          label: 'HTML5 Modern Code Standard',
+          statusText: hasModernDoctype ? 'Modern <!DOCTYPE html> tag' : 'Legacy / Non-standard DOCTYPE structure',
+        },
+        openGraph: {
+          pass: hasOpenGraph,
+          label: 'Social Media Card Tags',
+          statusText: hasOpenGraph ? 'OpenGraph meta tags found' : 'Missing og:tags (WhatsApp & Facebook previews look plain)',
         },
       },
       summary: aiSummary,

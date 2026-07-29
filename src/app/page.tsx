@@ -215,6 +215,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── SECTION 2: LIVE 8-PARAMETER WEBSITE HEALTH CHECK ─── */}
+      <HealthCheck />
+
       {/* ─── FEATURED TEMPLATES SHOWCASE RIBBON ─── */}
       <section className="py-16 bg-white">
         <div className="max-w-content mx-auto px-6 space-y-10">
