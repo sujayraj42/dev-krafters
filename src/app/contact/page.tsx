@@ -402,6 +402,19 @@ function ContactFormContent() {
     }
 
     try {
+      // Save contact submission to localStorage so it appears in /admin
+      const contactSubmission = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        projectType: formData.projectType || 'General Inquiry',
+        budget: formData.budget,
+        message: parts.join('\n'),
+        date: new Date().toISOString(),
+      };
+      const existingContacts = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
+      localStorage.setItem('dev_krafters_contacts', JSON.stringify([contactSubmission, ...existingContacts]));
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
