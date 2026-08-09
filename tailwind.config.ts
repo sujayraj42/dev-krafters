@@ -10,22 +10,18 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#0B0F19",
-          dark: "#030712",
+          DEFAULT: "#0F4C4C",
+          dark: "#0A3838",
         },
         accent: {
-          DEFAULT: "#FF5A3C",
-          dark: "#E04326",
-        },
-        cyber: {
-          teal: "#00F2FE",
-          purple: "#8B5CF6",
+          DEFAULT: "#E85A3C",
+          dark: "#C94A2F",
         },
         surface: {
-          bg: "#030712",
-          alt: "#0B0F19",
+          bg: "#FFFFFF",
+          alt: "#F7F9F9",
         },
-        muted: "#94A3B8",
+        muted: "#5C6B6B",
       },
       fontFamily: {
         heading: ["var(--font-montserrat)", "sans-serif"],
@@ -35,8 +31,8 @@ const config: Config = {
         content: "1200px",
       },
       borderRadius: {
-        card: "16px",
-        btn: "12px",
+        card: "12px",
+        btn: "8px",
       },
     },
   },

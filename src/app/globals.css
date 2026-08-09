@@ -3,95 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #0B0F19; /* Deep cyber navy */
-  --color-primary-dark: #030712; /* Rich dark-space black */
-  --color-accent: #FF5A3C; /* High-vibrancy premium neon coral */
-  --color-accent-dark: #E04326; /* Deep glowing accent */
-  --color-cyber-teal: #00F2FE; /* Futuristic cyan glow */
-  --color-cyber-purple: #8B5CF6; /* Royal mystic violet */
-  --color-bg: #030712; /* Immersive dark space */
-  --color-bg-alt: #0B0F19; /* High-contrast card backdrop */
-  --color-text-muted: #94A3B8; /* Refined slate muted body */
+  --color-primary: #0F4C4C;
+  --color-primary-dark: #0A3838;
+  --color-accent: #E85A3C;
+  --color-accent-dark: #C94A2F;
+  --color-bg: #FFFFFF;
+  --color-bg-alt: #F7F9F9;
+  --color-text-muted: #5C6B6B;
 }
 
 body {
-  color: #F8FAFC;
+  color: var(--color-primary);
   background-color: var(--color-bg);
   font-family: var(--font-poppins), sans-serif;
   overflow-x: hidden;
-  background-image:
-    radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(255, 90, 60, 0.05) 0px, transparent 50%),
-    linear-gradient(rgba(11, 15, 25, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(11, 15, 25, 0.3) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-montserrat), sans-serif;
-  letter-spacing: -0.02em;
 }
 
-/* Custom focus ring for cyber style */
+/* Custom utility for smooth transitions and focus rings */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-black;
-}
-
-/* ===== ADVANCED CYBER GLOW & NEON UTILITIES ===== */
-.cyber-glow-teal {
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.15), inset 0 0 10px rgba(0, 242, 254, 0.05);
-  border-color: rgba(0, 242, 254, 0.3);
-}
-
-.cyber-glow-accent {
-  box-shadow: 0 0 20px rgba(255, 90, 60, 0.15), inset 0 0 10px rgba(255, 90, 60, 0.05);
-  border-color: rgba(255, 90, 60, 0.3);
-}
-
-/* Glassmorphic card surfaces */
-.glass-card {
-  background: rgba(11, 15, 25, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow:
-    0 8px 32px 0 rgba(0, 0, 0, 0.37),
-    0 0 2px 1px rgba(255, 255, 255, 0.05) inset;
-}
-
-.glass-card-hover {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-card-hover:hover {
-  transform: translateY(-6px) scale(1.01);
-  background: rgba(15, 23, 42, 0.8);
-  border-color: rgba(0, 242, 254, 0.25);
-  box-shadow:
-    0 12px 40px 0 rgba(0, 242, 254, 0.1),
-    0 0 2px 1px rgba(0, 242, 254, 0.1) inset;
-}
-
-/* Text Gradients */
-.gradient-text-teal {
-  background: linear-gradient(135deg, #FFFFFF 0%, var(--color-cyber-teal) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-accent {
-  background: linear-gradient(135deg, #FFFFFF 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-cyber {
-  background: linear-gradient(135deg, var(--color-cyber-teal) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
 }
 
 /* ===== STEP WIZARD TRANSITIONS ===== */
@@ -191,7 +125,7 @@ h1, h2, h3, h4, h5, h6 {
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.875rem;
-  color: #64748B;
+  color: #9ca3af;
   pointer-events: none;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background: transparent;
@@ -212,25 +146,36 @@ h1, h2, h3, h4, h5, h6 {
   top: -0.5rem;
   left: 0.75rem;
   font-size: 0.7rem;
-  color: var(--color-cyber-teal);
-  background: var(--color-primary-dark);
+  color: var(--color-accent);
+  background: white;
   font-weight: 600;
 }
 
-/* ===== PULSING BORDER FOR CALLS ===== */
+/* ===== PULSING BORDER FOR CALENDLY CTA ===== */
 @keyframes pulseBorder {
   0%, 100% {
-    border-color: rgba(255, 90, 60, 0.4);
-    box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.2);
+    border-color: rgba(232, 90, 60, 0.4);
+    box-shadow: 0 0 0 0 rgba(232, 90, 60, 0.1);
   }
   50% {
-    border-color: rgba(255, 90, 60, 0.9);
-    box-shadow: 0 0 0 10px rgba(255, 90, 60, 0);
+    border-color: rgba(232, 90, 60, 0.7);
+    box-shadow: 0 0 0 6px rgba(232, 90, 60, 0);
   }
 }
 
 .animate-pulse-border {
-  animation: pulseBorder 2s ease-in-out infinite;
+  animation: pulseBorder 2.5s ease-in-out infinite;
+}
+
+/* ===== GLASSMORPHISM CARD ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 24px rgba(15, 76, 76, 0.06),
+    0 1px 3px rgba(15, 76, 76, 0.04);
 }
 
 /* ===== COUNT-UP FADE ===== */
@@ -251,54 +196,29 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ===== TRUST BADGES ===== */
 .trust-badge {
-  @apply inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold;
-  background: rgba(255, 255, 255, 0.04);
-  color: #94A3B8;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s ease;
-}
-.trust-badge:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(0, 242, 254, 0.3);
-  color: #F8FAFC;
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium;
+  background: rgba(15, 76, 76, 0.04);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(15, 76, 76, 0.08);
 }
 
 /* ===== DRAG & DROP ZONE ===== */
 .dropzone {
-  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border: 2px dashed rgba(15, 76, 76, 0.2);
   border-radius: 12px;
   transition: all 0.2s ease;
 }
 
 .dropzone:hover,
 .dropzone.drag-over {
-  border-color: var(--color-cyber-teal);
-  background: rgba(0, 242, 254, 0.04);
+  border-color: var(--color-accent);
+  background: rgba(232, 90, 60, 0.03);
 }
 
-/* ===== SHIMMER EFFECT ===== */
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
-
-/* Custom Webkit scrollbar for premium feel */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-primary-dark);
-}
-::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 9999px;
-  border: 2px solid var(--color-primary-dark);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+/* ===== HERO GRADIENT TEXT ===== */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
