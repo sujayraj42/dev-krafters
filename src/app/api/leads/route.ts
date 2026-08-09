@@ -1,0 +1,56 @@
+import { NextResponse } from 'next/server';
+import { getAllLeads, saveLead, clearLeads } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
+
+// GET /api/leads - Retrieve all leads from database
+export async function GET() {
+  try {
+    const leads = getAllLeads();
+    return NextResponse.json({ success: true, leads, count: leads.length });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Database fetch failed';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
+
+// POST /api/leads - Save a new lead to database
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+
+    if (!body.email && !body.name) {
+      return NextResponse.json({ success: false, error: 'Email or name is required' }, { status: 400 });
+    }
+
+    const savedRecord = saveLead({
+      type: body.type || 'contact',
+      name: body.name || '',
+      email: body.email || '',
+      phone: body.phone || '',
+      projectType: body.projectType || '',
+      pages: body.pages,
+      budget: body.budget || '',
+      totalEstimateFormatted: body.totalEstimateFormatted || '',
+      totalEstimateInr: body.totalEstimateInr,
+      message: body.message || '',
+      date: body.date,
+    });
+
+    return NextResponse.json({ success: true, lead: savedRecord });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to save lead to database';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
+
+// DELETE /api/leads - Clear leads database
+export async function DELETE() {
+  try {
+    clearLeads();
+    return NextResponse.json({ success: true, message: 'Leads database cleared successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to clear leads database';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}

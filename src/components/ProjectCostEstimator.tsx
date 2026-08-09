@@ -141,8 +141,9 @@ export const ProjectCostEstimator: React.FC = () => {
     setCustomPages(pkg.defaultPages);
   };
 
-  const handleSaveEstimate = () => {
+  const handleSaveEstimate = async () => {
     const estimateData = {
+      type: 'estimate',
       projectType: activePkg.name,
       pages: customPages,
       addons: selectedAddons,
@@ -151,6 +152,16 @@ export const ProjectCostEstimator: React.FC = () => {
       totalEstimateInr: totalOneTime,
       date: new Date().toISOString(),
     };
+
+    try {
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(estimateData),
+      });
+    } catch (err) {
+      console.error('Failed to save estimate to DB', err);
+    }
 
     const existing = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
     localStorage.setItem('dev_krafters_estimates', JSON.stringify([estimateData, ...existing]));

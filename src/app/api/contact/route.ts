@@ -46,6 +46,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Save lead persistently to database
+    try {
+      const { saveLead } = await import('@/lib/db');
+      saveLead({
+        type: 'contact',
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone ? phone.trim() : undefined,
+        projectType: projectType || 'General Inquiry',
+        message: message.trim(),
+      });
+    } catch (dbErr) {
+      console.error('[DB Save Error]', dbErr);
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL || 'hello@devkrafters.com';
     const isApiKeySet = apiKey && apiKey !== 're_your_resend_api_key_here';

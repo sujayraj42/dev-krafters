@@ -55,8 +55,26 @@ export default function AdminPage() {
 
   const [copied, setCopied] = useState(false);
 
-  // Load all leads from browser localStorage
-  const loadLeads = () => {
+  // Load all leads from Server Database API + localStorage fallback
+  const loadLeads = async () => {
+    try {
+      const res = await fetch('/api/leads');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.leads)) {
+        const contacts = data.leads.filter((l: { type: string }) => l.type === 'contact');
+        const newsletter = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
+        const estimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
+
+        setContactLeads(contacts);
+        setNewsletterLeads(newsletter);
+        setEstimateLeads(estimates);
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to fetch leads from DB API, using local fallback:', err);
+    }
+
+    // Fallback to local storage
     const contacts = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
     const newsletter = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
     const estimates = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
@@ -93,8 +111,13 @@ export default function AdminPage() {
     loadLeads();
   };
 
-  const clearAllData = () => {
-    if (confirm('Are you sure you want to clear all lead data stored in browser memory?')) {
+  const clearAllData = async () => {
+    if (confirm('Are you sure you want to clear all lead data from the server database?')) {
+      try {
+        await fetch('/api/leads', { method: 'DELETE' });
+      } catch (err) {
+        console.error('Failed to clear server DB:', err);
+      }
       localStorage.removeItem('dev_krafters_contacts');
       localStorage.removeItem('dev_krafters_leads');
       localStorage.removeItem('dev_krafters_estimates');
@@ -104,8 +127,9 @@ export default function AdminPage() {
     }
   };
 
-  const addSampleLead = () => {
-    const demoContact: ContactLead = {
+  const addSampleLead = async () => {
+    const demoContact = {
+      type: 'contact',
       name: 'Rahul Sharma',
       email: 'rahul@sharmaclinic.com',
       phone: '+91 98765 43210',
@@ -114,21 +138,16 @@ export default function AdminPage() {
       message: 'Need a custom 6-page site for my dental clinic.',
       date: new Date().toISOString(),
     };
-    const demoNewsletter: NewsletterLead = {
-      email: 'anita.marketing@gmail.com',
-      date: new Date(Date.now() - 86400000).toISOString(),
-    };
-    const demoEstimate: EstimateLead = {
-      projectType: 'Business Website',
-      pages: 6,
-      totalEstimateFormatted: '₹25,000',
-      totalEstimateInr: 25000,
-      date: new Date(Date.now() - 172800000).toISOString(),
-    };
 
-    localStorage.setItem('dev_krafters_contacts', JSON.stringify([demoContact, ...contactLeads]));
-    localStorage.setItem('dev_krafters_leads', JSON.stringify([demoNewsletter, ...newsletterLeads]));
-    localStorage.setItem('dev_krafters_estimates', JSON.stringify([demoEstimate, ...estimateLeads]));
+    try {
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(demoContact),
+      });
+    } catch (err) {
+      console.error('Failed to post sample lead:', err);
+    }
     loadLeads();
   };
 

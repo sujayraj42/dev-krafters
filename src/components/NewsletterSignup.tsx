@@ -19,13 +19,21 @@ export const NewsletterSignup: React.FC = () => {
     setStatus('loading');
 
     try {
-      // Save lead to local storage so admin / user can access collected leads
+      // Save to database API
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'newsletter',
+          email,
+          date: new Date().toISOString(),
+        }),
+      });
+
+      // Also keep in localStorage for offline access
       const leads = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
       const newLead = { email, date: new Date().toISOString(), source: 'newsletter' };
       localStorage.setItem('dev_krafters_leads', JSON.stringify([newLead, ...leads]));
-
-      // Simulate network request
-      await new Promise((res) => setTimeout(res, 800));
 
       setStatus('success');
       setMessage('Success! You are subscribed to web growth insights.');
