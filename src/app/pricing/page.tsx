@@ -432,7 +432,7 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
 // INTERACTIVE CUSTOM COST ESTIMATOR WIDGET
 // ─────────────────────────────────────────────
 function CustomCostCalculator() {
-  return <ProjectCostEstimator compact />;
+  return <ProjectCostEstimator />;
 }
 
 // ─────────────────────────────────────────────

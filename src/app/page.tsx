@@ -10,7 +10,6 @@ import { BorderBeam, InfiniteMarquee, GlowCard, AnimatedTextShimmer } from '@/co
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import { FAQAccordion } from '@/components/FAQAccordion';
 import { ClientLogoMarquee } from '@/components/ClientLogoMarquee';
-import { ProjectCostEstimator } from '@/components/ProjectCostEstimator';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import {
   ArrowRight,
@@ -454,9 +453,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ─── INTERACTIVE PROJECT COST ESTIMATOR ─── */}
-      <ProjectCostEstimator />
 
       {/* ─── CLIENT TESTIMONIALS ─── */}
       <TestimonialCarousel />
