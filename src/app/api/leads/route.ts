@@ -2,12 +2,22 @@ import { NextResponse } from 'next/server';
 import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // GET /api/leads - Retrieve all leads from database
 export async function GET() {
   try {
     const leads = await getAllLeadsAsync();
-    return NextResponse.json({ success: true, leads, count: leads.length });
+    return NextResponse.json(
+      { success: true, leads, count: leads.length },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
+    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Database fetch failed';
     return NextResponse.json({ success: false, error: message }, { status: 500 });

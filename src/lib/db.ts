@@ -13,6 +13,7 @@ export interface LeadRecord {
   totalEstimateFormatted?: string;
   totalEstimateInr?: number;
   message?: string;
+  fileUrl?: string;
   date: string;
 }
 

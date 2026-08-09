@@ -402,16 +402,48 @@ function ContactFormContent() {
     }
 
     try {
-      // Save contact submission to localStorage so it appears in /admin
+      let fileUrl = '';
+      if (selectedFile) {
+        try {
+          const fileData = new FormData();
+          fileData.append('file', selectedFile);
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: fileData,
+          });
+          const uploadResult = await uploadRes.json();
+          if (uploadResult.success) {
+            fileUrl = uploadResult.fileUrl;
+            parts.push(`Attached file URL: ${fileUrl}`);
+          }
+        } catch (uploadErr) {
+          console.error('File upload failed:', uploadErr);
+        }
+      }
+
+      // Save contact submission to localStorage & database API so it appears in /admin
       const contactSubmission = {
+        type: 'contact',
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         projectType: formData.projectType || 'General Inquiry',
         budget: formData.budget,
         message: parts.join('\n'),
+        fileUrl,
         date: new Date().toISOString(),
       };
+
+      try {
+        await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contactSubmission),
+        });
+      } catch (dbErr) {
+        console.error('Failed to post contact to /api/leads', dbErr);
+      }
+
       const existingContacts = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
       localStorage.setItem('dev_krafters_contacts', JSON.stringify([contactSubmission, ...existingContacts]));
 

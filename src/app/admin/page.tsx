@@ -25,6 +25,7 @@ interface ContactLead {
   projectType?: string;
   budget?: string;
   message?: string;
+  fileUrl?: string;
   date: string;
 }
 
@@ -55,33 +56,53 @@ export default function AdminPage() {
 
   const [copied, setCopied] = useState(false);
 
-  // Load all leads from Server Database API + localStorage fallback
+  // Load and sync all leads from Server Database API + LocalStorage
   const loadLeads = async () => {
+    // 1. Fetch LocalStorage entries
+    const localContacts: ContactLead[] = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
+    const localNewsletters: NewsletterLead[] = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
+    const localEstimates: EstimateLead[] = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
+
+    let serverContacts: ContactLead[] = [];
+    let serverNewsletters: NewsletterLead[] = [];
+    let serverEstimates: EstimateLead[] = [];
+
     try {
-      const res = await fetch('/api/leads');
+      const res = await fetch('/api/leads', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.leads)) {
-        const contacts = data.leads.filter((l: { type: string }) => l.type === 'contact');
-        const newsletter = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
-        const estimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
-
-        setContactLeads(contacts);
-        setNewsletterLeads(newsletter);
-        setEstimateLeads(estimates);
-        return;
+        serverContacts = data.leads.filter((l: { type: string }) => l.type === 'contact');
+        serverNewsletters = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
+        serverEstimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
       }
     } catch (err) {
-      console.error('Failed to fetch leads from DB API, using local fallback:', err);
+      console.error('Failed to fetch leads from DB API, using local storage:', err);
     }
 
-    // Fallback to local storage
-    const contacts = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
-    const newsletter = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
-    const estimates = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
+    // Deduplicate and merge contacts
+    const contactMap = new Map<string, ContactLead>();
+    [...serverContacts, ...localContacts].forEach((item) => {
+      const key = `${item.email}_${item.date}`;
+      if (!contactMap.has(key)) contactMap.set(key, item);
+    });
 
-    setContactLeads(contacts);
-    setNewsletterLeads(newsletter);
-    setEstimateLeads(estimates);
+    // Deduplicate and merge newsletters
+    const newsletterMap = new Map<string, NewsletterLead>();
+    [...serverNewsletters, ...localNewsletters].forEach((item) => {
+      const key = `${item.email}_${item.date}`;
+      if (!newsletterMap.has(key)) newsletterMap.set(key, item);
+    });
+
+    // Deduplicate and merge estimates
+    const estimateMap = new Map<string, EstimateLead>();
+    [...serverEstimates, ...localEstimates].forEach((item) => {
+      const key = `${item.projectType}_${item.date}_${item.totalEstimateInr}`;
+      if (!estimateMap.has(key)) estimateMap.set(key, item);
+    });
+
+    setContactLeads(Array.from(contactMap.values()));
+    setNewsletterLeads(Array.from(newsletterMap.values()));
+    setEstimateLeads(Array.from(estimateMap.values()));
   };
 
   useEffect(() => {
@@ -89,8 +110,15 @@ export default function AdminPage() {
     if (unlocked === 'true') {
       setIsAuthenticated(true);
       loadLeads();
+
+      // Live auto-sync interval every 5 seconds
+      const interval = setInterval(() => {
+        loadLeads();
+      }, 5000);
+
+      return () => clearInterval(interval);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -438,6 +466,16 @@ export default function AdminPage() {
                           <td className="py-3.5 px-5">
                             <span className="font-semibold text-primary">{c.projectType}</span>
                             {c.budget && <span className="text-muted block text-[11px]">Budget: {c.budget}</span>}
+                            {c.fileUrl && (
+                              <a
+                                href={c.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-accent hover:underline bg-accent/10 px-2 py-0.5 rounded-full"
+                              >
+                                📎 View Attachment / Image
+                              </a>
+                            )}
                           </td>
                           <td className="py-3.5 px-5 text-muted">{new Date(c.date).toLocaleString()}</td>
                         </tr>
