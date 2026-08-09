@@ -56,53 +56,33 @@ export default function AdminPage() {
 
   const [copied, setCopied] = useState(false);
 
-  // Load and sync all leads from Server Database API + LocalStorage
+  // Load leads directly from MongoDB Server Database API
   const loadLeads = async () => {
-    // 1. Fetch LocalStorage entries
-    const localContacts: ContactLead[] = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
-    const localNewsletters: NewsletterLead[] = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
-    const localEstimates: EstimateLead[] = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
-
-    let serverContacts: ContactLead[] = [];
-    let serverNewsletters: NewsletterLead[] = [];
-    let serverEstimates: EstimateLead[] = [];
-
     try {
       const res = await fetch('/api/leads', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.leads)) {
-        serverContacts = data.leads.filter((l: { type: string }) => l.type === 'contact');
-        serverNewsletters = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
-        serverEstimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
+        const contacts = data.leads.filter((l: { type: string }) => l.type === 'contact' || l.type === 'chatbot');
+        const newsletter = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
+        const estimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
+
+        setContactLeads(contacts);
+        setNewsletterLeads(newsletter);
+        setEstimateLeads(estimates);
+        return;
       }
     } catch (err) {
-      console.error('Failed to fetch leads from DB API, using local storage:', err);
+      console.error('Failed to fetch leads from DB API:', err);
     }
 
-    // Deduplicate and merge contacts
-    const contactMap = new Map<string, ContactLead>();
-    [...serverContacts, ...localContacts].forEach((item, idx) => {
-      const key = (item as unknown as { id?: string }).id || `${item.email || 'no-email'}_${item.name || ''}_${item.date}_${idx}`;
-      if (!contactMap.has(key)) contactMap.set(key, item);
-    });
+    // Fallback to local storage only if offline
+    const localContacts: ContactLead[] = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
+    const localNewsletters: NewsletterLead[] = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
+    const localEstimates: EstimateLead[] = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
 
-    // Deduplicate and merge newsletters
-    const newsletterMap = new Map<string, NewsletterLead>();
-    [...serverNewsletters, ...localNewsletters].forEach((item, idx) => {
-      const key = (item as unknown as { id?: string }).id || `${item.email || 'no-email'}_${item.date}_${idx}`;
-      if (!newsletterMap.has(key)) newsletterMap.set(key, item);
-    });
-
-    // Deduplicate and merge estimates
-    const estimateMap = new Map<string, EstimateLead>();
-    [...serverEstimates, ...localEstimates].forEach((item, idx) => {
-      const key = (item as unknown as { id?: string }).id || `${item.projectType}_${item.totalEstimateInr || 0}_${item.date}_${idx}`;
-      if (!estimateMap.has(key)) estimateMap.set(key, item);
-    });
-
-    setContactLeads(Array.from(contactMap.values()));
-    setNewsletterLeads(Array.from(newsletterMap.values()));
-    setEstimateLeads(Array.from(estimateMap.values()));
+    setContactLeads(localContacts);
+    setNewsletterLeads(localNewsletters);
+    setEstimateLeads(localEstimates);
   };
 
   useEffect(() => {

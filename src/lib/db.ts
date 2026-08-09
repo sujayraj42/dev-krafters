@@ -3,7 +3,7 @@ import path from 'path';
 
 export interface LeadRecord {
   id: string;
-  type: 'contact' | 'newsletter' | 'estimate' | string;
+  type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | string;
   name?: string;
   email: string;
   phone?: string;
@@ -30,6 +30,27 @@ function ensureDb() {
   }
 }
 
+// Clear local file demo data if it contained hardcoded sample leads
+export function purgeLocalDemoData() {
+  ensureDb();
+  try {
+    const content = fs.readFileSync(DB_FILE, 'utf-8');
+    const records = JSON.parse(content) as LeadRecord[];
+    const cleaned = records.filter(
+      (r) =>
+        r.id !== 'lead-1' &&
+        r.id !== 'lead-2' &&
+        r.id !== 'lead-3' &&
+        r.email !== 'anita@smiledental.com' &&
+        r.email !== 'rahul.mehta@spicecraft.in' &&
+        r.email !== 'quote@client.com'
+    );
+    fs.writeFileSync(DB_FILE, JSON.stringify(cleaned, null, 2), 'utf-8');
+  } catch {
+    // ignore
+  }
+}
+
 // ─────────────────────────────────────────────
 // MONGODB ATLAS CLOUD DB INTEGRATION
 // ─────────────────────────────────────────────
@@ -39,10 +60,9 @@ async function getMongoLeads(): Promise<LeadRecord[] | null> {
     const clientPromise = (await import('@/lib/mongodb')).default;
     if (!clientPromise) return null;
 
-    // Timeout after 3 seconds if MongoDB connection is blocked or slow
     const client = await Promise.race([
       clientPromise,
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MongoDB Timeout')), 3000)),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MongoDB Connection Timeout')), 4000)),
     ]);
 
     if (!client) return null;
@@ -78,7 +98,7 @@ async function saveMongoLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: st
 
     const client = await Promise.race([
       clientPromise,
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MongoDB Timeout')), 3000)),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MongoDB Connection Timeout')), 4000)),
     ]);
 
     if (!client) return null;
@@ -117,10 +137,11 @@ async function clearMongoLeads(): Promise<boolean> {
 }
 
 // ─────────────────────────────────────────────
-// PUBLIC EXPORTED FUNCTIONS WITH MONGO + LOCAL HYBRID MERGING
+// PUBLIC EXPORTED FUNCTIONS (EXCLUSIVELY MONGODB WHEN CONFIGURED)
 // ─────────────────────────────────────────────
 export function getAllLeads(): LeadRecord[] {
   ensureDb();
+  purgeLocalDemoData();
   try {
     const content = fs.readFileSync(DB_FILE, 'utf-8');
     return JSON.parse(content) as LeadRecord[];
@@ -130,25 +151,21 @@ export function getAllLeads(): LeadRecord[] {
 }
 
 export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
-  const localLeads = getAllLeads();
+  purgeLocalDemoData();
   const mongoLeads = await getMongoLeads();
 
-  const allList = [...(mongoLeads || []), ...localLeads];
+  // If MongoDB Atlas is configured and reachable, return ONLY MongoDB leads!
+  if (mongoLeads !== null) {
+    return mongoLeads;
+  }
 
-  // Merge and deduplicate safely using unique fallback keys
-  const leadMap = new Map<string, LeadRecord>();
-  allList.forEach((item, index) => {
-    const uniqueKey = item.id || `${item.email || 'no-email'}_${item.type}_${item.date}_${index}`;
-    if (!leadMap.has(uniqueKey)) {
-      leadMap.set(uniqueKey, item);
-    }
-  });
-
-  return Array.from(leadMap.values());
+  // Fallback to local server file disk only if MongoDB is unconfigured or unreachable
+  return getAllLeads();
 }
 
 export function saveLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }): LeadRecord {
   ensureDb();
+  purgeLocalDemoData();
   const leads = getAllLeads();
 
   const newRecord: LeadRecord = {
@@ -165,13 +182,17 @@ export function saveLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string
 export async function saveLeadAsync(
   lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }
 ): Promise<LeadRecord> {
-  // Always save to local server file disk FIRST (instant 0ms persistence)
-  const localSaved = saveLead(lead);
+  purgeLocalDemoData();
 
-  // Background attempt to save to MongoDB Cloud
-  saveMongoLead(lead).catch((err) => console.error('[Background Mongo Save Error]', err));
+  // Save to MongoDB Cloud Database
+  const savedMongo = await saveMongoLead(lead);
+  if (savedMongo) {
+    // Also write to local server disk backup
+    saveLead(lead);
+    return savedMongo;
+  }
 
-  return localSaved;
+  return saveLead(lead);
 }
 
 export function clearLeads(): void {

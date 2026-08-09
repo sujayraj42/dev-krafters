@@ -125,25 +125,40 @@ export async function POST(request: Request) {
     const leadEmailMatch = lastUserMessage.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     const resendApiKey = process.env.RESEND_API_KEY;
 
-    if (leadEmailMatch && resendApiKey && resendApiKey.startsWith('re_')) {
+    if (leadEmailMatch) {
       try {
-        const resend = new Resend(resendApiKey);
-        const receiver = process.env.CONTACT_RECEIVER_EMAIL || 'hello@devkrafters.com';
-
-        await resend.emails.send({
-          from: 'Dev Krafters Chatbot <onboarding@resend.dev>',
-          to: receiver,
-          subject: `New Lead Captured via AI Chatbot: ${leadEmailMatch[0]}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #0F4C4C;">
-              <h2>New Lead Captured via Floating AI Chatbot</h2>
-              <p><strong>Captured Email:</strong> ${leadEmailMatch[0]}</p>
-              <p><strong>Full User Message:</strong> ${lastUserMessage}</p>
-            </div>
-          `,
+        const { saveLeadAsync } = await import('@/lib/db');
+        await saveLeadAsync({
+          type: 'chatbot',
+          name: 'Chatbot Lead',
+          email: leadEmailMatch[0],
+          message: lastUserMessage,
+          projectType: 'Captured via AI Chatbot',
         });
-      } catch (e) {
-        console.error('[Chatbot Resend Lead Dispatch Error]', e);
+      } catch (dbErr) {
+        console.error('[Chatbot Lead DB Save Error]', dbErr);
+      }
+
+      if (resendApiKey && resendApiKey.startsWith('re_')) {
+        try {
+          const resend = new Resend(resendApiKey);
+          const receiver = process.env.CONTACT_RECEIVER_EMAIL || 'hello@devkrafters.com';
+
+          await resend.emails.send({
+            from: 'Dev Krafters Chatbot <onboarding@resend.dev>',
+            to: receiver,
+            subject: `New Lead Captured via AI Chatbot: ${leadEmailMatch[0]}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; color: #0F4C4C;">
+                <h2>New Lead Captured via Floating AI Chatbot</h2>
+                <p><strong>Captured Email:</strong> ${leadEmailMatch[0]}</p>
+                <p><strong>Full User Message:</strong> ${lastUserMessage}</p>
+              </div>
+            `,
+          });
+        } catch (e) {
+          console.error('[Chatbot Resend Lead Dispatch Error]', e);
+        }
       }
     }
 
