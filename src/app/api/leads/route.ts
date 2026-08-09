@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getAllLeads, saveLead, clearLeads } from '@/lib/db';
+import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/leads - Retrieve all leads from database
 export async function GET() {
   try {
-    const leads = getAllLeads();
+    const leads = await getAllLeadsAsync();
     return NextResponse.json({ success: true, leads, count: leads.length });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Database fetch failed';
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Email or name is required' }, { status: 400 });
     }
 
-    const savedRecord = saveLead({
+    const savedRecord = await saveLeadAsync({
       type: body.type || 'contact',
       name: body.name || '',
       email: body.email || '',
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 // DELETE /api/leads - Clear leads database
 export async function DELETE() {
   try {
-    clearLeads();
+    await clearLeadsAsync();
     return NextResponse.json({ success: true, message: 'Leads database cleared successfully' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to clear leads database';

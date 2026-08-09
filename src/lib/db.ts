@@ -3,7 +3,7 @@ import path from 'path';
 
 export interface LeadRecord {
   id: string;
-  type: 'contact' | 'newsletter' | 'estimate';
+  type: 'contact' | 'newsletter' | 'estimate' | string;
   name?: string;
   email: string;
   phone?: string;
@@ -19,7 +19,6 @@ export interface LeadRecord {
 const DB_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'leads_db.json');
 
-// Ensure database directory and file exist
 function ensureDb() {
   if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
@@ -60,14 +59,17 @@ function ensureDb() {
 }
 
 export function getAllLeads(): LeadRecord[] {
+  ensureDb();
   try {
-    ensureDb();
     const content = fs.readFileSync(DB_FILE, 'utf-8');
     return JSON.parse(content) as LeadRecord[];
-  } catch (error) {
-    console.error('Error reading leads database:', error);
+  } catch {
     return [];
   }
+}
+
+export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
+  return getAllLeads();
 }
 
 export function saveLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }): LeadRecord {
@@ -85,7 +87,17 @@ export function saveLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string
   return newRecord;
 }
 
+export async function saveLeadAsync(
+  lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }
+): Promise<LeadRecord> {
+  return saveLead(lead);
+}
+
 export function clearLeads(): void {
   ensureDb();
   fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2), 'utf-8');
+}
+
+export async function clearLeadsAsync(): Promise<void> {
+  clearLeads();
 }
