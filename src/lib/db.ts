@@ -25,36 +25,7 @@ function ensureDb() {
     fs.mkdirSync(DB_DIR, { recursive: true });
   }
   if (!fs.existsSync(DB_FILE)) {
-    const initialData: LeadRecord[] = [
-      {
-        id: 'lead-1',
-        type: 'contact',
-        name: 'Dr. Anita Joshi',
-        email: 'anita@smiledental.com',
-        phone: '+91 98765 43210',
-        projectType: 'Business Website (₹25,000)',
-        budget: '₹25,000 – ₹75,000',
-        message: 'Need a custom website for my dental clinic.',
-        date: new Date().toISOString(),
-      },
-      {
-        id: 'lead-2',
-        type: 'newsletter',
-        email: 'rahul.mehta@spicecraft.in',
-        date: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: 'lead-3',
-        type: 'estimate',
-        name: 'Calculator Lead',
-        email: 'quote@client.com',
-        projectType: 'E-commerce Store',
-        pages: 10,
-        totalEstimateFormatted: '₹75,000',
-        totalEstimateInr: 75000,
-        date: new Date(Date.now() - 172800000).toISOString(),
-      },
-    ];
+    const initialData: LeadRecord[] = [];
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
   }
 }
@@ -67,7 +38,14 @@ async function getMongoLeads(): Promise<LeadRecord[] | null> {
   try {
     const clientPromise = (await import('@/lib/mongodb')).default;
     if (!clientPromise) return null;
-    const client = await clientPromise;
+
+    // Timeout after 3 seconds if MongoDB connection is blocked or slow
+    const client = await Promise.race([
+      clientPromise,
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MongoDB Timeout')), 3000)),
+    ]);
+
+    if (!client) return null;
     const db = client.db('dev_krafters');
     const docs = await db.collection('leads').find({}).sort({ date: -1 }).toArray();
 
@@ -87,7 +65,7 @@ async function getMongoLeads(): Promise<LeadRecord[] | null> {
       date: typeof doc.date === 'string' ? doc.date : new Date(doc.date).toISOString(),
     }));
   } catch (error) {
-    console.error('[MongoDB Fetch Error]', error);
+    console.error('[MongoDB Fetch Error]', error instanceof Error ? error.message : error);
     return null;
   }
 }
@@ -97,7 +75,13 @@ async function saveMongoLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: st
   try {
     const clientPromise = (await import('@/lib/mongodb')).default;
     if (!clientPromise) return null;
-    const client = await clientPromise;
+
+    const client = await Promise.race([
+      clientPromise,
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MongoDB Timeout')), 3000)),
+    ]);
+
+    if (!client) return null;
     const db = client.db('dev_krafters');
 
     const newDoc = {
@@ -112,7 +96,7 @@ async function saveMongoLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: st
       id: res.insertedId.toString(),
     };
   } catch (error) {
-    console.error('[MongoDB Save Error]', error);
+    console.error('[MongoDB Save Error]', error instanceof Error ? error.message : error);
     return null;
   }
 }
@@ -133,7 +117,7 @@ async function clearMongoLeads(): Promise<boolean> {
 }
 
 // ─────────────────────────────────────────────
-// PUBLIC EXPORTED FUNCTIONS WITH MONGO + LOCAL FALLBACK
+// PUBLIC EXPORTED FUNCTIONS WITH MONGO + LOCAL HYBRID MERGING
 // ─────────────────────────────────────────────
 export function getAllLeads(): LeadRecord[] {
   ensureDb();
@@ -146,11 +130,21 @@ export function getAllLeads(): LeadRecord[] {
 }
 
 export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
+  const localLeads = getAllLeads();
   const mongoLeads = await getMongoLeads();
-  if (mongoLeads && mongoLeads.length > 0) {
-    return mongoLeads;
-  }
-  return getAllLeads();
+
+  const allList = [...(mongoLeads || []), ...localLeads];
+
+  // Merge and deduplicate by email + date or id
+  const leadMap = new Map<string, LeadRecord>();
+  allList.forEach((item) => {
+    const key = `${item.email}_${item.type}_${item.date}`;
+    if (!leadMap.has(key)) {
+      leadMap.set(key, item);
+    }
+  });
+
+  return Array.from(leadMap.values());
 }
 
 export function saveLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }): LeadRecord {
@@ -171,13 +165,13 @@ export function saveLead(lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string
 export async function saveLeadAsync(
   lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }
 ): Promise<LeadRecord> {
-  const savedMongo = await saveMongoLead(lead);
-  if (savedMongo) {
-    // Also mirror to local disk
-    saveLead(lead);
-    return savedMongo;
-  }
-  return saveLead(lead);
+  // Always save to local server file disk FIRST (instant 0ms persistence)
+  const localSaved = saveLead(lead);
+
+  // Background attempt to save to MongoDB Cloud
+  saveMongoLead(lead).catch((err) => console.error('[Background Mongo Save Error]', err));
+
+  return localSaved;
 }
 
 export function clearLeads(): void {
