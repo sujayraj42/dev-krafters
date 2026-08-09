@@ -324,107 +324,106 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
         {pkg.popular && <BorderBeam duration={5} colorFrom="#E85A3C" colorTo="#0F4C4C" size={300} />}
 
         {/* Top Banner / Badge */}
-      {pkg.badge && (
-        <div
-          className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest ${
-            isHovered ? 'bg-gradient-to-r from-accent to-accent-dark text-white shadow-md' : baseTheme.badgeBg
-          }`}
-        >
-          {pkg.badge}
-        </div>
-      )}
+        {pkg.badge && (
+          <div
+            className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest ${isHovered ? 'bg-gradient-to-r from-accent to-accent-dark text-white shadow-md' : baseTheme.badgeBg
+              }`}
+          >
+            {pkg.badge}
+          </div>
+        )}
 
-      {/* Main Content Body */}
-      <div className="p-6 sm:p-7 space-y-6">
-        {/* Header Title + Icon */}
-        <div className="space-y-2 pt-1">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeIconBg}`}>
-              {getPackageIcon(pkg.id)}
-            </div>
-            <div>
-              <h3 className={`font-heading font-extrabold text-2xl tracking-tight ${activeTitleColor}`}>
-                {pkg.name}
-              </h3>
-              <div className={`flex items-center gap-1.5 text-[11px] font-heading font-semibold ${activeAccentText}`}>
-                <Clock size={12} />
-                <span>{pkg.delivery}</span>
+        {/* Main Content Body */}
+        <div className="p-6 sm:p-7 space-y-6">
+          {/* Header Title + Icon */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center gap-2.5">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeIconBg}`}>
+                {getPackageIcon(pkg.id)}
+              </div>
+              <div>
+                <h3 className={`font-heading font-extrabold text-2xl tracking-tight ${activeTitleColor}`}>
+                  {pkg.name}
+                </h3>
+                <div className={`flex items-center gap-1.5 text-[11px] font-heading font-semibold ${activeAccentText}`}>
+                  <Clock size={12} />
+                  <span>{pkg.delivery}</span>
+                </div>
               </div>
             </div>
+
+            <p className={`font-body text-xs leading-relaxed min-h-[38px] ${activeTaglineColor}`}>
+              {pkg.tagline}
+            </p>
           </div>
 
-          <p className={`font-body text-xs leading-relaxed min-h-[38px] ${activeTaglineColor}`}>
-            {pkg.tagline}
-          </p>
-        </div>
+          {/* Price Tag Box */}
+          <div className={`p-4 rounded-2xl border flex items-baseline justify-between transition-colors ${activeBoxBg}`}>
+            <div>
+              <span className={`font-heading font-extrabold text-4xl sm:text-5xl tracking-tight ${activePriceColor}`}>
+                {pkg.price}
+              </span>
+              <span className={`font-body text-xs font-medium ml-1 ${activeTaglineColor}`}>
+                {pkg.pricePeriod || '/ fixed'}
+              </span>
+            </div>
 
-        {/* Price Tag Box */}
-        <div className={`p-4 rounded-2xl border flex items-baseline justify-between transition-colors ${activeBoxBg}`}>
-          <div>
-            <span className={`font-heading font-extrabold text-4xl sm:text-5xl tracking-tight ${activePriceColor}`}>
-              {pkg.price}
-            </span>
-            <span className={`font-body text-xs font-medium ml-1 ${activeTaglineColor}`}>
-              {pkg.pricePeriod || '/ fixed'}
+            <span className={`text-[10px] font-heading font-bold px-2.5 py-1 rounded-full uppercase border ${activePillBg}`}>
+              100% Fixed Quote
             </span>
           </div>
 
-          <span className={`text-[10px] font-heading font-bold px-2.5 py-1 rounded-full uppercase border ${activePillBg}`}>
-            100% Fixed Quote
-          </span>
-        </div>
-
-        {/* Ideal For Audience Pill */}
-        <div className={`p-3 rounded-xl border text-[11px] leading-snug transition-colors ${activeBoxBg}`}>
-          <span className={`font-bold ${activeAccentText}`}>Best for:</span> {pkg.idealFor}
-        </div>
-
-        {/* Included List Breakdown */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <span className={`font-heading font-bold text-xs uppercase tracking-wider ${activeTitleColor}`}>
-              Package Features:
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExpanded(!expanded);
-              }}
-              className={`text-[11px] font-heading font-semibold hover:underline flex items-center gap-1 ${activeAccentText}`}
-            >
-              {expanded ? 'Collapse' : 'Expand All'}
-              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
+          {/* Ideal For Audience Pill */}
+          <div className={`p-3 rounded-xl border text-[11px] leading-snug transition-colors ${activeBoxBg}`}>
+            <span className={`font-bold ${activeAccentText}`}>Best for:</span> {pkg.idealFor}
           </div>
 
-          {expanded && (
-            <ul className="space-y-2.5 font-body text-xs animate-fade-in-up">
-              {pkg.included.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5">
-                  <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${activeCheckColor}`} />
-                  <span className={`leading-snug ${activeItemText}`}>{item}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* Included List Breakdown */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <span className={`font-heading font-bold text-xs uppercase tracking-wider ${activeTitleColor}`}>
+                Package Features:
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded(!expanded);
+                }}
+                className={`text-[11px] font-heading font-semibold hover:underline flex items-center gap-1 ${activeAccentText}`}
+              >
+                {expanded ? 'Collapse' : 'Expand All'}
+                {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+            </div>
+
+            {expanded && (
+              <ul className="space-y-2.5 font-body text-xs animate-fade-in-up">
+                {pkg.included.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${activeCheckColor}`} />
+                    <span className={`leading-snug ${activeItemText}`}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Action CTA Button Container */}
+        <div className={`p-6 sm:p-7 pt-4 transition-colors ${activeFooterBg}`}>
+          <Button
+            href={`/contact?package=${pkg.id}`}
+            variant="primary"
+            size="lg"
+            className={`w-full font-bold text-sm shadow-md transition-all ${activeButtonBg}`}
+          >
+            <span>Claim {pkg.name}</span>
+            <ArrowRight className="w-4 h-4 ml-1.5" />
+          </Button>
         </div>
       </div>
-
-      {/* Action CTA Button Container */}
-      <div className={`p-6 sm:p-7 pt-4 transition-colors ${activeFooterBg}`}>
-        <Button
-          href={`/contact?package=${pkg.id}`}
-          variant="primary"
-          size="lg"
-          className={`w-full font-bold text-sm shadow-md transition-all ${activeButtonBg}`}
-        >
-          <span>Claim {pkg.name}</span>
-          <ArrowRight className="w-4 h-4 ml-1.5" />
-        </Button>
-      </div>
-    </div>
-  </GlowCard>
+    </GlowCard>
   );
 }
 
@@ -491,11 +490,10 @@ function CustomCostCalculator() {
                     key={key}
                     type="button"
                     onClick={() => setSelectedScope(key)}
-                    className={`p-3 rounded-xl text-left border text-xs font-heading font-semibold transition-all ${
-                      selectedScope === key
+                    className={`p-3 rounded-xl text-left border text-xs font-heading font-semibold transition-all ${selectedScope === key
                         ? 'bg-primary text-white border-primary shadow-md'
                         : 'bg-white text-primary border-gray-200 hover:border-accent/50'
-                    }`}
+                      }`}
                   >
                     {scopeNames[key]}
                   </button>

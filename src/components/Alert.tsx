@@ -3,6 +3,7 @@ import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
 
 export interface AlertProps {
   type?: 'success' | 'error' | 'info' | 'warning';
+  variant?: 'success' | 'error' | 'info' | 'warning';
   title?: string;
   children: React.ReactNode;
   onClose?: () => void;
@@ -10,12 +11,14 @@ export interface AlertProps {
 }
 
 export const Alert: React.FC<AlertProps> = ({
-  type = 'info',
+  type,
+  variant,
   title,
   children,
   onClose,
   className = '',
 }) => {
+  const alertType = variant || type || 'info';
   const styles = {
     success: {
       bg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
@@ -35,7 +38,7 @@ export const Alert: React.FC<AlertProps> = ({
     },
   };
 
-  const currentStyle = styles[type];
+  const currentStyle = styles[alertType];
 
   return (
     <div

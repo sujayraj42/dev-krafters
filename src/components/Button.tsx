@@ -2,13 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'accent' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   href?: string;
   target?: string;
   rel?: string;
   children: React.ReactNode;
   className?: string;
+  isLoading?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -20,6 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   className = '',
   disabled,
+  isLoading = false,
   ...props
 }) => {
   const baseStyles =
@@ -33,26 +35,39 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
+      'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg shadow-primary/20 border border-transparent',
+    accent:
       'bg-accent text-white hover:bg-accent-dark shadow-md hover:shadow-lg shadow-accent/20 border border-transparent',
     secondary:
       'border-2 border-primary text-primary hover:bg-primary hover:text-white bg-transparent',
+    outline:
+      'border border-gray-300 text-primary hover:border-primary hover:bg-gray-50 bg-white',
     ghost:
       'text-primary hover:bg-surface-alt hover:text-primary-dark bg-transparent border border-transparent',
   };
 
-  const combinedClasses = `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`;
+  const combinedClasses = `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant] || variantStyles.primary} ${className}`;
+
+  const content = (
+    <>
+      {isLoading && (
+        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
+      )}
+      {children}
+    </>
+  );
 
   if (href) {
     return (
       <Link href={href} target={target} rel={rel} className={combinedClasses}>
-        {children}
+        {content}
       </Link>
     );
   }
 
   return (
-    <button className={combinedClasses} disabled={disabled} {...props}>
-      {children}
+    <button className={combinedClasses} disabled={disabled || isLoading} {...props}>
+      {content}
     </button>
   );
 };
