@@ -4,6 +4,7 @@ import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChatWidget } from '@/components/ChatWidget';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -40,6 +41,7 @@ export default function RootLayout({
         <main className="flex-grow">{children}</main>
         <Footer />
         <ChatWidget />
+        <ThemeSwitcher />
       </body>
     </html>
   );

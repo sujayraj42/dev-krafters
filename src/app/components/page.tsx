@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { Input, Select, Textarea } from '@/components/FormControls';
-import { Checkbox, Radio } from '@/components/CheckboxRadio';
 import { Badge } from '@/components/Badge';
 import { Alert } from '@/components/Alert';
 import { Modal } from '@/components/Modal';
@@ -122,7 +120,7 @@ export default function ComponentsShowcasePage() {
 
           <AnimateOnScroll animation="fade-up" delay={300}>
             <p className="font-body text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              No technical jargon! Test drive the exact interactive buttons, lead forms, 
+              No technical jargon! Test drive the exact interactive buttons, lead forms,
               glow cards, customer review widgets, and booking popups we craft to turn your visitors into paying clients.
             </p>
           </AnimateOnScroll>
@@ -204,11 +202,10 @@ export default function ComponentsShowcasePage() {
               <button
                 key={item.id}
                 onClick={() => setActiveFeature(item.id as typeof activeFeature)}
-                className={`px-5 py-3.5 rounded-2xl font-heading text-xs font-extrabold transition-all duration-300 border text-left flex flex-col gap-1 cursor-pointer ${
-                  activeFeature === item.id
-                    ? 'bg-primary text-white border-primary shadow-xl scale-105 ring-2 ring-accent/50'
-                    : 'bg-surface-alt text-primary border-gray-200 hover:border-accent hover:bg-white hover:shadow-md'
-                }`}
+                className={`px-5 py-3.5 rounded-2xl font-heading text-xs font-extrabold transition-all duration-300 border text-left flex flex-col gap-1 cursor-pointer ${activeFeature === item.id
+                  ? 'bg-primary text-white border-primary shadow-xl scale-105 ring-2 ring-accent/50'
+                  : 'bg-surface-alt text-primary border-gray-200 hover:border-accent hover:bg-white hover:shadow-md'
+                  }`}
               >
                 <span>{item.label}</span>
                 <span className={`text-[10px] font-normal ${activeFeature === item.id ? 'text-accent-light' : 'text-muted'}`}>
@@ -355,11 +352,10 @@ export default function ComponentsShowcasePage() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id as typeof selectedCategory)}
-                  className={`px-5 py-2.5 rounded-xl font-heading text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-primary text-white shadow-md scale-105'
-                      : 'bg-white text-muted hover:text-primary hover:bg-gray-100 border border-gray-200'
-                  }`}
+                  className={`px-5 py-2.5 rounded-xl font-heading text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${selectedCategory === cat.id
+                    ? 'bg-primary text-white shadow-md scale-105'
+                    : 'bg-white text-muted hover:text-primary hover:bg-gray-100 border border-gray-200'
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{cat.label}</span>
@@ -559,16 +555,14 @@ export default function ComponentsShowcasePage() {
                   <div
                     key={tool.id}
                     onClick={() => toggleTool(tool.id)}
-                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3.5 select-none ${
-                      isSelected
-                        ? 'border-accent bg-accent/5 shadow-md scale-[1.02]'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3.5 select-none ${isSelected
+                      ? 'border-accent bg-accent/5 shadow-md scale-[1.02]'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center mt-0.5 transition-colors ${
-                        isSelected ? 'bg-accent text-white' : 'bg-gray-100 text-gray-400'
-                      }`}
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center mt-0.5 transition-colors ${isSelected ? 'bg-accent text-white' : 'bg-gray-100 text-gray-400'
+                        }`}
                     >
                       <Check className="w-4 h-4 stroke-[3]" />
                     </div>
