@@ -135,12 +135,12 @@ export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
 
   const allList = [...(mongoLeads || []), ...localLeads];
 
-  // Merge and deduplicate by email + date or id
+  // Merge and deduplicate safely using unique fallback keys
   const leadMap = new Map<string, LeadRecord>();
-  allList.forEach((item) => {
-    const key = `${item.email}_${item.type}_${item.date}`;
-    if (!leadMap.has(key)) {
-      leadMap.set(key, item);
+  allList.forEach((item, index) => {
+    const uniqueKey = item.id || `${item.email || 'no-email'}_${item.type}_${item.date}_${index}`;
+    if (!leadMap.has(uniqueKey)) {
+      leadMap.set(uniqueKey, item);
     }
   });
 

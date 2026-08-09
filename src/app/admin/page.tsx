@@ -81,22 +81,22 @@ export default function AdminPage() {
 
     // Deduplicate and merge contacts
     const contactMap = new Map<string, ContactLead>();
-    [...serverContacts, ...localContacts].forEach((item) => {
-      const key = `${item.email}_${item.date}`;
+    [...serverContacts, ...localContacts].forEach((item, idx) => {
+      const key = (item as unknown as { id?: string }).id || `${item.email || 'no-email'}_${item.name || ''}_${item.date}_${idx}`;
       if (!contactMap.has(key)) contactMap.set(key, item);
     });
 
     // Deduplicate and merge newsletters
     const newsletterMap = new Map<string, NewsletterLead>();
-    [...serverNewsletters, ...localNewsletters].forEach((item) => {
-      const key = `${item.email}_${item.date}`;
+    [...serverNewsletters, ...localNewsletters].forEach((item, idx) => {
+      const key = (item as unknown as { id?: string }).id || `${item.email || 'no-email'}_${item.date}_${idx}`;
       if (!newsletterMap.has(key)) newsletterMap.set(key, item);
     });
 
     // Deduplicate and merge estimates
     const estimateMap = new Map<string, EstimateLead>();
-    [...serverEstimates, ...localEstimates].forEach((item) => {
-      const key = `${item.projectType}_${item.date}_${item.totalEstimateInr}`;
+    [...serverEstimates, ...localEstimates].forEach((item, idx) => {
+      const key = (item as unknown as { id?: string }).id || `${item.projectType}_${item.totalEstimateInr || 0}_${item.date}_${idx}`;
       if (!estimateMap.has(key)) estimateMap.set(key, item);
     });
 
