@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Logo } from './Logo';
-import { Mail, Linkedin, Instagram, Twitter } from 'lucide-react';
+import { Mail, Linkedin, Instagram, Twitter, ChevronRight } from 'lucide-react';
 
 const footerNav = [
   { name: 'Home', href: '/' },
@@ -14,89 +14,88 @@ const footerNav = [
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-primary text-white pt-16 pb-12 border-t border-primary-dark">
-      <div className="max-w-content mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-primary-dark/60">
-          {/* Brand Info */}
-          <div className="md:col-span-5 space-y-4">
-            <div className="inline-block bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-              <Logo showWordmark={true} className="[&_span]:text-white [&_span.text-accent]:text-accent" />
-            </div>
-            <p className="font-body text-gray-300 text-sm max-w-sm leading-relaxed">
-              Affordable AI-powered websites for local businesses. A one-person AI studio helping small businesses build, automate, and grow online.
+    <footer className="bg-primary border-t border-white/5 pt-20 pb-12 relative overflow-hidden">
+      {/* Decorative cyber grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:30px_30px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+
+      <div className="max-w-content mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-white/5">
+          {/* Brand Info with premium cyber layout */}
+          <div className="md:col-span-5 space-y-6">
+            <Logo showWordmark={true} />
+            <p className="font-body text-gray-400 text-sm max-w-sm leading-relaxed">
+              Supercharging local services, clinics, and retail storefronts with immersive, high-converting, AI-powered web applications. Built fast, built perfectly.
             </p>
-            <div className="pt-2 flex items-center gap-3">
+            <div className="pt-2 flex flex-col gap-3">
               <a
                 href="mailto:hello@devkrafters.com"
-                className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-accent transition-colors"
+                className="inline-flex items-center gap-2.5 text-sm text-gray-300 hover:text-cyber-teal hover:translate-x-1 transition-all"
               >
-                <Mail className="w-4 h-4 text-accent" />
+                <div className="w-8 h-8 rounded-lg bg-cyber-teal/10 flex items-center justify-center border border-cyber-teal/20">
+                  <Mail className="w-4 h-4 text-cyber-teal" />
+                </div>
                 <span>hello@devkrafters.com</span>
               </a>
             </div>
           </div>
 
           {/* Quick Navigation Links */}
-          <div className="md:col-span-4 space-y-4">
-            <h3 className="font-heading font-semibold text-lg text-white">Quick Links</h3>
-            <ul className="grid grid-cols-2 gap-2.5">
+          <div className="md:col-span-4 space-y-6">
+            <h3 className="font-heading font-black text-sm uppercase tracking-wider text-white border-l-2 border-cyber-teal pl-3">
+              Sitemap Navigation
+            </h3>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-3">
               {footerNav.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="font-body text-sm text-gray-300 hover:text-accent transition-colors py-1 inline-block"
+                    className="group font-body text-sm text-gray-400 hover:text-cyber-teal transition-colors flex items-center gap-1"
                   >
-                    {link.name}
+                    <ChevronRight size={12} className="text-gray-600 group-hover:text-cyber-teal group-hover:translate-x-0.5 transition-transform" />
+                    <span>{link.name}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Social & Contact */}
-          <div className="md:col-span-3 space-y-4">
-            <h3 className="font-heading font-semibold text-lg text-white">Connect With Us</h3>
-            <p className="font-body text-xs text-gray-300">
-              Follow our latest web design & AI automation tips:
+          {/* Social Channels with premium layout */}
+          <div className="md:col-span-3 space-y-6">
+            <h3 className="font-heading font-black text-sm uppercase tracking-wider text-white border-l-2 border-accent pl-3">
+              Connect Channels
+            </h3>
+            <p className="font-body text-xs text-gray-400 leading-relaxed">
+              Stay ahead with futuristic web design secrets, SEO algorithms, and local lead-gen tools:
             </p>
             <div className="flex items-center gap-3 pt-1">
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-gray-300 hover:bg-accent hover:text-white transition-all duration-200"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-gray-300 hover:bg-accent hover:text-white transition-all duration-200"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-gray-300 hover:bg-accent hover:text-white transition-all duration-200"
-                aria-label="Twitter/X"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
+              {[
+                { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn', color: 'hover:bg-[#0A66C2]' },
+                { icon: Instagram, href: 'https://instagram.com', label: 'Instagram', color: 'hover:bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]' },
+                { icon: Twitter, href: 'https://twitter.com', label: 'Twitter/X', color: 'hover:bg-[#1DA1F2]' },
+              ].map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:scale-110 transition-all duration-300 ${social.color}`}
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Copyright Footer */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-body">
-          <p suppressHydrationWarning>© {new Date().getFullYear()} Dev Krafters. All rights reserved.</p>
-          <p className="text-gray-400">
-            Crafted with precision & AI power.
-          </p>
+        {/* Brand Copyright & Metadata */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-body">
+          <p suppressHydrationWarning>© {new Date().getFullYear()} Dev Krafters Studio. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <span className="hover:text-cyber-teal cursor-pointer transition-colors">Privacy Policy</span>
+            <span className="text-gray-800">•</span>
+            <span className="hover:text-cyber-teal cursor-pointer transition-colors">Terms of Service</span>
+          </div>
         </div>
       </div>
     </footer>

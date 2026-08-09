@@ -141,9 +141,6 @@ const packages: PricingPackage[] = [
   },
 ];
 
-// ─────────────────────────────────────────────
-// FEATURE COMPARISON MATRIX DATA
-// ─────────────────────────────────────────────
 const comparisonFeatures = [
   { feature: 'Number of Pages', starter: '1 Page', landing: '3 Sections', business: '5–8 Pages', store: 'Up to 30 Products' },
   { feature: 'Delivery Time', starter: '3 Days', landing: '5 Days', business: '10 Days', store: '20 Days' },
@@ -156,9 +153,6 @@ const comparisonFeatures = [
   { feature: 'Free Bug-Fix Warranty', starter: '7 Days', landing: '7 Days', business: '15 Days', store: '30 Days' },
 ];
 
-// ─────────────────────────────────────────────
-// NOT INCLUDED LIST
-// ─────────────────────────────────────────────
 const notIncludedItems = [
   'Domain registration fees (approx. ₹800–₹1,200/yr)',
   'Hosting server costs (Vercel/Hostinger/Cloudflare)',
@@ -169,9 +163,6 @@ const notIncludedItems = [
   '3rd-party API token usage costs (e.g., OpenAI / Resend email tokens)',
 ];
 
-// ─────────────────────────────────────────────
-// FAQS DATA
-// ─────────────────────────────────────────────
 const faqs = [
   {
     q: 'Are there any hidden or recurring charges?',
@@ -195,133 +186,41 @@ const faqs = [
   },
 ];
 
-// ─────────────────────────────────────────────
-// PRICING CARD COMPONENT
-// ─────────────────────────────────────────────
 function PricingCard({ pkg }: { pkg: PricingPackage }) {
   const [expanded, setExpanded] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Custom per-package base light theme tokens
-  const baseTheme = {
-    'starter-page': {
-      cardBg: 'bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 text-gray-900',
-      badgeBg: 'bg-emerald-600 text-white',
-      iconBg: 'bg-emerald-100 text-emerald-600',
-      priceColor: 'text-emerald-700',
-      accentText: 'text-emerald-700',
-      checkColor: 'text-emerald-600',
-      buttonBg: 'bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-emerald-500/20',
-      border: 'border-emerald-200/80 hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10',
-      pillBg: 'bg-emerald-100/80 text-emerald-800 border-emerald-200',
-      boxBg: 'bg-emerald-50/60 border-emerald-100',
-    },
-    'landing-page': {
-      cardBg: 'bg-gradient-to-b from-violet-50/70 via-white to-violet-50/30 text-gray-900',
-      badgeBg: 'bg-violet-600 text-white',
-      iconBg: 'bg-violet-100 text-violet-600',
-      priceColor: 'text-violet-700',
-      accentText: 'text-violet-700',
-      checkColor: 'text-violet-600',
-      buttonBg: 'bg-violet-600 hover:bg-violet-700 text-white border-none shadow-violet-500/20',
-      border: 'border-violet-200/80 hover:border-violet-400 hover:shadow-xl hover:shadow-violet-500/10',
-      pillBg: 'bg-violet-100/80 text-violet-800 border-violet-200',
-      boxBg: 'bg-violet-50/60 border-violet-100',
-    },
-    'business-website': {
-      cardBg: 'bg-gradient-to-b from-amber-50/70 via-white to-amber-50/30 text-gray-900',
-      badgeBg: 'bg-gradient-to-r from-accent to-accent-dark text-white shadow-md',
-      iconBg: 'bg-amber-100 text-amber-600',
-      priceColor: 'text-accent',
-      accentText: 'text-accent',
-      checkColor: 'text-accent',
-      buttonBg: 'bg-accent hover:bg-accent-dark text-white border-none shadow-lg shadow-accent/20',
-      border: 'border-accent/40 shadow-lg shadow-accent/5',
-      pillBg: 'bg-amber-100/80 text-amber-900 border-amber-200',
-      boxBg: 'bg-amber-50/60 border-amber-100',
-    },
-    'ecommerce': {
-      cardBg: 'bg-gradient-to-b from-blue-50/70 via-white to-blue-50/30 text-gray-900',
-      badgeBg: 'bg-blue-600 text-white',
-      iconBg: 'bg-blue-100 text-blue-600',
-      priceColor: 'text-blue-700',
-      accentText: 'text-blue-700',
-      checkColor: 'text-blue-600',
-      buttonBg: 'bg-blue-600 hover:bg-blue-700 text-white border-none shadow-blue-500/20',
-      border: 'border-blue-200/80 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/10',
-      pillBg: 'bg-blue-100/80 text-blue-800 border-blue-200',
-      boxBg: 'bg-blue-50/60 border-blue-100',
-    },
-    'maintenance': {
-      cardBg: 'bg-gradient-to-b from-teal-50/70 via-white to-teal-50/30 text-gray-900',
-      badgeBg: 'bg-teal-600 text-white',
-      iconBg: 'bg-teal-100 text-teal-600',
-      priceColor: 'text-teal-700',
-      accentText: 'text-teal-700',
-      checkColor: 'text-teal-600',
-      buttonBg: 'bg-teal-600 hover:bg-teal-700 text-white border-none shadow-teal-500/20',
-      border: 'border-teal-200/80 hover:border-teal-400 hover:shadow-xl hover:shadow-teal-500/10',
-      pillBg: 'bg-teal-100/80 text-teal-800 border-teal-200',
-      boxBg: 'bg-teal-50/60 border-teal-100',
-    },
-  }[pkg.id] || {
-    cardBg: 'bg-white text-gray-900',
-    badgeBg: 'bg-primary text-white',
-    iconBg: 'bg-accent/10 text-accent',
-    priceColor: 'text-accent',
-    accentText: 'text-accent',
-    checkColor: 'text-accent',
-    buttonBg: 'bg-accent text-white',
-    border: 'border-gray-200',
-    pillBg: 'bg-gray-100 text-primary',
-    boxBg: 'bg-surface-alt',
-  };
-
-  // Dynamic Theme (Light by default, Dark when mouse hovers over card)
-  const activeCardBg = isHovered
-    ? 'bg-gradient-to-b from-primary via-primary-dark to-gray-950 text-white ring-2 ring-accent shadow-2xl shadow-accent/30 scale-[1.03] z-20'
-    : `${baseTheme.cardBg} ${baseTheme.border}`;
-
-  const activeTitleColor = isHovered ? 'text-white' : 'text-primary';
-  const activeTaglineColor = isHovered ? 'text-gray-300' : 'text-muted';
-  const activePriceColor = isHovered ? 'text-accent' : baseTheme.priceColor;
-  const activeAccentText = isHovered ? 'text-amber-300' : baseTheme.accentText;
-  const activeCheckColor = isHovered ? 'text-emerald-400' : baseTheme.checkColor;
-  const activeBoxBg = isHovered ? 'bg-white/10 border-white/10' : baseTheme.boxBg;
-  const activePillBg = isHovered ? 'bg-white/10 text-amber-300 border-white/10' : baseTheme.pillBg;
-  const activeIconBg = isHovered ? 'bg-white/10 text-amber-400 border border-white/10' : baseTheme.iconBg;
-  const activeItemText = isHovered ? 'text-gray-100' : 'text-primary/90';
-  const activeFooterBg = isHovered ? 'bg-gray-950/40 border-t border-white/10' : 'bg-white/40 border-t border-gray-100';
-  const activeButtonBg = isHovered ? 'bg-accent hover:bg-accent-dark text-white border-none shadow-lg shadow-accent/40' : baseTheme.buttonBg;
 
   const getPackageIcon = (id: string) => {
     switch (id) {
       case 'starter-page':
-        return <Zap className="w-5 h-5" />;
+        return <Zap className="w-5 h-5 text-cyber-teal" />;
       case 'landing-page':
-        return <Sparkles className="w-5 h-5" />;
+        return <Sparkles className="w-5 h-5 text-cyber-teal animate-pulse" />;
       case 'business-website':
-        return <Flame className="w-5 h-5 animate-pulse" />;
+        return <Flame className="w-5 h-5 text-accent animate-pulse" />;
       case 'ecommerce':
-        return <ShoppingBag className="w-5 h-5" />;
+        return <ShoppingBag className="w-5 h-5 text-cyber-teal" />;
       case 'maintenance':
-        return <ShieldCheck className="w-5 h-5" />;
+        return <ShieldCheck className="w-5 h-5 text-cyber-teal" />;
       default:
-        return <Sparkles className="w-5 h-5" />;
+        return <Sparkles className="w-5 h-5 text-cyber-teal" />;
     }
   };
 
+  const isPopular = pkg.popular;
+
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`flex flex-col justify-between relative rounded-card transition-all duration-300 overflow-hidden shadow-md cursor-pointer ${activeCardBg}`}
+      className={`flex flex-col justify-between relative rounded-card bg-[#0b0f19] border transition-all duration-300 overflow-hidden shadow-2xl group ${
+        isPopular
+          ? 'border-accent shadow-[0_0_25px_rgba(255,90,60,0.15)] ring-1 ring-accent'
+          : 'border-white/5 hover:border-cyber-teal/30 hover:shadow-[0_0_20px_rgba(0,242,254,0.1)]'
+      }`}
     >
       {/* Top Banner / Badge */}
       {pkg.badge && (
         <div
-          className={`absolute top-0 right-0 text-[10px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest ${
-            isHovered ? 'bg-gradient-to-r from-accent to-accent-dark text-white shadow-md' : baseTheme.badgeBg
+          className={`absolute top-0 right-0 text-[9px] font-heading font-extrabold px-3.5 py-1.5 rounded-bl-2xl uppercase tracking-widest ${
+            isPopular ? 'bg-accent text-white shadow-md' : 'bg-white/10 text-gray-300 border-l border-b border-white/5'
           }`}
         >
           {pkg.badge}
@@ -329,75 +228,72 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
       )}
 
       {/* Main Content Body */}
-      <div className="p-6 sm:p-7 space-y-6">
+      <div className="p-6 sm:p-8 space-y-6">
         {/* Header Title + Icon */}
-        <div className="space-y-2 pt-1">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeIconBg}`}>
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
               {getPackageIcon(pkg.id)}
             </div>
             <div>
-              <h3 className={`font-heading font-extrabold text-2xl tracking-tight ${activeTitleColor}`}>
+              <h3 className="font-heading font-black text-2xl tracking-tight text-white group-hover:text-cyber-teal transition-colors">
                 {pkg.name}
               </h3>
-              <div className={`flex items-center gap-1.5 text-[11px] font-heading font-semibold ${activeAccentText}`}>
-                <Clock size={12} />
+              <div className="flex items-center gap-1.5 text-[10px] font-heading font-black text-cyber-teal uppercase tracking-wider">
+                <Clock size={11} />
                 <span>{pkg.delivery}</span>
               </div>
             </div>
           </div>
 
-          <p className={`font-body text-xs leading-relaxed min-h-[38px] ${activeTaglineColor}`}>
+          <p className="font-body text-xs text-gray-400 leading-relaxed min-h-[38px]">
             {pkg.tagline}
           </p>
         </div>
 
         {/* Price Tag Box */}
-        <div className={`p-4 rounded-2xl border flex items-baseline justify-between transition-colors ${activeBoxBg}`}>
+        <div className="p-5 rounded-2xl bg-white/2 border border-white/5 flex items-baseline justify-between">
           <div>
-            <span className={`font-heading font-extrabold text-4xl sm:text-5xl tracking-tight ${activePriceColor}`}>
+            <span className="font-heading font-black text-3xl sm:text-4.5xl tracking-tight text-white">
               {pkg.price}
             </span>
-            <span className={`font-body text-xs font-medium ml-1 ${activeTaglineColor}`}>
+            <span className="font-body text-xs font-semibold ml-1 text-gray-400">
               {pkg.pricePeriod || '/ fixed'}
             </span>
           </div>
 
-          <span className={`text-[10px] font-heading font-bold px-2.5 py-1 rounded-full uppercase border ${activePillBg}`}>
-            100% Fixed Quote
+          <span className="text-[9px] font-heading font-black px-3 py-1 rounded-full uppercase border border-white/10 bg-white/5 text-gray-300 tracking-wider">
+            100% Guaranteed
           </span>
         </div>
 
         {/* Ideal For Audience Pill */}
-        <div className={`p-3 rounded-xl border text-[11px] leading-snug transition-colors ${activeBoxBg}`}>
-          <span className={`font-bold ${activeAccentText}`}>Best for:</span> {pkg.idealFor}
+        <div className="p-3.5 rounded-xl bg-white/2 border border-white/5 text-[11px] text-gray-400 leading-normal">
+          <span className="font-bold text-cyber-teal">Best for:</span> {pkg.idealFor}
         </div>
 
         {/* Included List Breakdown */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <span className={`font-heading font-bold text-xs uppercase tracking-wider ${activeTitleColor}`}>
-              Package Features:
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center justify-between border-b border-white/5 pb-2">
+            <span className="font-heading font-extrabold text-xs uppercase tracking-wider text-white">
+              Inclusions Schema:
             </span>
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExpanded(!expanded);
-              }}
-              className={`text-[11px] font-heading font-semibold hover:underline flex items-center gap-1 ${activeAccentText}`}
+              onClick={() => setExpanded(!expanded)}
+              className="text-[10px] font-heading font-black uppercase tracking-wider text-cyber-teal hover:underline flex items-center gap-1"
             >
-              {expanded ? 'Collapse' : 'Expand All'}
-              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              {expanded ? 'Collapse' : 'Expand'}
+              {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             </button>
           </div>
 
           {expanded && (
-            <ul className="space-y-2.5 font-body text-xs animate-fade-in-up">
+            <ul className="space-y-3 font-body text-xs animate-fade-in-up">
               {pkg.included.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5">
-                  <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${activeCheckColor}`} />
-                  <span className={`leading-snug ${activeItemText}`}>{item}</span>
+                <li key={idx} className="flex items-start gap-2.5 text-gray-300">
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-cyber-teal" />
+                  <span className="leading-relaxed">{item}</span>
                 </li>
               ))}
             </ul>
@@ -406,14 +302,14 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
       </div>
 
       {/* Action CTA Button Container */}
-      <div className={`p-6 sm:p-7 pt-4 transition-colors ${activeFooterBg}`}>
+      <div className="p-6 sm:p-8 pt-4 bg-[#070b13]/40 border-t border-white/5">
         <Button
           href={`/contact?package=${pkg.id}`}
-          variant="primary"
+          variant={isPopular ? 'primary' : 'secondary'}
           size="lg"
-          className={`w-full font-bold text-sm shadow-md transition-all ${activeButtonBg}`}
+          className="w-full font-bold text-xs shadow-md"
         >
-          <span>Claim {pkg.name}</span>
+          <span>Claim {pkg.name} Layout</span>
           <ArrowRight className="w-4 h-4 ml-1.5" />
         </Button>
       </div>
@@ -421,9 +317,6 @@ function PricingCard({ pkg }: { pkg: PricingPackage }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// INTERACTIVE CUSTOM COST ESTIMATOR WIDGET
-// ─────────────────────────────────────────────
 function CustomCostCalculator() {
   const [selectedScope, setSelectedScope] = useState<'starter' | 'landing' | 'business' | 'store'>('business');
   const [addChatbot, setAddChatbot] = useState(true);
@@ -439,10 +332,10 @@ function CustomCostCalculator() {
   };
 
   const scopeNames = {
-    starter: 'Starter 1-Page Site (₹5,000)',
-    landing: '3-Section Landing Page (₹9,000)',
-    business: '5–8 Page Business Website (₹25,000)',
-    store: 'E-commerce Storefront (₹75,000)',
+    starter: 'Starter Page (₹5,000)',
+    landing: 'Landing Page (₹9,000)',
+    business: 'Business Website (₹25,000)',
+    store: 'E-commerce Store (₹75,000)',
   };
 
   let total = scopePrices[selectedScope];
@@ -451,21 +344,21 @@ function CustomCostCalculator() {
   if (addExpress) total += 5000;
 
   return (
-    <div className="glass-card rounded-card p-6 sm:p-10 border border-gray-200/80 shadow-xl relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+    <div className="glass-card rounded-card p-6 sm:p-10 border border-white/5 shadow-2xl relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-80 h-80 bg-cyber-teal/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative space-y-8 max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold">
-            <Calculator className="w-4 h-4" />
-            <span>Interactive Estimator</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyber-teal/10 text-cyber-teal font-heading text-xs font-bold border border-cyber-teal/20 uppercase tracking-widest">
+            <Calculator className="w-4 h-4 text-cyber-teal" />
+            <span>AI Cost Estimator</span>
           </div>
-          <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-primary tracking-tight">
-            Build Your Custom Estimate
+          <h3 className="font-heading font-black text-2xl sm:text-4xl text-white tracking-tight">
+            Build Your Custom Blueprint
           </h3>
-          <p className="font-body text-xs sm:text-sm text-muted max-w-lg mx-auto">
-            Select your desired base package and add-on features to estimate your exact project cost in real time.
+          <p className="font-body text-xs sm:text-sm text-gray-400 max-w-lg mx-auto leading-relaxed">
+            Specify design constraints. Adjust variables below to estimate exact architectural budgets immediately.
           </p>
         </div>
 
@@ -474,9 +367,9 @@ function CustomCostCalculator() {
           <div className="lg:col-span-7 space-y-6">
             {/* Step 1: Base Scope */}
             <div className="space-y-3">
-              <label className="font-heading font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-accent" />
-                1. Select Base Website Scope:
+              <label className="font-heading font-black text-xs uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-cyber-teal" />
+                1. Specify Website Scope:
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {(['starter', 'landing', 'business', 'store'] as const).map((key) => (
@@ -484,10 +377,10 @@ function CustomCostCalculator() {
                     key={key}
                     type="button"
                     onClick={() => setSelectedScope(key)}
-                    className={`p-3 rounded-xl text-left border text-xs font-heading font-semibold transition-all ${
+                    className={`p-4 rounded-xl text-left border text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 ${
                       selectedScope === key
-                        ? 'bg-primary text-white border-primary shadow-md'
-                        : 'bg-white text-primary border-gray-200 hover:border-accent/50'
+                        ? 'bg-cyber-teal text-primary border-cyber-teal shadow-[0_0_15px_rgba(0,242,254,0.3)]'
+                        : 'bg-white/5 text-gray-300 border-white/5 hover:border-cyber-teal/40'
                     }`}
                   >
                     {scopeNames[key]}
@@ -498,73 +391,73 @@ function CustomCostCalculator() {
 
             {/* Step 2: Add-on Checkboxes */}
             <div className="space-y-3">
-              <label className="font-heading font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-accent" />
-                2. Select Add-on Enhancements:
+              <label className="font-heading font-black text-xs uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-cyber-teal" />
+                2. Select Add-on Integration Models:
               </label>
               <div className="space-y-2.5 font-body text-xs">
-                <label className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 cursor-pointer hover:border-accent/40 transition">
+                <label className="flex items-center justify-between p-3.5 rounded-xl bg-white/2 border border-white/5 cursor-pointer hover:border-cyber-teal/30 transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={addChatbot}
                       onChange={(e) => setAddChatbot(e.target.checked)}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-4 h-4 accent-cyber-teal rounded bg-black border-white/10"
                     />
                     <div>
-                      <span className="font-semibold text-primary block">AI Assistant / Chatbot Integration</span>
-                      <span className="text-[11px] text-muted">24/7 lead capture chatbot trained on your business info</span>
+                      <span className="font-semibold text-white block">Conversational AI Chatbot Desk</span>
+                      <span className="text-[11px] text-gray-400">Custom Gemini model trained strictly on business details</span>
                     </div>
                   </div>
-                  <span className="font-heading font-bold text-accent shrink-0">+₹8,000</span>
+                  <span className="font-heading font-black text-cyber-teal shrink-0">+₹8,000</span>
                 </label>
 
-                <label className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 cursor-pointer hover:border-accent/40 transition">
+                <label className="flex items-center justify-between p-3.5 rounded-xl bg-white/2 border border-white/5 cursor-pointer hover:border-cyber-teal/30 transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={addSeo}
                       onChange={(e) => setAddSeo(e.target.checked)}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-4 h-4 accent-cyber-teal rounded bg-black border-white/10"
                     />
                     <div>
-                      <span className="font-semibold text-primary block">Google Business & Local SEO Boost</span>
-                      <span className="text-[11px] text-muted">Map listing optimization & keyword tagging</span>
+                      <span className="font-semibold text-white block">Google Maps & Local SEO Setup</span>
+                      <span className="text-[11px] text-gray-400">Keywords, sitemaps, and citation optimization</span>
                     </div>
                   </div>
-                  <span className="font-heading font-bold text-accent shrink-0">+₹4,000</span>
+                  <span className="font-heading font-black text-cyber-teal shrink-0">+₹4,000</span>
                 </label>
 
-                <label className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 cursor-pointer hover:border-accent/40 transition">
+                <label className="flex items-center justify-between p-3.5 rounded-xl bg-white/2 border border-white/5 cursor-pointer hover:border-cyber-teal/30 transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={addExpress}
                       onChange={(e) => setAddExpress(e.target.checked)}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-4 h-4 accent-cyber-teal rounded bg-black border-white/10"
                     />
                     <div>
-                      <span className="font-semibold text-primary block">Express Priority Delivery</span>
-                      <span className="text-[11px] text-muted">Fast-track build timeline by 40%</span>
+                      <span className="font-semibold text-white block">Express Priority Pipeline</span>
+                      <span className="text-[11px] text-gray-400">Fast-track implementation timelines by 40%</span>
                     </div>
                   </div>
-                  <span className="font-heading font-bold text-accent shrink-0">+₹5,000</span>
+                  <span className="font-heading font-black text-cyber-teal shrink-0">+₹5,000</span>
                 </label>
 
-                <label className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200 cursor-pointer hover:border-accent/40 transition">
+                <label className="flex items-center justify-between p-3.5 rounded-xl bg-white/2 border border-white/5 cursor-pointer hover:border-cyber-teal/30 transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={addCare}
                       onChange={(e) => setAddCare(e.target.checked)}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-4 h-4 accent-cyber-teal rounded bg-black border-white/10"
                     />
                     <div>
-                      <span className="font-semibold text-primary block">Include Monthly Care Plan</span>
-                      <span className="text-[11px] text-muted">Security, backups, & monthly content updates</span>
+                      <span className="font-semibold text-white block">Ongoing Monthly Care Plan</span>
+                      <span className="text-[11px] text-gray-400">Backups, dependencies, and monthly revisions</span>
                     </div>
                   </div>
-                  <span className="font-heading font-bold text-accent shrink-0">+₹3,000/mo</span>
+                  <span className="font-heading font-black text-cyber-teal shrink-0">+₹3,000/mo</span>
                 </label>
               </div>
             </div>
@@ -572,43 +465,43 @@ function CustomCostCalculator() {
 
           {/* Live Total Display Column */}
           <div className="lg:col-span-5">
-            <div className="bg-primary rounded-card p-6 sm:p-8 text-white space-y-6 shadow-xl text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-[40px] pointer-events-none" />
+            <div className="bg-[#0b0f19] rounded-card p-6 sm:p-8 text-white space-y-6 shadow-2xl text-center relative overflow-hidden border border-white/5">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/15 rounded-full blur-[40px] pointer-events-none" />
 
-              <div className="space-y-1">
-                <span className="font-heading text-xs uppercase tracking-wider text-accent font-bold">
+              <div className="space-y-1.5 relative z-10">
+                <span className="font-heading text-[10px] uppercase tracking-widest text-accent font-black">
                   Estimated One-Time Total
                 </span>
-                <div className="font-heading font-extrabold text-4xl sm:text-5xl text-white tracking-tight">
+                <div className="font-heading font-black text-4xl sm:text-5xl text-white tracking-tight">
                   ₹{total.toLocaleString()}
                 </div>
                 {addCare && (
-                  <p className="text-xs text-gray-300 font-body">
-                    + ₹3,000/mo for ongoing care
+                  <p className="text-xs text-cyber-teal font-body font-semibold">
+                    + ₹3,000/mo for ongoing maintenance
                   </p>
                 )}
               </div>
 
-              <div className="py-3 border-y border-white/10 text-xs font-body text-gray-200 space-y-1 text-left">
+              <div className="py-3 border-y border-white/5 text-xs font-body text-gray-400 space-y-2 text-left relative z-10">
                 <p className="flex justify-between">
-                  <span>Base Scope:</span>
+                  <span>Base website build:</span>
                   <span className="font-semibold text-white">₹{scopePrices[selectedScope].toLocaleString()}</span>
                 </p>
                 {addChatbot && (
-                  <p className="flex justify-between text-emerald-300">
-                    <span>+ AI Chatbot:</span>
+                  <p className="flex justify-between text-cyber-teal font-semibold">
+                    <span>+ Gemini Chatbot:</span>
                     <span>₹8,000</span>
                   </p>
                 )}
                 {addSeo && (
-                  <p className="flex justify-between text-emerald-300">
-                    <span>+ Local SEO:</span>
+                  <p className="flex justify-between text-cyber-teal font-semibold">
+                    <span>+ Map & Local SEO:</span>
                     <span>₹4,000</span>
                   </p>
                 )}
                 {addExpress && (
-                  <p className="flex justify-between text-emerald-300">
-                    <span>+ Express Delivery:</span>
+                  <p className="flex justify-between text-cyber-teal font-semibold">
+                    <span>+ Priority Milestone:</span>
                     <span>₹5,000</span>
                   </p>
                 )}
@@ -618,14 +511,14 @@ function CustomCostCalculator() {
                 href={`/contact?package=${selectedScope}`}
                 variant="primary"
                 size="lg"
-                className="w-full bg-accent hover:bg-accent-dark border-none shadow-lg"
+                className="w-full bg-accent hover:bg-accent-dark border-none shadow-lg relative z-10"
               >
-                <span>Get This Exact Quote</span>
+                <span>Confirm This Blueprint</span>
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
 
-              <p className="text-[11px] text-gray-300 font-body">
-                ✓ 100% Fixed Quote • No Surprise Fees
+              <p className="text-[10px] text-gray-450 font-heading uppercase tracking-wider relative z-10">
+                ✓ 100% Locked Cost • No hidden extras
               </p>
             </div>
           </div>
@@ -635,9 +528,6 @@ function CustomCostCalculator() {
   );
 }
 
-// ─────────────────────────────────────────────
-// MAIN PRICING PAGE EXPORT
-// ─────────────────────────────────────────────
 export default function PricingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
@@ -646,50 +536,53 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-body bg-white text-gray-900">
-      {/* ─── HERO SECTION (SURFACE-ALT BG WITH GLOW) ─── */}
-      <section className="bg-surface-alt py-16 sm:py-24 border-b border-gray-200/60 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+    <div className="flex flex-col min-h-screen font-body bg-black text-white overflow-hidden relative">
 
-        <div className="relative max-w-content mx-auto px-6 text-center space-y-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold tracking-wide">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Honest, Fixed Pricing — 0% Hidden Costs</span>
+      {/* ─── HERO SECTION (SURFACE-ALT BG WITH GLOW) ─── */}
+      <section className="py-20 sm:py-28 border-b border-white/5 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-cyber-teal/5 rounded-full blur-[130px] pointer-events-none" />
+
+        <div className="relative max-w-content mx-auto px-6 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyber-teal/10 text-cyber-teal font-heading text-xs font-bold tracking-widest uppercase border border-cyber-teal/20">
+            <Sparkles className="w-4 h-4 text-cyber-teal" />
+            <span>Honest, Fixed Pricing Models — 0% Hidden Costs</span>
           </div>
 
-          <h1 className="font-heading font-extrabold text-4xl sm:text-5xl lg:text-6xl text-primary tracking-tight leading-[1.15]">
+          <h1 className="font-heading font-black text-4xl sm:text-5xl lg:text-7xl text-white tracking-tight leading-[1.1]">
             Transparent Website Packages for{' '}
-            <span className="text-accent">Local Businesses</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-teal to-accent drop-shadow-[0_0_20px_rgba(0,242,254,0.3)]">
+              Local Operators
+            </span>
           </h1>
 
-          <p className="font-body text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Choose the package sized for your business stage. Every build includes custom design, mobile responsiveness, fast delivery, and post-launch support.
+          <p className="font-body text-base sm:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            Select the perfect package for your operational scale. Fully customized Next.js design architectures, mobile performance guarantees, and post-launch maintenance.
           </p>
 
           {/* Key Trust Stats Pill Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-3 text-xs font-heading font-semibold text-primary/80">
-            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
-              <CheckCircle2 size={15} className="text-accent" /> Fixed Price Guarantee
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-4 text-xs font-heading font-semibold text-gray-300">
+            <span className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 shadow-md">
+              <CheckCircle2 size={14} className="text-cyber-teal" /> Fixed Cost Guarantees
             </span>
-            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
-              <CheckCircle2 size={15} className="text-accent" /> 3 to 10-Day Delivery
+            <span className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 shadow-md">
+              <CheckCircle2 size={14} className="text-cyber-teal" /> 3 to 10-Day Execution
             </span>
-            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
-              <CheckCircle2 size={15} className="text-accent" /> Free Post-Launch Warranty
+            <span className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 shadow-md">
+              <CheckCircle2 size={14} className="text-cyber-teal" /> Free Post-Launch Warranty
             </span>
           </div>
         </div>
       </section>
 
       {/* ─── PRICING CARDS GRID SECTION ─── */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-content mx-auto px-6 space-y-12">
-          <div className="text-center space-y-2">
-            <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
+      <section className="py-24 bg-black">
+        <div className="max-w-content mx-auto px-6 space-y-16">
+          <div className="text-center space-y-3">
+            <h2 className="font-heading font-black text-3xl sm:text-5xl text-white tracking-tight">
               Select Your Fixed Package
             </h2>
-            <p className="font-body text-sm sm:text-base text-muted max-w-xl mx-auto">
-              No hidden fees, no surprises. Click any package to start your inquiry.
+            <p className="font-body text-sm sm:text-base text-gray-400 max-w-xl mx-auto">
+              Transparent specs. No surprise bills or hidden ongoing line items.
             </p>
           </div>
 
@@ -702,45 +595,45 @@ export default function PricingPage() {
       </section>
 
       {/* ─── INTERACTIVE ESTIMATOR WIDGET SECTION ─── */}
-      <section className="py-16 sm:py-20 bg-surface-alt border-y border-gray-200/60">
+      <section className="py-24 bg-[#070b13] border-y border-white/5">
         <div className="max-w-content mx-auto px-6">
           <CustomCostCalculator />
         </div>
       </section>
 
       {/* ─── FEATURE COMPARISON MATRIX TABLE ─── */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-content mx-auto px-6 space-y-10">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-heading text-xs font-bold">
-              <Layers className="w-3.5 h-3.5 text-accent" />
+      <section className="py-24 bg-black">
+        <div className="max-w-content mx-auto px-6 space-y-12">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyber-teal/10 text-cyber-teal font-heading text-xs font-bold border border-cyber-teal/20">
+              <Layers className="w-3.5 h-3.5 text-cyber-teal" />
               <span>Feature Comparison</span>
             </div>
-            <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
-              Compare All Packages Side-by-Side
+            <h2 className="font-heading font-black text-3xl sm:text-5xl text-white tracking-tight">
+              Compare Packages Side-by-Side
             </h2>
           </div>
 
           {/* Table Container */}
-          <div className="overflow-x-auto rounded-card border border-gray-200 shadow-sm">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto rounded-card border border-white/5 shadow-2xl">
+            <table className="w-full text-left border-collapse bg-[#0b0f19]">
               <thead>
-                <tr className="bg-primary text-white font-heading text-xs sm:text-sm">
-                  <th className="p-4 sm:p-5">Feature</th>
-                  <th className="p-4 sm:p-5 text-center">Starter (₹5k)</th>
-                  <th className="p-4 sm:p-5 text-center">Landing (₹9k)</th>
-                  <th className="p-4 sm:p-5 text-center bg-accent text-white">Business (₹25k)</th>
-                  <th className="p-4 sm:p-5 text-center">E-commerce (₹75k)</th>
+                <tr className="bg-[#070b13] text-white font-heading text-xs sm:text-sm border-b border-white/5">
+                  <th className="p-5">Capability Matrix</th>
+                  <th className="p-5 text-center text-gray-350">Starter (₹5k)</th>
+                  <th className="p-5 text-center text-gray-350">Landing (₹9k)</th>
+                  <th className="p-5 text-center bg-cyber-teal/10 text-cyber-teal">Business (₹25k)</th>
+                  <th className="p-5 text-center text-gray-350">E-commerce (₹75k)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 font-body text-xs sm:text-sm text-primary">
+              <tbody className="divide-y divide-white/5 font-body text-xs sm:text-sm text-gray-300">
                 {comparisonFeatures.map((row, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-surface-alt/60'}>
-                    <td className="p-4 font-semibold text-primary">{row.feature}</td>
-                    <td className="p-4 text-center text-muted">{row.starter}</td>
-                    <td className="p-4 text-center text-muted">{row.landing}</td>
-                    <td className="p-4 text-center font-bold text-accent bg-accent/5">{row.business}</td>
-                    <td className="p-4 text-center text-muted">{row.store}</td>
+                  <tr key={idx} className={idx % 2 === 0 ? 'bg-[#0b0f19]/40' : 'bg-[#070b13]/40'}>
+                    <td className="p-5 font-bold text-white">{row.feature}</td>
+                    <td className="p-5 text-center text-gray-400">{row.starter}</td>
+                    <td className="p-5 text-center text-gray-400">{row.landing}</td>
+                    <td className="p-5 text-center font-bold text-cyber-teal bg-cyber-teal/5">{row.business}</td>
+                    <td className="p-5 text-center text-gray-400">{row.store}</td>
                   </tr>
                 ))}
               </tbody>
@@ -750,28 +643,28 @@ export default function PricingPage() {
       </section>
 
       {/* ─── NOT INCLUDED DISCLOSURE SECTION ─── */}
-      <section className="py-16 bg-surface-alt border-t border-gray-200/60">
+      <section className="py-24 bg-[#070b13] border-t border-white/5">
         <div className="max-w-content mx-auto px-6">
-          <div className="bg-white rounded-card p-8 border border-gray-200/80 max-w-4xl mx-auto space-y-6 shadow-xs">
-            <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-              <div className="w-10 h-10 rounded-lg bg-gray-100 text-muted flex items-center justify-center flex-shrink-0">
-                <ShieldCheck className="w-5 h-5 text-accent" />
+          <div className="glass-card rounded-card p-8 sm:p-10 border border-white/5 max-w-4xl mx-auto space-y-6 shadow-2xl">
+            <div className="flex items-center gap-4 border-b border-white/5 pb-5">
+              <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-accent animate-pulse" />
               </div>
               <div>
-                <h3 className="font-heading font-bold text-xl text-primary">
-                  100% Transparency Guarantee — What is Not Included
+                <h3 className="font-heading font-black text-xl sm:text-2xl text-white">
+                  100% Upfront Transparency — Exclusions List
                 </h3>
-                <p className="font-body text-xs text-muted">
-                  We believe in total upfront honesty so you never encounter surprise bills.
+                <p className="font-body text-xs text-gray-400">
+                  Total integrity before any code is generated.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-body text-xs text-muted">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-body text-xs text-gray-400">
               {notIncludedItems.map((item, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 bg-surface-alt/60 p-3 rounded-lg border border-gray-100">
-                  <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                  <span className="leading-snug">{item}</span>
+                <div key={idx} className="flex items-start gap-2.5 bg-white/2 p-4 rounded-xl border border-white/5">
+                  <Info className="w-4.5 h-4.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{item}</span>
                 </div>
               ))}
             </div>
@@ -780,14 +673,15 @@ export default function PricingPage() {
       </section>
 
       {/* ─── FAQS ACCORDION SECTION ─── */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-6 space-y-10">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold">
+      <section className="py-24 bg-black">
+        <div className="max-w-3xl mx-auto px-6 space-y-12">
+
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyber-teal/10 text-cyber-teal font-heading text-xs font-bold border border-cyber-teal/20">
               <HelpCircle className="w-3.5 h-3.5" />
-              <span>Got Questions?</span>
+              <span>Have Concerns?</span>
             </div>
-            <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
+            <h2 className="font-heading font-black text-3xl sm:text-5xl text-white tracking-tight">
               Frequently Asked Questions
             </h2>
           </div>
@@ -798,22 +692,22 @@ export default function PricingPage() {
               return (
                 <div
                   key={idx}
-                  className="bg-surface-alt rounded-card border border-gray-200/80 overflow-hidden transition-all duration-200"
+                  className="bg-[#0b0f19] rounded-card border border-white/5 overflow-hidden transition-all duration-300"
                 >
                   <button
                     type="button"
                     onClick={() => toggleFaq(idx)}
-                    className="w-full p-5 text-left flex items-center justify-between font-heading font-bold text-base text-primary hover:text-accent transition-colors"
+                    className="w-full p-6 text-left flex items-center justify-between font-heading font-bold text-base text-white hover:text-cyber-teal transition-colors"
                   >
                     <span>{faq.q}</span>
                     {isOpen ? (
-                      <ChevronUp className="w-5 h-5 text-accent shrink-0" />
+                      <ChevronUp className="w-5 h-5 text-cyber-teal shrink-0" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-muted shrink-0" />
+                      <ChevronDown className="w-5 h-5 text-gray-500 shrink-0" />
                     )}
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-5 font-body text-sm text-muted leading-relaxed border-t border-gray-200/40 pt-3">
+                    <div className="px-6 pb-6 font-body text-sm text-gray-400 leading-relaxed border-t border-white/5 pt-4">
                       {faq.a}
                     </div>
                   )}
@@ -825,23 +719,23 @@ export default function PricingPage() {
       </section>
 
       {/* ─── FINAL CTA BANNER (DEV KRAFTERS BRANDED) ─── */}
-      <section className="py-16 bg-surface-alt border-t border-gray-200/60">
+      <section className="py-24 bg-[#070b13] border-t border-white/5">
         <div className="max-w-content mx-auto px-6">
-          <div className="bg-primary rounded-card p-10 text-center max-w-3xl mx-auto space-y-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-[80px] pointer-events-none" />
+          <div className="bg-primary rounded-card p-10 sm:p-16 text-center max-w-3xl mx-auto space-y-6 shadow-2xl relative overflow-hidden border border-white/5">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/25 rounded-full blur-[80px] pointer-events-none" />
 
-            <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
-              Ready to launch your high-converting website?
+            <h3 className="font-heading font-black text-2xl sm:text-4xl text-white tracking-tight">
+              Ready to construct your online solution?
             </h3>
-            <p className="font-body text-sm sm:text-base text-gray-200 max-w-xl mx-auto leading-relaxed">
-              Start with a free inquiry or schedule a 15-minute consultation with our lead developer today.
+            <p className="font-body text-sm sm:text-base text-gray-300 max-w-xl mx-auto leading-relaxed">
+              Define your project metrics. We dispatch a fixed-price visual proposal within 24 hours.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
               <Button href="/contact" variant="primary" size="lg" className="bg-accent hover:bg-accent-dark border-none">
-                <span>Start Your Project</span>
+                <span>Configure This Build</span>
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
-              <Button href="https://calendly.com" target="_blank" variant="secondary" size="lg" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <Button href="https://calendly.com" target="_blank" variant="secondary" size="lg" className="border-cyber-teal text-cyber-teal">
                 <Calendar className="w-4 h-4 mr-1.5" />
                 <span>Book Intro Call</span>
               </Button>

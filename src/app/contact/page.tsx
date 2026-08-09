@@ -27,9 +27,6 @@ import {
   Users,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────
-// FORM DATA TYPES & OPTIONS
-// ─────────────────────────────────────────────
 interface FormData {
   name: string;
   email: string;
@@ -88,38 +85,32 @@ const timelineOptions = [
   { value: 'flexible', label: 'Flexible / No rush' },
 ];
 
-// ─────────────────────────────────────────────
-// WIZARD STEPS CONFIG
-// ─────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: 'About You', description: 'Your contact details' },
-  { id: 2, label: 'Your Project', description: 'What you need built' },
-  { id: 3, label: 'Details', description: 'Scope & extras' },
+  { id: 1, label: 'Identity', description: 'Contact details' },
+  { id: 2, label: 'Blueprint', description: 'Project package' },
+  { id: 3, label: 'Objectives', description: 'Scope & deadlines' },
 ] as const;
 
-// ─────────────────────────────────────────────
-// SIDEBAR DATA
-// ─────────────────────────────────────────────
 const whyUsPoints = [
   {
     icon: UserCheck,
-    title: 'Direct access',
-    description: 'You work directly with the person building your site — no account managers, no handoffs.',
+    title: 'Direct Pipeline',
+    description: 'You collaborate directly with the core engineer building your site — no account handlers.',
   },
   {
     icon: Zap,
-    title: 'Fast turnaround',
-    description: 'AI-assisted workflow means quicker builds without cutting corners.',
+    title: 'Fast execution',
+    description: 'Harnessing optimized boilerplate engines means visual releases in as fast as 3 days.',
   },
   {
     icon: Tag,
-    title: 'Transparent pricing',
-    description: 'Fixed prices, no surprise line items.',
+    title: 'Transparent Pricing',
+    description: '100% fixed-price proposals with absolutely zero hidden surprise line items.',
   },
   {
     icon: ShieldCheck,
-    title: 'Support after launch',
-    description: 'Free bug-fix window included, with ongoing maintenance available.',
+    title: 'Support Guarantee',
+    description: '15 to 30 days of free bug warranty, with standard maintenance plans available.',
   },
 ];
 
@@ -131,9 +122,6 @@ const testimonial = {
   rating: 5,
 };
 
-// ─────────────────────────────────────────────
-// STEP PROGRESS BAR
-// ─────────────────────────────────────────────
 function StepProgressBar({ currentStep }: { currentStep: number }) {
   return (
     <div className="flex items-center justify-between mb-8">
@@ -145,32 +133,32 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
             {/* Step circle + label */}
             <div className="flex flex-col items-center gap-1.5 min-w-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-heading font-bold text-sm transition-all duration-300 ${
+                className={`w-11 h-11 rounded-full flex items-center justify-center font-heading font-bold text-xs sm:text-sm transition-all duration-300 ${
                   isCompleted
-                    ? 'bg-accent text-white shadow-md shadow-accent/30'
+                    ? 'bg-cyber-teal text-primary shadow-[0_0_15px_rgba(0,242,254,0.3)]'
                     : isActive
-                    ? 'bg-accent text-white shadow-md shadow-accent/30 ring-4 ring-accent/20'
-                    : 'bg-gray-100 text-muted border border-gray-200'
+                    ? 'bg-cyber-teal text-primary shadow-[0_0_20px_rgba(0,242,254,0.4)] ring-4 ring-cyber-teal/20'
+                    : 'bg-white/5 text-gray-500 border border-white/10'
                 }`}
               >
                 {isCompleted ? <CheckCircle className="w-5 h-5" /> : step.id}
               </div>
               <div className="text-center hidden sm:block">
                 <p
-                  className={`font-heading text-xs font-semibold transition-colors ${
-                    isActive || isCompleted ? 'text-primary' : 'text-muted'
+                  className={`font-heading text-xs font-bold uppercase tracking-wider transition-colors ${
+                    isActive || isCompleted ? 'text-white' : 'text-gray-500'
                   }`}
                 >
                   {step.label}
                 </p>
-                <p className="font-body text-[10px] text-muted">{step.description}</p>
+                <p className="font-body text-[10px] text-gray-400">{step.description}</p>
               </div>
             </div>
             {/* Connector line */}
             {idx < STEPS.length - 1 && (
-              <div className="flex-1 mx-2 sm:mx-4 h-0.5 rounded-full bg-gray-200 relative overflow-hidden self-start mt-5">
+              <div className="flex-1 mx-2 sm:mx-4 h-0.5 rounded-full bg-white/10 relative overflow-hidden self-start mt-5.5">
                 <div
-                  className={`absolute inset-y-0 left-0 bg-accent rounded-full transition-all duration-500 ease-out ${
+                  className={`absolute inset-y-0 left-0 bg-cyber-teal rounded-full transition-all duration-500 ease-out ${
                     currentStep > step.id ? 'w-full' : 'w-0'
                   }`}
                 />
@@ -183,9 +171,6 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// ANIMATED COUNTER
-// ─────────────────────────────────────────────
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
@@ -213,7 +198,7 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
     const timer = setInterval(() => {
       current++;
       const progress = current / steps;
-      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.round(eased * target));
       if (current >= steps) {
         setCount(target);
@@ -224,16 +209,13 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
   }, [hasStarted, target]);
 
   return (
-    <span ref={ref} className="tabular-nums">
+    <span ref={ref} className="tabular-nums font-black">
       {count}
       {suffix}
     </span>
   );
 }
 
-// ─────────────────────────────────────────────
-// SUCCESS STATE
-// ─────────────────────────────────────────────
 function SuccessState({
   formData,
   onReset,
@@ -242,65 +224,64 @@ function SuccessState({
   onReset: () => void;
 }) {
   return (
-    <div className="space-y-6 py-4 text-center animate-fade-in-up">
-      {/* Big animated checkmark */}
+    <div className="space-y-6 py-6 text-center animate-fade-in-up">
       <div className="flex justify-center">
-        <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center animate-success-bounce">
-          <CheckCircle className="w-10 h-10 text-emerald-600" />
+        <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center animate-success-bounce">
+          <CheckCircle className="w-10 h-10 text-emerald-400" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="font-heading font-bold text-2xl text-primary">
-          Message Sent!
+        <h3 className="font-heading font-black text-2xl text-white">
+          Transmission Received!
         </h3>
-        <p className="font-body text-sm text-muted max-w-sm mx-auto">
-          We&apos;ve received your project inquiry and will get back to you within 24 hours.
+        <p className="font-body text-sm text-gray-400 max-w-sm mx-auto leading-relaxed">
+          Your project inquiry is safely queued. Our engineering lead will reach out within 24 hours.
         </p>
       </div>
 
-      {/* Submission summary */}
-      <div className="p-5 bg-surface-alt rounded-xl border border-gray-100 text-left space-y-2.5 font-body text-xs text-primary max-w-md mx-auto">
-        <h4 className="font-heading font-semibold text-sm text-primary flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-emerald-600" />
-          Submission Summary
+      <div className="p-5 bg-white/2 rounded-xl border border-white/5 text-left space-y-3 font-body text-xs text-gray-300 max-w-md mx-auto">
+        <h4 className="font-heading font-black text-sm text-white flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-emerald-400" />
+          Blueprint Metrics
         </h4>
-        <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
-          <span className="font-semibold text-muted">Name</span>
-          <span>{formData.name}</span>
-          <span className="font-semibold text-muted">Email</span>
-          <span>{formData.email}</span>
+        <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+          <span className="font-semibold text-gray-500">Name</span>
+          <span className="text-white">{formData.name}</span>
+          <span className="font-semibold text-gray-500">Email</span>
+          <span className="text-white">{formData.email}</span>
           {formData.phone && (
             <>
-              <span className="font-semibold text-muted">Phone</span>
-              <span>{formData.phone}</span>
+              <span className="font-semibold text-gray-500">Phone</span>
+              <span className="text-white">{formData.phone}</span>
             </>
           )}
           {formData.projectType && (
             <>
-              <span className="font-semibold text-muted">Package</span>
-              <span>{projectTypeOptions.find((o) => o.value === formData.projectType)?.label || formData.projectType}</span>
+              <span className="font-semibold text-gray-500">Package</span>
+              <span className="text-white">
+                {projectTypeOptions.find((o) => o.value === formData.projectType)?.label || formData.projectType}
+              </span>
             </>
           )}
           {formData.budget && (
             <>
-              <span className="font-semibold text-muted">Budget</span>
-              <span>{budgetOptions.find((o) => o.value === formData.budget)?.label || formData.budget}</span>
+              <span className="font-semibold text-gray-500">Budget</span>
+              <span className="text-white">
+                {budgetOptions.find((o) => o.value === formData.budget)?.label || formData.budget}
+              </span>
             </>
           )}
         </div>
       </div>
 
-      <Button variant="secondary" size="md" onClick={onReset}>
-        Send Another Message
+      <Button variant="secondary" size="md" onClick={onReset} className="border-white/10 text-white">
+        Configure New Blueprint
       </Button>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────
-// MAIN FORM CONTENT
-// ─────────────────────────────────────────────
 function ContactFormContent() {
   const searchParams = useSearchParams();
   const initialPackage =
@@ -331,7 +312,6 @@ function ContactFormContent() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({ ...prev, [name]: value }));
-      // Clear field error on change
       if (errors[name as keyof FieldErrors]) {
         setErrors((prev) => ({ ...prev, [name]: undefined }));
       }
@@ -339,7 +319,6 @@ function ContactFormContent() {
     [errors]
   );
 
-  // ── Validation ──
   const validateStep = useCallback(
     (step: number): boolean => {
       const newErrors: FieldErrors = {};
@@ -357,8 +336,8 @@ function ContactFormContent() {
       }
 
       if (step === 3) {
-        if (!formData.message.trim()) newErrors.message = 'Please tell us about your project';
-        if (formData.message.length > 2000) newErrors.message = 'Message is too long (max 2,000 characters)';
+        if (!formData.message.trim()) newErrors.message = 'Please specify your visual parameters';
+        if (formData.message.length > 2000) newErrors.message = 'Constraint string too long';
       }
 
       setErrors(newErrors);
@@ -378,7 +357,6 @@ function ContactFormContent() {
     setCurrentStep((s) => Math.max(s - 1, 1));
   }, []);
 
-  // ── Submit ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -386,18 +364,17 @@ function ContactFormContent() {
 
     setIsSubmitting(true);
 
-    // Build enriched message with extra fields
     const parts = [formData.message.trim()];
     if (formData.budget) {
       const budgetLabel = budgetOptions.find((o) => o.value === formData.budget)?.label || formData.budget;
-      parts.push(`\n\n--- Additional Info ---\nBudget: ${budgetLabel}`);
+      parts.push(`\n\n--- Budget Details ---\nLimit: ${budgetLabel}`);
     }
     if (formData.timeline) {
       const timelineLabel = timelineOptions.find((o) => o.value === formData.timeline)?.label || formData.timeline;
-      parts.push(`Timeline: ${timelineLabel}`);
+      parts.push(`Execution speed: ${timelineLabel}`);
     }
     if (selectedFile) {
-      parts.push(`Attached file: ${selectedFile.name}`);
+      parts.push(`Uploaded files: ${selectedFile.name}`);
     }
 
     try {
@@ -453,7 +430,6 @@ function ContactFormContent() {
     setSubmitError('');
   };
 
-  // ── Step content ──
   const slideClass =
     slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left';
 
@@ -461,9 +437,9 @@ function ContactFormContent() {
     switch (currentStep) {
       case 1:
         return (
-          <div key="step-1" className={`space-y-5 ${slideClass}`}>
+          <div key="step-1" className={`space-y-6 ${slideClass}`}>
             <Input
-              label="Your Name"
+              label="Your Full Name"
               name="name"
               placeholder="e.g. Priya Sharma"
               value={formData.name}
@@ -473,7 +449,7 @@ function ContactFormContent() {
               required
             />
             <Input
-              label="Email Address"
+              label="Secure Email Address"
               name="email"
               type="email"
               placeholder="e.g. priya@mybusiness.com"
@@ -484,52 +460,52 @@ function ContactFormContent() {
               required
             />
             <Input
-              label="Phone Number (Optional)"
+              label="Mobile WhatsApp Contact (Optional)"
               name="phone"
               type="tel"
               placeholder="e.g. +91 98765 43210"
               value={formData.phone}
               onChange={handleChange}
               error={errors.phone}
-              helperText="We'll only call if you prefer phone over email"
+              helperText="Zero spam. We respect communication borders completely."
               floating
             />
           </div>
         );
       case 2:
         return (
-          <div key="step-2" className={`space-y-5 ${slideClass}`}>
+          <div key="step-2" className={`space-y-6 ${slideClass}`}>
             <Select
-              label="Business Type"
+              label="Business Operation Niche"
               name="businessType"
               options={businessTypeOptions}
               value={formData.businessType}
               onChange={handleChange}
             />
             <Select
-              label="Project Package"
+              label="Selected Build Package"
               name="projectType"
               options={projectTypeOptions}
               value={formData.projectType}
               onChange={handleChange}
             />
             <Select
-              label="Budget Range"
+              label="Allocated Project Budget"
               name="budget"
               options={budgetOptions}
               value={formData.budget}
               onChange={handleChange}
-              helperText="Helps us recommend the right package"
+              helperText="Helps our automated scoping engine prioritize features"
             />
           </div>
         );
       case 3:
         return (
-          <div key="step-3" className={`space-y-5 ${slideClass}`}>
+          <div key="step-3" className={`space-y-6 ${slideClass}`}>
             <Textarea
-              label="Tell us about your project"
+              label="Project Objectives & Aesthetic Goals"
               name="message"
-              placeholder="What goals, features, or deadlines do you have in mind?"
+              placeholder="Specify references, custom colors, required sections..."
               value={formData.message}
               onChange={handleChange}
               rows={5}
@@ -539,7 +515,7 @@ function ContactFormContent() {
               required
             />
             <Select
-              label="Preferred Timeline"
+              label="Milestone Urgency"
               name="timeline"
               options={timelineOptions}
               value={formData.timeline}
@@ -560,17 +536,17 @@ function ContactFormContent() {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-start">
       {/* ────── FORM CARD ────── */}
       <div className="lg:col-span-7">
-        <div className="glass-card rounded-card p-6 sm:p-8">
+        <div className="glass-card rounded-card p-6 sm:p-10 border border-white/5">
           {isSubmitted ? (
             <SuccessState formData={formData} onReset={handleReset} />
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-1">
-                <h2 className="font-heading font-bold text-2xl text-primary">
-                  Project Inquiry Form
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-2">
+                <h2 className="font-heading font-black text-2xl text-white">
+                  Blueprint Configurator
                 </h2>
-                <p className="font-body text-sm text-muted">
-                  Fill out the steps below and we&apos;ll get back within 24 hours.
+                <p className="font-body text-xs sm:text-sm text-gray-400">
+                  Verify the steps below to initialize secure deployment parameters.
                 </p>
               </div>
 
@@ -588,15 +564,16 @@ function ContactFormContent() {
               <div className="min-h-[260px]">{renderStepContent()}</div>
 
               {/* Navigation buttons */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between pt-4 border-t border-white/5">
                 {currentStep > 1 ? (
                   <Button
                     type="button"
                     variant="ghost"
                     size="md"
                     onClick={goBack}
+                    className="border-white/5 text-gray-300"
                   >
-                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    <ArrowLeft className="w-4 h-4 mr-1.5" />
                     <span>Back</span>
                   </Button>
                 ) : (
@@ -610,8 +587,8 @@ function ContactFormContent() {
                     size="md"
                     onClick={goNext}
                   >
-                    <span>Next</span>
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    <span>Proceed</span>
+                    <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
                 ) : (
                   <Button
@@ -623,12 +600,12 @@ function ContactFormContent() {
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Sending...
+                        Transmitting...
                       </span>
                     ) : (
                       <>
-                        <span>Send Message</span>
-                        <Send className="w-4 h-4 ml-1" />
+                        <span>Deploy Blueprint</span>
+                        <Send className="w-4 h-4 ml-1.5" />
                       </>
                     )}
                   </Button>
@@ -639,18 +616,18 @@ function ContactFormContent() {
         </div>
 
         {/* Trust badges */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
+        <div className="flex flex-wrap items-center justify-center gap-3.5 mt-6">
           <span className="trust-badge">
-            <Lock className="w-3.5 h-3.5" />
-            Your info is secure
+            <Lock className="w-4 h-4 text-cyber-teal" />
+            Pristine Security Protocols
           </span>
           <span className="trust-badge">
-            <Zap className="w-3.5 h-3.5" />
-            24h response
+            <Zap className="w-4 h-4 text-cyber-teal" />
+            24h Queue Response
           </span>
           <span className="trust-badge">
-            <MessageCircle className="w-3.5 h-3.5" />
-            No spam, ever
+            <MessageCircle className="w-4 h-4 text-cyber-teal" />
+            Zero Communication Spam
           </span>
         </div>
       </div>
@@ -659,62 +636,62 @@ function ContactFormContent() {
       <div className="lg:col-span-5 space-y-6">
         {/* Stats counter */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-surface-alt rounded-card p-5 text-center border border-gray-100">
-            <p className="font-heading font-extrabold text-3xl text-accent">
+          <div className="bg-[#0b0f19] rounded-card p-5 text-center border border-white/5 shadow-2xl">
+            <p className="font-heading font-black text-3xl text-cyber-teal">
               <AnimatedCounter target={50} suffix="+" />
             </p>
-            <p className="font-body text-xs text-muted mt-1">Projects Delivered</p>
+            <p className="font-body text-[10px] sm:text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">Active Builds</p>
           </div>
-          <div className="bg-surface-alt rounded-card p-5 text-center border border-gray-100">
-            <p className="font-heading font-extrabold text-3xl text-accent">
+          <div className="bg-[#0b0f19] rounded-card p-5 text-center border border-white/5 shadow-2xl">
+            <p className="font-heading font-black text-3xl text-cyber-teal">
               <AnimatedCounter target={24} suffix="h" />
             </p>
-            <p className="font-body text-xs text-muted mt-1">Avg Response Time</p>
+            <p className="font-body text-[10px] sm:text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">SLA Queue Response</p>
           </div>
         </div>
 
         {/* Testimonial card */}
-        <Card variant="default" hoverEffect={false} className="border border-gray-100 shadow-sm space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-accent rounded-r-full" />
+        <Card variant="default" hoverEffect={false} className="border border-white/5 shadow-2xl space-y-5 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-cyber-teal" />
           <div className="flex gap-0.5">
             {Array.from({ length: testimonial.rating }).map((_, i) => (
               <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
             ))}
           </div>
-          <blockquote className="font-body text-sm text-primary leading-relaxed italic">
+          <blockquote className="font-body text-xs sm:text-sm text-gray-300 leading-relaxed italic">
             &ldquo;{testimonial.quote}&rdquo;
           </blockquote>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-accent/10 text-accent flex items-center justify-center font-heading font-bold text-sm">
+            <div className="w-9 h-9 rounded-full bg-cyber-teal text-primary flex items-center justify-center font-heading font-black text-sm">
               {testimonial.author.charAt(0)}
             </div>
             <div>
-              <p className="font-heading font-semibold text-xs text-primary">
+              <p className="font-heading font-bold text-xs text-white">
                 {testimonial.author}
               </p>
-              <p className="font-body text-[11px] text-muted">{testimonial.role}</p>
+              <p className="font-body text-[11px] text-gray-500">{testimonial.role}</p>
             </div>
           </div>
         </Card>
 
         {/* Why Choose Us */}
-        <Card variant="default" hoverEffect={false} className="border border-gray-100 shadow-sm space-y-5">
-          <h3 className="font-heading font-bold text-lg text-primary border-b border-gray-100 pb-3">
-            Why Choose Dev Krafters?
+        <Card variant="default" hoverEffect={false} className="border border-white/5 shadow-2xl space-y-6">
+          <h3 className="font-heading font-bold text-lg text-white border-b border-white/5 pb-3">
+            Architectural Benefits
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {whyUsPoints.map((point, idx) => {
               const IconComp = point.icon;
               return (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-accent/10 text-accent flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <IconComp className="w-4.5 h-4.5" />
+                <div key={idx} className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-cyber-teal/10 border border-cyber-teal/20 text-cyber-teal flex items-center justify-center flex-shrink-0 mt-0.5 animate-pulse">
+                    <IconComp className="w-5 h-5" />
                   </div>
-                  <div className="space-y-0.5">
-                    <h4 className="font-heading font-semibold text-sm text-primary">
+                  <div className="space-y-1">
+                    <h4 className="font-heading font-bold text-sm text-white">
                       {point.title}
                     </h4>
-                    <p className="font-body text-xs text-muted leading-relaxed">
+                    <p className="font-body text-xs text-gray-450 leading-relaxed">
                       {point.description}
                     </p>
                   </div>
@@ -725,29 +702,29 @@ function ContactFormContent() {
         </Card>
 
         {/* Direct Contact */}
-        <Card variant="alt" hoverEffect={false} className="space-y-5">
-          <h3 className="font-heading font-bold text-lg text-primary">
-            Direct Contact
+        <Card variant="alt" hoverEffect={false} className="space-y-6 border border-white/5">
+          <h3 className="font-heading font-bold text-lg text-white">
+            Direct Core Contact
           </h3>
-          <p className="font-body text-sm text-muted">
-            Prefer direct email or messaging? Reach out directly and we will respond promptly.
+          <p className="font-body text-xs sm:text-sm text-gray-400 leading-relaxed">
+            Prefer standard mail protocols? Skip scoping arrays completely and reach out directly.
           </p>
 
           <a
             href="mailto:hello@devkrafters.com"
-            className="flex items-center gap-3 p-3 rounded-lg bg-white border border-gray-200/80 text-primary hover:border-accent hover:text-accent transition-all group"
+            className="flex items-center gap-3.5 p-4 rounded-xl bg-white/2 border border-white/5 text-white hover:border-cyber-teal transition-all group"
           >
-            <div className="w-10 h-10 rounded-md bg-accent/10 text-accent flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors">
+            <div className="w-11 h-11 rounded-lg bg-cyber-teal/10 text-cyber-teal flex items-center justify-center group-hover:bg-cyber-teal group-hover:text-primary transition-colors">
               <Mail className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-heading font-semibold text-xs text-muted">Email Us</p>
-              <p className="font-body font-medium text-sm">hello@devkrafters.com</p>
+              <p className="font-heading font-black text-[10px] text-gray-500 uppercase tracking-wider">Mail Terminal</p>
+              <p className="font-body font-bold text-xs sm:text-sm text-white">hello@devkrafters.com</p>
             </div>
           </a>
 
-          <div className="pt-3 border-t border-gray-200/80">
-            <p className="font-heading font-semibold text-xs text-muted mb-3">
+          <div className="pt-4 border-t border-white/5">
+            <p className="font-heading font-bold text-xs text-gray-500 uppercase tracking-wider mb-4">
               Social Channels
             </p>
             <div className="flex items-center gap-3">
@@ -761,7 +738,7 @@ function ContactFormContent() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-primary hover:bg-accent hover:text-white hover:border-accent transition-all"
+                  className="w-11 h-11 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-300 hover:text-white hover:border-cyber-teal transition-all"
                   aria-label={social.label}
                 >
                   <social.icon className="w-5 h-5" />
@@ -778,13 +755,12 @@ function ContactFormContent() {
           className="border-2 border-accent/40 bg-accent/5 animate-pulse-border"
         >
           <div className="space-y-4">
-            <div className="flex items-center gap-3 text-accent font-heading font-semibold text-base">
+            <div className="flex items-center gap-3 text-accent font-heading font-bold text-base">
               <Calendar className="w-5 h-5" />
-              <span>Or book a call directly</span>
+              <span>Holographic Intro Consultation</span>
             </div>
-            <p className="font-body text-xs text-muted leading-relaxed">
-              Want to skip the contact form? Schedule a quick 15-minute intro call to discuss your
-              site requirements live.
+            <p className="font-body text-xs text-gray-400 leading-relaxed">
+              Book a live 15-minute consulting sequence directly on our calendar. Secure, rapid scoping.
             </p>
             <Button
               href="https://calendly.com"
@@ -792,9 +768,9 @@ function ContactFormContent() {
               rel="noopener noreferrer"
               variant="secondary"
               size="sm"
-              className="w-full bg-white"
+              className="w-full bg-[#0b0f19] border-accent/40 text-accent hover:bg-accent hover:text-white shadow-md shadow-accent/10"
             >
-              <span>Book 15-Min Intro Call</span>
+              <span>Initialize Intro Consultation</span>
             </Button>
           </div>
         </Card>
@@ -803,55 +779,54 @@ function ContactFormContent() {
   );
 }
 
-// ─────────────────────────────────────────────
-// PAGE WRAPPER
-// ─────────────────────────────────────────────
 export default function ContactPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-black text-white overflow-hidden relative font-body">
       {/* HERO */}
-      <section className="bg-surface-alt py-16 sm:py-24 relative overflow-hidden">
-        {/* Subtle decorative gradient blobs */}
-        <div className="absolute -top-32 -right-32 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <section className="py-20 sm:py-28 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-cyber-teal/5 rounded-full blur-[130px] pointer-events-none" />
 
-        <div className="max-w-content mx-auto px-6 text-center space-y-4 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-body text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Fast 24-Hour Response Time</span>
+        <div className="relative max-w-content mx-auto px-6 text-center space-y-6 z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyber-teal/10 text-cyber-teal font-heading text-xs font-bold uppercase border border-cyber-teal/20 tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-cyber-teal" />
+            <span>24-Hour Scoping Turnaround Guarantee</span>
           </div>
-          <h1 className="font-heading font-extrabold text-4xl sm:text-5xl tracking-tight gradient-text">
-            Start Your Project
+
+          <h1 className="font-heading font-black text-4xl sm:text-5xl lg:text-7xl tracking-tight text-white leading-tight">
+            Start Your{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-teal to-accent drop-shadow-[0_0_20px_rgba(0,242,254,0.35)]">
+              Build Sequence
+            </span>
           </h1>
-          <p className="font-body text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Tell us about your project — we&apos;ll get back within 24 hours with a tailored proposal.
+
+          <p className="font-body text-base sm:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            Specify design constraints. Our automated matching framework structures custom layouts inside transparent fixed cost constraints.
           </p>
 
-          {/* Compact trust strip */}
-          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 font-body text-xs text-muted">
-            <span className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-accent" />
-              50+ projects delivered
+          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 font-heading text-xs font-bold text-gray-300 uppercase tracking-wider">
+            <span className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 shadow-md">
+              <Users className="w-4 h-4 text-cyber-teal" />
+              50+ builds delivered
             </span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-accent" />
-              Free post-launch support
+            <span className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 shadow-md">
+              <ShieldCheck className="w-4 h-4 text-cyber-teal" />
+              Free support warranty
             </span>
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-accent" />
-              AI-assisted builds
+            <span className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 shadow-md">
+              <Zap className="w-4 h-4 text-cyber-teal" />
+              Next.js / React 19 builds
             </span>
           </div>
         </div>
       </section>
 
       {/* FORM & SIDEBAR */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="py-24 bg-black border-t border-white/5">
         <div className="max-w-content mx-auto px-6">
           <Suspense
             fallback={
-              <div className="text-center font-body text-muted py-20">
-                Loading contact form...
+              <div className="text-center font-heading font-bold text-gray-400 py-24">
+                LOADING ARCHITECTURAL INTERFACE...
               </div>
             }
           >

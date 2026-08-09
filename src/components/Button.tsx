@@ -23,21 +23,21 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-heading font-semibold rounded-btn transition-all duration-200 focus-ring disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.98]';
+    'inline-flex items-center justify-center font-heading font-extrabold uppercase tracking-wider rounded-btn transition-all duration-300 focus-ring disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.97] cursor-pointer';
 
   const sizeStyles = {
-    sm: 'px-4 py-2 text-sm gap-1.5',
-    md: 'px-6 py-3 text-base gap-2',
-    lg: 'px-8 py-4 text-lg gap-2.5',
+    sm: 'px-5 py-2.5 text-xs gap-1.5',
+    md: 'px-7 py-3.5 text-xs sm:text-sm gap-2',
+    lg: 'px-9 py-4.5 text-sm sm:text-base gap-2.5',
   };
 
   const variantStyles = {
     primary:
-      'bg-accent text-white hover:bg-accent-dark shadow-md hover:shadow-lg shadow-accent/20 border border-transparent',
+      'bg-accent text-white hover:bg-accent-dark border border-transparent shadow-[0_0_20px_rgba(255,90,60,0.15)] hover:shadow-[0_0_25px_rgba(255,90,60,0.35)]',
     secondary:
-      'border-2 border-primary text-primary hover:bg-primary hover:text-white bg-transparent',
+      'border-2 border-cyber-teal text-cyber-teal hover:bg-cyber-teal hover:text-primary bg-transparent shadow-[0_0_15px_rgba(0,242,254,0.05)] hover:shadow-[0_0_20px_rgba(0,242,254,0.25)]',
     ghost:
-      'text-primary hover:bg-surface-alt hover:text-primary-dark bg-transparent border border-transparent',
+      'text-white hover:bg-white/5 hover:text-cyber-teal bg-transparent border border-white/5',
   };
 
   const combinedClasses = `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`;
