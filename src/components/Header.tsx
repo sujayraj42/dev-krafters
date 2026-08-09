@@ -21,7 +21,7 @@ export const Header: React.FC = () => {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/60 shadow-xs transition-all">
+    <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-xl border-b border-gray-200/60 shadow-xs transition-all duration-300">
       <div className="max-w-content mx-auto px-6 h-20 flex items-center justify-between">
         {/* Brand Logo + Status Dot */}
         <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white/98 backdrop-blur-2xl border-b border-gray-200 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200 shadow-2xl">
+        <div className="md:hidden bg-surface/98 backdrop-blur-2xl border-b border-gray-200 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200 shadow-2xl">
           <nav className="flex flex-col space-y-2">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;

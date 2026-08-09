@@ -14,10 +14,10 @@
 }
 
 [data-theme="dark"] {
-  --color-primary: #0F172A;
-  --color-primary-dark: #020617;
+  --color-primary: #E2E8F0;
+  --color-primary-dark: #F8FAFC;
   --color-accent: #38BDF8;
-  --color-accent-dark: #0284C7;
+  --color-accent-dark: #7DD3FC;
   --color-bg: #090D16;
   --color-bg-alt: #0F172A;
   --color-text-muted: #94A3B8;

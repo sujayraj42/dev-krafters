@@ -10,15 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#0F4C4C',
-          dark: '#0A3838',
+          DEFAULT: 'var(--color-primary)',
+          dark: 'var(--color-primary-dark)',
         },
         accent: {
-          DEFAULT: '#E85A3C',
-          dark: '#C94A2F',
+          DEFAULT: 'var(--color-accent)',
+          dark: 'var(--color-accent-dark)',
+          light: 'var(--color-accent)',
         },
-        'surface-alt': '#F7F9F9',
-        muted: '#5C6B6B',
+        surface: {
+          DEFAULT: 'var(--color-bg)',
+          alt: 'var(--color-bg-alt)',
+        },
+        'surface-alt': 'var(--color-bg-alt)',
+        muted: 'var(--color-text-muted)',
       },
       fontFamily: {
         heading: ['var(--font-montserrat)', 'sans-serif'],

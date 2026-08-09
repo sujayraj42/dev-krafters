@@ -80,7 +80,7 @@ export const ThemeSwitcher: React.FC = () => {
       {/* Floating Theme Switcher Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-white/90 dark:bg-gray-900/90 text-primary border border-gray-200/80 shadow-2xl backdrop-blur-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer focus-ring"
+        className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-surface/90 text-primary border border-gray-200/80 shadow-2xl backdrop-blur-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer focus-ring"
         aria-label="Change Website Color Theme"
       >
         <span
@@ -97,8 +97,8 @@ export const ThemeSwitcher: React.FC = () => {
 
       {/* Popover Theme Selector Dropdown */}
       {isOpen && (
-        <div className="absolute bottom-16 left-0 w-72 bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 border border-gray-200/80 shadow-2xl backdrop-blur-2xl space-y-3 animate-fade-in-up">
-          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-2.5">
+        <div className="absolute bottom-16 left-0 w-72 bg-surface/95 rounded-2xl p-4 border border-gray-200/80 shadow-2xl backdrop-blur-2xl space-y-3 animate-fade-in-up">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
             <div className="flex items-center gap-2 text-primary font-heading font-extrabold text-xs uppercase tracking-wider">
               <Palette className="w-4 h-4 text-accent" />
               <span>Choose Color Palette</span>
@@ -122,7 +122,7 @@ export const ThemeSwitcher: React.FC = () => {
                   className={`w-full p-3 rounded-xl border text-left transition-all duration-200 flex items-center justify-between group cursor-pointer ${
                     isSelected
                       ? 'border-accent bg-accent/10 shadow-sm'
-                      : 'border-gray-100 dark:border-gray-800 hover:border-gray-300 hover:bg-gray-50/50'
+                      : 'border-gray-100 hover:border-gray-300 hover:bg-surface-alt'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -150,7 +150,7 @@ export const ThemeSwitcher: React.FC = () => {
             })}
           </div>
 
-          <div className="text-[10px] text-center text-muted pt-1 border-t border-gray-100 dark:border-gray-800">
+          <div className="text-[10px] text-center text-muted pt-1 border-t border-gray-100">
             ✨ Themes apply instantly across all pages & components
           </div>
         </div>

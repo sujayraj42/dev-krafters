@@ -36,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${montserrat.variable} ${poppins.variable} scroll-smooth`}>
-      <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-white text-primary selection:bg-accent selection:text-white relative">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-surface text-primary selection:bg-accent selection:text-white relative transition-colors duration-300">
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
