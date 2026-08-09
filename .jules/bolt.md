@@ -1,0 +1,3 @@
+## 2026-08-01 - [SaaS Template Gallery Search Filter Redundant Operations]
+**Learning:** In the Portfolio showcase page (`src/app/portfolio/page.tsx`), the list of 20 rich React 19 templates (`TEMPLATES`) is statically defined. However, filtering and multiple string lowercase conversions were occurring on every render of the `ShowcasePage` (e.g. when typing or selecting categories), causing unnecessary CPU cycles and garbage collection from temporary string allocations.
+**Action:** Use `React.useMemo` to cache the filtered subset and pre-compute lowercase search strings exactly once per search query/category change instead of repeating it for every list item.

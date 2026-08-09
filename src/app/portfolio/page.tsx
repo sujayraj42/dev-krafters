@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Button } from '@/components/Button';
@@ -54,14 +54,23 @@ export default function ShowcasePage() {
   const [activeCategory, setActiveCategory] = useState<TemplateCategory | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTemplates = TEMPLATES.filter((template) => {
-    const matchesCategory = activeCategory === 'All' || template.category === activeCategory;
-    const matchesSearch =
-      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // ⚡ OPTIMIZATION: Memoize filtered static templates list.
+  // Pre-computes search query in lowercase once per query/category change
+  // instead of redundantly running .toLowerCase() 60+ times on every keypress or component render.
+  const filteredTemplates = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return TEMPLATES.filter((template) => {
+      const matchesCategory = activeCategory === 'All' || template.category === activeCategory;
+      if (!matchesCategory) return false;
+      if (!query) return true;
+
+      return (
+        template.name.toLowerCase().includes(query) ||
+        template.description.toLowerCase().includes(query) ||
+        template.category.toLowerCase().includes(query)
+      );
+    });
+  }, [activeCategory, searchQuery]);
 
   return (
     <div className="flex flex-col min-h-screen font-body bg-white text-gray-900">

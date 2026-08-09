@@ -1,0 +1,15 @@
+
+> dev-krafters@0.1.0 dev /app
+> next dev
+
+   ▲ Next.js 15.5.23
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.1s
+ ○ Compiling /portfolio ...
+ ✓ Compiled /portfolio in 20.6s (2704 modules)
+ GET /portfolio 200 in 23154ms
+ ✓ Compiled in 2.7s (1274 modules)
+ GET /portfolio 200 in 389ms
