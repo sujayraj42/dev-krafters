@@ -7,6 +7,8 @@ import { HealthCheck } from '@/app/components/HealthCheck';
 import { TEMPLATES } from '@/app/portfolio/templates';
 import { AnimateOnScroll, FloatingParticles, TiltCard } from '@/components/ScrollAnimations';
 import { BorderBeam, InfiniteMarquee, GlowCard, AnimatedTextShimmer } from '@/components/PremiumEffects';
+import { TestimonialCarousel } from '@/components/TestimonialCarousel';
+import { FAQAccordion } from '@/components/FAQAccordion';
 import {
   ArrowRight,
   Zap,
@@ -446,6 +448,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ─── CLIENT TESTIMONIALS ─── */}
+      <TestimonialCarousel />
+
+      {/* ─── FAQ SECTION ─── */}
+      <FAQAccordion />
 
       {/* ─── FINAL CTA BANNER (PRIMARY TEAL BG) ─── */}
       <section className="py-16 bg-primary text-white relative overflow-hidden">

@@ -5,6 +5,9 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChatWidget } from '@/components/ChatWidget';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { ScrollProgressBar } from '@/components/ScrollProgressBar';
+import { BackToTop } from '@/components/BackToTop';
+import { LiveVisitorCounter } from '@/components/LiveVisitorCounter';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -42,6 +45,9 @@ export default function RootLayout({
         <Footer />
         <ChatWidget />
         <ThemeSwitcher />
+        <ScrollProgressBar />
+        <BackToTop />
+        <LiveVisitorCounter />
       </body>
     </html>
   );
