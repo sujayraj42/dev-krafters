@@ -8,6 +8,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { ScrollProgressBar } from '@/components/ScrollProgressBar';
 import { BackToTop } from '@/components/BackToTop';
 import { LiveVisitorCounter } from '@/components/LiveVisitorCounter';
+import { CookieConsent } from '@/components/CookieConsent';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -48,6 +49,7 @@ export default function RootLayout({
         <ScrollProgressBar />
         <BackToTop />
         <LiveVisitorCounter />
+        <CookieConsent />
       </body>
     </html>
   );

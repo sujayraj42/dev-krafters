@@ -1,7 +1,10 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Logo } from './Logo';
-import { Mail, Linkedin, Instagram, Twitter } from 'lucide-react';
+import { Mail, Linkedin, Instagram, Twitter, Database } from 'lucide-react';
+import { LeadsManagerModal } from './LeadsManager';
 
 const footerNav = [
   { name: 'Home', href: '/' },
@@ -13,8 +16,10 @@ const footerNav = [
 ];
 
 export const Footer: React.FC = () => {
+  const [isLeadsOpen, setIsLeadsOpen] = useState(false);
+
   return (
-    <footer className="bg-primary text-white pt-16 pb-12 border-t border-primary-dark">
+    <footer className="bg-primary text-white pt-16 pb-12 border-t border-primary-dark relative">
       <div className="max-w-content mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-primary-dark/60">
           {/* Brand Info */}
@@ -88,6 +93,17 @@ export const Footer: React.FC = () => {
                 <Twitter className="w-5 h-5" />
               </a>
             </div>
+
+            {/* Leads Vault Trigger for Site Owner */}
+            <div className="pt-2">
+              <button
+                onClick={() => setIsLeadsOpen(true)}
+                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-accent transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 cursor-pointer"
+              >
+                <Database className="w-3.5 h-3.5 text-accent" />
+                <span>Admin: View Saved Leads</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -99,6 +115,9 @@ export const Footer: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Admin Leads Vault Modal */}
+      <LeadsManagerModal isOpen={isLeadsOpen} onClose={() => setIsLeadsOpen(false)} />
     </footer>
   );
 };

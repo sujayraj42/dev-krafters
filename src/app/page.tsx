@@ -9,6 +9,9 @@ import { AnimateOnScroll, FloatingParticles, TiltCard } from '@/components/Scrol
 import { BorderBeam, InfiniteMarquee, GlowCard, AnimatedTextShimmer } from '@/components/PremiumEffects';
 import { TestimonialCarousel } from '@/components/TestimonialCarousel';
 import { FAQAccordion } from '@/components/FAQAccordion';
+import { ClientLogoMarquee } from '@/components/ClientLogoMarquee';
+import { ProjectCostEstimator } from '@/components/ProjectCostEstimator';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
 import {
   ArrowRight,
   Zap,
@@ -220,6 +223,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ─── CLIENT LOGO MARQUEE (TRUSTED BY) ─── */}
+      <ClientLogoMarquee />
 
       {/* ─── INFINITE MARQUEE TICKER ─── */}
       <InfiniteMarquee
@@ -449,11 +455,17 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── INTERACTIVE PROJECT COST ESTIMATOR ─── */}
+      <ProjectCostEstimator />
+
       {/* ─── CLIENT TESTIMONIALS ─── */}
       <TestimonialCarousel />
 
       {/* ─── FAQ SECTION ─── */}
       <FAQAccordion />
+
+      {/* ─── NEWSLETTER & LEAD CAPTURE ─── */}
+      <NewsletterSignup />
 
       {/* ─── FINAL CTA BANNER (PRIMARY TEAL BG) ─── */}
       <section className="py-16 bg-primary text-white relative overflow-hidden">
