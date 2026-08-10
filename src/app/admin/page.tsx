@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ShieldCheck,
   Lock,
@@ -11,34 +11,40 @@ import {
   Users,
   Search,
   CheckCircle2,
-  KeyRound,
-  ArrowRight,
   MessageSquare,
-  FileText,
+  Sparkles,
+  Bot,
+  ExternalLink,
+  Phone,
+  Copy,
+  RefreshCw,
+  X,
+  FileSpreadsheet,
+  Check,
+  Zap,
+  Activity,
+  Calendar,
+  AlertCircle,
+  Database,
+  ArrowUpRight,
+  ChevronRight,
+  Filter,
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface ContactLead {
-  name: string;
+export interface LeadRecord {
+  id: string;
+  type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | string;
+  name?: string;
   email: string;
   phone?: string;
   projectType?: string;
+  pages?: number;
   budget?: string;
-  message?: string;
-  fileUrl?: string;
-  date: string;
-}
-
-interface NewsletterLead {
-  email: string;
-  date: string;
-}
-
-interface EstimateLead {
-  projectType: string;
-  pages: number;
   totalEstimateFormatted?: string;
   totalEstimateInr?: number;
+  message?: string;
+  fileUrl?: string;
   date: string;
 }
 
@@ -47,19 +53,20 @@ export default function AdminPage() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'all' | 'contacts' | 'newsletter' | 'estimates'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'newsletter' | 'estimate' | 'chatbot'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
 
-  const [contactLeads, setContactLeads] = useState<ContactLead[]>([]);
-  const [newsletterLeads, setNewsletterLeads] = useState<NewsletterLead[]>([]);
-  const [estimateLeads, setEstimateLeads] = useState<EstimateLead[]>([]);
-
-  const [copied, setCopied] = useState(false);
+  const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [dbStatus, setDbStatus] = useState<'loading' | 'connected' | 'error'>('loading');
   const [dbError, setDbError] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
+  const [dbName, setDbName] = useState('dev_krafters');
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [csvExported, setCsvExported] = useState(false);
 
-  // Load leads from MongoDB Cloud Database API
+  // Load leads from MongoDB Cloud API
   const loadLeads = async () => {
     try {
       const res = await fetch('/api/leads', { cache: 'no-store' });
@@ -67,20 +74,15 @@ export default function AdminPage() {
 
       if (!res.ok || !data.success) {
         setDbStatus('error');
-        setDbError(data.error || `Server returned ${res.status}`);
+        setDbError(data.error || `Server HTTP ${res.status}`);
         return;
       }
 
       if (Array.isArray(data.leads)) {
-        const contacts = data.leads.filter((l: { type: string }) => l.type === 'contact' || l.type === 'chatbot');
-        const newsletter = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
-        const estimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
-
-        setContactLeads(contacts);
-        setNewsletterLeads(newsletter);
-        setEstimateLeads(estimates);
+        setLeads(data.leads);
         setDbStatus('connected');
         setDbError('');
+        if (data.dbName) setDbName(data.dbName);
       }
     } catch (err) {
       console.error('Failed to fetch leads from DB API:', err);
@@ -95,14 +97,12 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       loadLeads();
 
-      // Live auto-sync interval every 8 seconds
       const interval = setInterval(() => {
         loadLeads();
-      }, 8000);
+      }, 6000);
 
       return () => clearInterval(interval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -124,24 +124,8 @@ export default function AdminPage() {
     loadLeads();
   };
 
-  const clearAllData = async () => {
-    if (confirm('Are you sure you want to clear all lead data from the server database?')) {
-      try {
-        await fetch('/api/leads', { method: 'DELETE' });
-      } catch (err) {
-        console.error('Failed to clear server DB:', err);
-      }
-      localStorage.removeItem('dev_krafters_contacts');
-      localStorage.removeItem('dev_krafters_leads');
-      localStorage.removeItem('dev_krafters_estimates');
-      setContactLeads([]);
-      setNewsletterLeads([]);
-      setEstimateLeads([]);
-    }
-  };
-
   const seed5SampleLeads = async () => {
-    setIsAdding(true);
+    setIsSeeding(true);
     const demoLeads = [
       {
         type: 'contact',
@@ -150,8 +134,8 @@ export default function AdminPage() {
         phone: '+91 98765 43210',
         projectType: 'Business Website (₹25,000)',
         budget: '₹25,000 – ₹50,000',
-        message: 'Need a multi-page website with online appointment booking for dental clinic in Patna.',
-        date: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+        message: 'Need a custom 6-page website with online appointment booking for my dental clinic in Patna.',
+        date: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
       },
       {
         type: 'contact',
@@ -160,13 +144,13 @@ export default function AdminPage() {
         phone: '+91 91234 56789',
         projectType: 'Landing Page (₹12,000)',
         budget: '₹10,000 – ₹20,000',
-        message: 'Looking for a high-converting digital menu & party reservation landing page.',
-        date: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+        message: 'Looking for a high-converting digital menu & table reservation landing page for bistro.',
+        date: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
       },
       {
         type: 'newsletter',
         email: 'rahul.mehta99@gmail.com',
-        date: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
+        date: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
       },
       {
         type: 'estimate',
@@ -174,13 +158,13 @@ export default function AdminPage() {
         pages: 10,
         totalEstimateFormatted: '₹45,000',
         totalEstimateInr: 45000,
-        date: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
+        date: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
       },
       {
         type: 'chatbot',
         name: 'Priya Sharma (AI Chat)',
         email: 'priya@sareestudio.com',
-        message: 'Can you build an online shop for my saree boutique with WhatsApp order integration?',
+        message: 'Can you build an online catalog for my saree studio with WhatsApp quick order button?',
         projectType: 'Captured via AI Chatbot',
         date: new Date().toISOString(),
       },
@@ -195,49 +179,46 @@ export default function AdminPage() {
         });
       }
     } catch (err) {
-      console.error('Failed to seed sample leads:', err);
-      setDbError(err instanceof Error ? err.message : 'Failed to seed sample leads');
-      setDbStatus('error');
+      console.error('Failed to seed leads:', err);
     }
     await loadLeads();
-    setIsAdding(false);
+    setIsSeeding(false);
+  };
+
+  const clearAllData = async () => {
+    if (!confirm('Are you sure you want to clear ALL lead data from MongoDB Atlas?')) return;
+    setIsClearing(true);
+    try {
+      await fetch('/api/leads', { method: 'DELETE' });
+    } catch (err) {
+      console.error('Failed to clear DB:', err);
+    }
+    await loadLeads();
+    setIsClearing(false);
+    setSelectedLead(null);
   };
 
   const exportCSV = () => {
-    const rows = [
-      ...contactLeads.map((c) => ({
-        type: 'Contact Inquiry',
-        name: c.name,
-        contact: `${c.email} | ${c.phone || ''}`,
-        detail: `${c.projectType || ''} (${c.budget || ''})`,
-        date: new Date(c.date).toLocaleString(),
-      })),
-      ...newsletterLeads.map((n) => ({
-        type: 'Newsletter Subscriber',
-        name: 'Subscriber',
-        contact: n.email,
-        detail: 'Email Subscription',
-        date: new Date(n.date).toLocaleString(),
-      })),
-      ...estimateLeads.map((e) => ({
-        type: 'Cost Quote',
-        name: 'Calculator Lead',
-        contact: 'Quote Saved',
-        detail: `${e.projectType} (${e.pages} pages) - ${e.totalEstimateFormatted || '₹' + e.totalEstimateInr}`,
-        date: new Date(e.date).toLocaleString(),
-      })),
-    ];
-
-    if (rows.length === 0) {
-      alert('No lead data available to export.');
+    if (leads.length === 0) {
+      alert('No leads available to export.');
       return;
     }
 
-    const headers = 'Type,Name,Contact,Detail,Date\n';
+    const headers = 'ID,Type,Name,Email,Phone,Project Type,Budget/Estimate,Message,Date\n';
     const csvContent =
       'data:text/csv;charset=utf-8,' +
       headers +
-      rows.map((r) => `"${r.type}","${r.name}","${r.contact}","${r.detail}","${r.date}"`).join('\n');
+      leads
+        .map(
+          (r) =>
+            `"${r.id}","${r.type}","${r.name || ''}","${r.email || ''}","${r.phone || ''}","${
+              r.projectType || ''
+            }","${r.totalEstimateFormatted || r.budget || ''}","${(r.message || '').replace(
+              /"/g,
+              '""'
+            )}","${new Date(r.date).toLocaleString()}"`
+        )
+        .join('\n');
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -247,60 +228,104 @@ export default function AdminPage() {
     link.click();
     document.body.removeChild(link);
 
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+    setCsvExported(true);
+    setTimeout(() => setCsvExported(false), 3000);
   };
 
-  const totalCount = contactLeads.length + newsletterLeads.length + estimateLeads.length;
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
+  // Filtered Leads
+  const filteredLeads = useMemo(() => {
+    return leads.filter((lead) => {
+      // Type Filter
+      if (activeTab !== 'all') {
+        if (activeTab === 'contact' && lead.type !== 'contact') return false;
+        if (activeTab === 'newsletter' && lead.type !== 'newsletter') return false;
+        if (activeTab === 'estimate' && lead.type !== 'estimate') return false;
+        if (activeTab === 'chatbot' && lead.type !== 'chatbot') return false;
+      }
+      // Search Query Filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const nameMatch = (lead.name || '').toLowerCase().includes(q);
+        const emailMatch = (lead.email || '').toLowerCase().includes(q);
+        const phoneMatch = (lead.phone || '').toLowerCase().includes(q);
+        const typeMatch = (lead.type || '').toLowerCase().includes(q);
+        const projectMatch = (lead.projectType || '').toLowerCase().includes(q);
+        const messageMatch = (lead.message || '').toLowerCase().includes(q);
+
+        return nameMatch || emailMatch || phoneMatch || typeMatch || projectMatch || messageMatch;
+      }
+      return true;
+    });
+  }, [leads, activeTab, searchQuery]);
+
+  // Counts
+  const counts = useMemo(() => {
+    return {
+      all: leads.length,
+      contact: leads.filter((l) => l.type === 'contact').length,
+      newsletter: leads.filter((l) => l.type === 'newsletter').length,
+      estimate: leads.filter((l) => l.type === 'estimate').length,
+      chatbot: leads.filter((l) => l.type === 'chatbot').length,
+    };
+  }, [leads]);
+
+  // Passcode Lock Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center p-6 font-body">
-        <div className="max-w-md w-full bg-surface-alt rounded-3xl border border-gray-200/80 shadow-2xl p-8 space-y-6 animate-fade-in-up text-center">
-          <div className="w-14 h-14 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mx-auto shadow-sm">
-            <Lock className="w-7 h-7" />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-body text-slate-100 relative overflow-hidden">
+        {/* Glowing Background Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-md w-full bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl p-8 space-y-6 relative z-10 text-center animate-fade-in-up">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent to-accent-light text-white flex items-center justify-center mx-auto shadow-lg shadow-accent/30">
+            <Lock className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <h1 className="font-heading font-extrabold text-2xl text-primary">Admin Lead Portal</h1>
-            <p className="text-xs text-muted">
-              Enter passcode to view captured website leads & inquiries.
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 text-accent text-xs font-heading font-bold uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5" /> Dev Krafters Admin Portal
+            </div>
+            <h1 className="text-2xl font-heading font-extrabold text-white">Security Access Gate</h1>
+            <p className="text-xs text-slate-400">
+              Enter your owner passcode to unlock the MongoDB leads management dashboard.
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4 text-left">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-xs font-heading font-bold text-primary block mb-1.5">
-                Passcode (Default: <code className="bg-accent/10 text-accent px-1.5 py-0.5 rounded font-mono">1234</code>)
-              </label>
-              <div className="relative">
-                <KeyRound className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  placeholder="Enter passcode"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-                />
-              </div>
-              {error && <p className="text-xs text-rose-500 font-semibold mt-1">{error}</p>}
+              <input
+                type="password"
+                placeholder="Enter PIN Passcode..."
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-slate-700 text-white placeholder-slate-500 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                autoFocus
+              />
+              {error && <p className="text-xs text-rose-400 mt-2 font-medium">{error}</p>}
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-accent text-white font-heading font-bold text-sm hover:bg-accent-dark transition-colors shadow-md shadow-accent/20 cursor-pointer"
+              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-accent to-accent-dark text-white font-heading font-bold text-sm hover:opacity-95 transition-all shadow-lg shadow-accent/25 flex items-center justify-center gap-2 cursor-pointer"
             >
-              Unlock Lead Vault
+              <span>Unlock Admin Vault</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="pt-2 border-t border-gray-200/60">
+          <div className="pt-4 border-t border-slate-800/80">
             <button
               onClick={handleQuickUnlock}
-              className="text-xs text-accent font-heading font-semibold hover:underline cursor-pointer flex items-center justify-center gap-1 mx-auto"
+              className="text-xs text-slate-400 hover:text-accent font-heading font-semibold transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
             >
-              <span>Demo Quick Unlock</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Quick Demo Unlock (PIN: 1234)</span>
             </button>
           </div>
         </div>
@@ -309,274 +334,552 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface font-body text-primary py-12 px-6">
-      <div className="max-w-content mx-auto space-y-8">
-        {/* DB Connection Status Banner */}
+    <div className="min-h-screen bg-slate-950 font-body text-slate-100 py-8 px-4 sm:px-8 relative overflow-hidden">
+      {/* Background Neon Lights */}
+      <div className="absolute top-0 right-1/3 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
+        {/* DB Connection Status Warning Banner */}
         {dbStatus === 'error' && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 flex items-start gap-3 animate-fade-in-up">
-            <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-lg">⚠️</span>
+          <div className="bg-rose-950/80 border border-rose-700/80 text-rose-200 rounded-2xl p-5 flex items-start gap-4 shadow-xl backdrop-blur-xl animate-fade-in-up">
+            <div className="w-10 h-10 rounded-xl bg-rose-900/90 text-rose-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertCircle className="w-5 h-5" />
             </div>
-            <div className="text-xs space-y-1">
-              <p className="font-heading font-bold text-sm">MongoDB Connection Failed</p>
-              <p>{dbError || 'Cannot connect to database. Check MONGODB_URI in Vercel Environment Variables.'}</p>
-              <p className="text-rose-500">Go to <strong>Vercel Dashboard → Settings → Environment Variables</strong> and add your <code className="bg-rose-100 px-1 rounded">MONGODB_URI</code> with the real password.</p>
+            <div className="text-xs space-y-1.5 flex-1">
+              <p className="font-heading font-bold text-sm text-white">MongoDB Cloud Connection Notice</p>
+              <p className="text-rose-300">{dbError || 'Could not connect to MongoDB Atlas.'}</p>
+              <p className="text-rose-400">
+                To fix this on Vercel: Go to <strong>Vercel Dashboard → Project Settings → Environment Variables</strong> and configure <code className="bg-rose-900/60 px-1.5 py-0.5 rounded text-white font-mono">MONGODB_URI</code> with your MongoDB Atlas password.
+              </p>
             </div>
+            <button
+              onClick={loadLeads}
+              className="px-3.5 py-2 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-white font-heading font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
           </div>
         )}
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-200/60">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-heading font-bold uppercase tracking-wider mb-2">
-              <ShieldCheck className="w-3.5 h-3.5" /> Site Owner Admin
+        {/* Top Header Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-xs font-heading font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-3.5 h-3.5" /> Owner Operations Portal
+              </div>
+              <div
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-heading font-bold ${
+                  dbStatus === 'connected'
+                    ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+                    : dbStatus === 'error'
+                    ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400'
+                    : 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    dbStatus === 'connected'
+                      ? 'bg-emerald-400 animate-pulse'
+                      : dbStatus === 'error'
+                      ? 'bg-rose-400'
+                      : 'bg-amber-400 animate-ping'
+                  }`}
+                />
+                <span>
+                  {dbStatus === 'connected'
+                    ? `MongoDB: ${dbName}`
+                    : dbStatus === 'error'
+                    ? 'MongoDB Disconnected'
+                    : 'Connecting to MongoDB...'}
+                </span>
+              </div>
             </div>
-            <h1 className="text-3xl font-heading font-extrabold text-primary">Leads & Inquiries Manager</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-xs text-muted">
-                Connected to MongoDB Atlas Cloud Database
-              </p>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                dbStatus === 'connected' ? 'bg-emerald-100 text-emerald-700' :
-                dbStatus === 'error' ? 'bg-rose-100 text-rose-700' :
-                'bg-amber-100 text-amber-700'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  dbStatus === 'connected' ? 'bg-emerald-500' :
-                  dbStatus === 'error' ? 'bg-rose-500' :
-                  'bg-amber-500 animate-pulse'
-                }`} />
-                {dbStatus === 'connected' ? 'Connected' : dbStatus === 'error' ? 'Disconnected' : 'Connecting...'}
-              </span>
-            </div>
+            <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-white tracking-tight">
+              Leads & Client Inquiries
+            </h1>
+            <p className="text-xs text-slate-400">
+              Real-time submission pipeline synced with MongoDB Atlas Cloud Database.
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Action Toolbar */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={seed5SampleLeads}
+              disabled={isSeeding}
+              className={`px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark text-white font-heading font-bold text-xs hover:opacity-95 transition-all shadow-md shadow-accent/20 flex items-center gap-2 cursor-pointer ${
+                isSeeding ? 'opacity-50 cursor-wait' : ''
+              }`}
+            >
+              <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <span>{isSeeding ? 'Seeding 5 Leads...' : '+ Seed 5 Test Leads'}</span>
+            </button>
+
             <button
               onClick={exportCSV}
-              className="px-4 py-2.5 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-all duration-200 shadow-md shadow-accent/20 flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800 font-heading font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
             >
-              {copied ? <CheckCircle2 className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-              <span>{copied ? 'CSV Exported!' : 'Export CSV'}</span>
+              {csvExported ? <Check className="w-4 h-4 text-emerald-400" /> : <FileSpreadsheet className="w-4 h-4 text-emerald-400" />}
+              <span>{csvExported ? 'CSV Saved!' : 'Export CSV'}</span>
             </button>
 
             <button
               onClick={clearAllData}
-              className="px-3.5 py-2.5 rounded-xl border border-gray-200 text-rose-600 hover:bg-rose-50 font-heading font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              disabled={isClearing}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-rose-400 hover:bg-rose-950/40 hover:border-rose-800 font-heading font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Clear Data</span>
+              <span>Clear</span>
             </button>
 
             <Link
               href="/"
-              className="px-3.5 py-2.5 rounded-xl border border-gray-200 text-muted hover:text-primary hover:bg-surface-alt font-heading font-semibold text-xs transition-colors"
+              className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-heading font-semibold text-xs transition-colors"
             >
-              Back to Site
+              View Site
             </Link>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="bg-surface-alt/60 rounded-2xl p-5 border border-gray-200/60 shadow-xs space-y-2">
-            <div className="flex justify-between items-center text-muted">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">Contact Form Leads</span>
-              <MessageSquare className="w-4 h-4 text-accent" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Card 1: Contact Form */}
+          <div
+            onClick={() => setActiveTab('contact')}
+            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
+              activeTab === 'contact' ? 'border-accent ring-1 ring-accent' : 'border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex justify-between items-center text-slate-400">
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">Contact Form</span>
+              <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                <MessageSquare className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-3xl font-heading font-extrabold text-primary">{contactLeads.length}</p>
-            <p className="text-[11px] text-muted">Direct project inquiries</p>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-heading font-extrabold text-white">{counts.contact}</span>
+              <span className="text-xs text-slate-400 font-heading">Direct Quotes</span>
+            </div>
           </div>
 
-          <div className="bg-surface-alt/60 rounded-2xl p-5 border border-gray-200/60 shadow-xs space-y-2">
-            <div className="flex justify-between items-center text-muted">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">Newsletter Subscribers</span>
-              <Mail className="w-4 h-4 text-accent" />
+          {/* Card 2: Newsletter */}
+          <div
+            onClick={() => setActiveTab('newsletter')}
+            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
+              activeTab === 'newsletter' ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex justify-between items-center text-slate-400">
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">Newsletter</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                <Mail className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-3xl font-heading font-extrabold text-primary">{newsletterLeads.length}</p>
-            <p className="text-[11px] text-muted">Email list subscriptions</p>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-heading font-extrabold text-white">{counts.newsletter}</span>
+              <span className="text-xs text-slate-400 font-heading">Subscribers</span>
+            </div>
           </div>
 
-          <div className="bg-surface-alt/60 rounded-2xl p-5 border border-gray-200/60 shadow-xs space-y-2">
-            <div className="flex justify-between items-center text-muted">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">Calculator Saved Quotes</span>
-              <Calculator className="w-4 h-4 text-accent" />
+          {/* Card 3: Calculator Estimates */}
+          <div
+            onClick={() => setActiveTab('estimate')}
+            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
+              activeTab === 'estimate' ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex justify-between items-center text-slate-400">
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">Calculator</span>
+              <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+                <Calculator className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-3xl font-heading font-extrabold text-primary">{estimateLeads.length}</p>
-            <p className="text-[11px] text-muted">Custom estimates created</p>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-heading font-extrabold text-white">{counts.estimate}</span>
+              <span className="text-xs text-slate-400 font-heading">Saved Estimates</span>
+            </div>
+          </div>
+
+          {/* Card 4: AI Chatbot */}
+          <div
+            onClick={() => setActiveTab('chatbot')}
+            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
+              activeTab === 'chatbot' ? 'border-teal-400 ring-1 ring-teal-400' : 'border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex justify-between items-center text-slate-400">
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">AI Chatbot</span>
+              <div className="w-8 h-8 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center">
+                <Bot className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-heading font-extrabold text-white">{counts.chatbot}</span>
+              <span className="text-xs text-slate-400 font-heading">Conversations</span>
+            </div>
           </div>
         </div>
 
-        {/* Filter Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-alt/40 p-3 rounded-2xl border border-gray-200/60">
-          <div className="flex gap-1.5 w-full sm:w-auto">
+        {/* Search & Filter Toolbar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+          {/* Tabs */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer ${
-                activeTab === 'all' ? 'bg-accent text-white shadow-xs' : 'text-muted hover:text-primary'
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'all'
+                  ? 'bg-accent text-white shadow-md shadow-accent/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              All ({totalCount})
+              All Leads ({counts.all})
             </button>
             <button
-              onClick={() => setActiveTab('contacts')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer ${
-                activeTab === 'contacts' ? 'bg-accent text-white shadow-xs' : 'text-muted hover:text-primary'
+              onClick={() => setActiveTab('contact')}
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'contact'
+                  ? 'bg-accent text-white shadow-md shadow-accent/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Contact Form ({contactLeads.length})
+              Contact ({counts.contact})
             </button>
             <button
               onClick={() => setActiveTab('newsletter')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer ${
-                activeTab === 'newsletter' ? 'bg-accent text-white shadow-xs' : 'text-muted hover:text-primary'
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'newsletter'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Newsletter ({newsletterLeads.length})
+              Newsletter ({counts.newsletter})
             </button>
             <button
-              onClick={() => setActiveTab('estimates')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer ${
-                activeTab === 'estimates' ? 'bg-accent text-white shadow-xs' : 'text-muted hover:text-primary'
+              onClick={() => setActiveTab('estimate')}
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'estimate'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Estimates ({estimateLeads.length})
+              Estimates ({counts.estimate})
+            </button>
+            <button
+              onClick={() => setActiveTab('chatbot')}
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'chatbot'
+                  ? 'bg-teal-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              AI Chat ({counts.chatbot})
             </button>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search leads..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-surface focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-
-            <button
-              onClick={seed5SampleLeads}
-              disabled={isAdding}
-              className={`px-3 py-1.5 rounded-xl border border-gray-200 text-[11px] font-heading font-semibold text-accent hover:bg-accent/10 transition-colors whitespace-nowrap cursor-pointer ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
-            >
-              {isAdding ? '⏳ Seeding 5 Leads...' : '+ Seed 5 Test Leads'}
-            </button>
+          {/* Search Field */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search leads by name, email, query..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Lead Table */}
-        <div className="bg-surface rounded-2xl border border-gray-200/80 shadow-md overflow-hidden text-xs">
-          {totalCount === 0 ? (
+        {/* Lead Records Table */}
+        <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-xl overflow-hidden text-xs">
+          {filteredLeads.length === 0 ? (
             <div className="p-16 text-center space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mx-auto">
-                <Users className="w-6 h-6" />
+              <div className="w-14 h-14 rounded-2xl bg-accent/15 text-accent flex items-center justify-center mx-auto">
+                <Users className="w-7 h-7" />
               </div>
               <div className="space-y-1 max-w-sm mx-auto">
-                <h3 className="font-heading font-bold text-primary text-base">No Leads Captured Yet</h3>
-                <p className="text-xs text-muted">
-                  Submissions from the Contact page, Newsletter form, or Pricing Estimator will appear here automatically.
+                <h3 className="font-heading font-bold text-white text-base">No Leads Match Criteria</h3>
+                <p className="text-xs text-slate-400">
+                  {searchQuery
+                    ? `No leads found matching "${searchQuery}". Try a different keyword.`
+                    : 'Click below to automatically seed 5 sample leads into MongoDB Atlas.'}
                 </p>
               </div>
               <button
                 onClick={seed5SampleLeads}
-                disabled={isAdding}
-                className={`px-4 py-2 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-colors cursor-pointer ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
+                disabled={isSeeding}
+                className={`px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark text-white font-heading font-bold text-xs hover:opacity-95 transition-all cursor-pointer shadow-md ${
+                  isSeeding ? 'opacity-50 cursor-wait' : ''
+                }`}
               >
-                {isAdding ? '⏳ Seeding 5 Leads...' : '+ Seed 5 Test Leads'}
+                {isSeeding ? '⏳ Seeding 5 Leads...' : '+ Seed 5 Test Leads'}
               </button>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-surface-alt border-b border-gray-200/80 font-heading text-muted uppercase text-[11px] tracking-wider">
-                    <th className="py-3.5 px-5">Source</th>
-                    <th className="py-3.5 px-5">Lead Name / Email</th>
-                    <th className="py-3.5 px-5">Project Scope / Budget</th>
-                    <th className="py-3.5 px-5">Date</th>
+                  <tr className="bg-slate-950/80 border-b border-slate-800 font-heading text-slate-400 uppercase text-[11px] tracking-wider">
+                    <th className="py-4 px-5">Lead Channel</th>
+                    <th className="py-4 px-5">Client Contact</th>
+                    <th className="py-4 px-5">Project Scope / Budget</th>
+                    <th className="py-4 px-5">Submission Date</th>
+                    <th className="py-4 px-5 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 font-body">
-                  {/* Contact Form Submissions */}
-                  {(activeTab === 'all' || activeTab === 'contacts') &&
-                    contactLeads
-                      .filter(
-                        (c) =>
-                          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.email.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map((c, i) => (
-                        <tr key={`c-${i}`} className="hover:bg-surface-alt/40 transition-colors">
-                          <td className="py-3.5 px-5 font-semibold text-primary flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-accent" />
-                            Contact Form Inquiry
-                          </td>
-                          <td className="py-3.5 px-5">
-                            <span className="font-bold text-primary block">{c.name}</span>
-                            <span className="text-muted font-mono text-[11px]">{c.email}</span>
-                          </td>
-                          <td className="py-3.5 px-5">
-                            <span className="font-semibold text-primary">{c.projectType}</span>
-                            {c.budget && <span className="text-muted block text-[11px]">Budget: {c.budget}</span>}
-                            {c.fileUrl && (
-                              <a
-                                href={c.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-accent hover:underline bg-accent/10 px-2 py-0.5 rounded-full"
-                              >
-                                📎 View Attachment / Image
-                              </a>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-5 text-muted">{new Date(c.date).toLocaleString()}</td>
-                        </tr>
-                      ))}
+                <tbody className="divide-y divide-slate-800/60 font-body">
+                  {filteredLeads.map((lead) => {
+                    const isSelected = selectedLead?.id === lead.id;
 
-                  {/* Newsletter Subscriptions */}
-                  {(activeTab === 'all' || activeTab === 'newsletter') &&
-                    newsletterLeads
-                      .filter((n) => n.email.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((n, i) => (
-                        <tr key={`n-${i}`} className="hover:bg-surface-alt/40 transition-colors">
-                          <td className="py-3.5 px-5 font-semibold text-primary flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                            Newsletter Subscriber
-                          </td>
-                          <td className="py-3.5 px-5 font-mono text-accent font-semibold">{n.email}</td>
-                          <td className="py-3.5 px-5 text-muted">Weekly Web Tips List</td>
-                          <td className="py-3.5 px-5 text-muted">{new Date(n.date).toLocaleString()}</td>
-                        </tr>
-                      ))}
+                    // Channel badge
+                    let badgeColor = 'bg-accent/20 text-accent border-accent/30';
+                    let channelLabel = 'Contact Inquiry';
+                    if (lead.type === 'newsletter') {
+                      badgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                      channelLabel = 'Newsletter';
+                    } else if (lead.type === 'estimate') {
+                      badgeColor = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30';
+                      channelLabel = 'Pricing Estimate';
+                    } else if (lead.type === 'chatbot') {
+                      badgeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30';
+                      channelLabel = 'AI Chatbot';
+                    }
 
-                  {/* Calculator Quotes */}
-                  {(activeTab === 'all' || activeTab === 'estimates') &&
-                    estimateLeads
-                      .filter((e) => e.projectType.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((e, i) => (
-                        <tr key={`e-${i}`} className="hover:bg-surface-alt/40 transition-colors">
-                          <td className="py-3.5 px-5 font-semibold text-primary flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500" />
-                            Pricing Calculator Quote
-                          </td>
-                          <td className="py-3.5 px-5">
-                            <span className="font-bold text-primary">{e.projectType}</span>
-                            <span className="text-muted block text-[11px]">{e.pages} Custom Pages</span>
-                          </td>
-                          <td className="py-3.5 px-5 font-heading font-bold text-accent">
-                            {e.totalEstimateFormatted || `₹${e.totalEstimateInr?.toLocaleString()}`}
-                          </td>
-                          <td className="py-3.5 px-5 text-muted">{new Date(e.date).toLocaleString()}</td>
-                        </tr>
-                      ))}
+                    return (
+                      <tr
+                        key={lead.id}
+                        onClick={() => setSelectedLead(lead)}
+                        className={`hover:bg-slate-800/40 transition-colors cursor-pointer ${
+                          isSelected ? 'bg-slate-800/60 border-l-4 border-l-accent' : ''
+                        }`}
+                      >
+                        <td className="py-4 px-5 font-semibold text-white">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-heading font-bold border ${badgeColor}`}
+                          >
+                            {channelLabel}
+                          </span>
+                        </td>
+                        <td className="py-4 px-5">
+                          <span className="font-bold text-white block">{lead.name || 'Anonymous Client'}</span>
+                          <span className="text-slate-400 font-mono text-[11px]">{lead.email}</span>
+                          {lead.phone && <span className="text-slate-500 block text-[11px]">{lead.phone}</span>}
+                        </td>
+                        <td className="py-4 px-5">
+                          <span className="font-semibold text-slate-200 block">
+                            {lead.projectType || (lead.type === 'newsletter' ? 'Weekly Web Tips Subscriber' : 'Website Inquiry')}
+                          </span>
+                          {lead.totalEstimateFormatted && (
+                            <span className="text-emerald-400 font-heading font-bold text-xs block">
+                              Quote: {lead.totalEstimateFormatted}
+                            </span>
+                          )}
+                          {lead.budget && (
+                            <span className="text-slate-400 text-[11px] block">Budget: {lead.budget}</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-5 text-slate-400">
+                          {new Date(lead.date).toLocaleString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </td>
+                        <td className="py-4 px-5 text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLead(lead);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-heading font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <span>Inspect</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </div>
       </div>
+
+      {/* Slide-over Lead Detail Drawer */}
+      {selectedLead && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border-l border-slate-800 h-full p-6 space-y-6 overflow-y-auto shadow-2xl relative">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-accent/20 text-accent flex items-center justify-center font-heading font-bold text-base">
+                  {(selectedLead.name || selectedLead.email).slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-white text-lg">
+                    {selectedLead.name || 'Lead Record'}
+                  </h3>
+                  <p className="text-xs text-slate-400 font-mono">{selectedLead.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content Details */}
+            <div className="space-y-5 text-xs">
+              {/* Channel & Date */}
+              <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div>
+                  <span className="text-slate-500 uppercase tracking-wider font-heading font-bold text-[10px] block">
+                    Submission Channel
+                  </span>
+                  <span className="font-heading font-bold text-accent text-sm capitalize">
+                    {selectedLead.type}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 uppercase tracking-wider font-heading font-bold text-[10px] block">
+                    Date & Time
+                  </span>
+                  <span className="font-semibold text-slate-300">
+                    {new Date(selectedLead.date).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Client Contact Info */}
+              <div className="space-y-3">
+                <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider">
+                  Contact Information
+                </h4>
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Email Address:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-white">{selectedLead.email}</span>
+                      <button
+                        onClick={() => copyToClipboard(selectedLead.email, 'email')}
+                        className="text-slate-400 hover:text-accent cursor-pointer"
+                      >
+                        {copiedId === 'email' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {selectedLead.phone && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Phone Number:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-white">{selectedLead.phone}</span>
+                        <a
+                          href={`tel:${selectedLead.phone}`}
+                          className="text-slate-400 hover:text-emerald-400"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Project Scope & Pricing */}
+              <div className="space-y-3">
+                <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider">
+                  Project Details
+                </h4>
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+                  {selectedLead.projectType && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Selected Package / Scope:</span>
+                      <span className="font-semibold text-white">{selectedLead.projectType}</span>
+                    </div>
+                  )}
+                  {selectedLead.budget && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Client Budget:</span>
+                      <span className="font-semibold text-amber-400">{selectedLead.budget}</span>
+                    </div>
+                  )}
+                  {selectedLead.totalEstimateFormatted && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Calculated Estimate:</span>
+                      <span className="font-heading font-bold text-emerald-400 text-sm">
+                        {selectedLead.totalEstimateFormatted}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Message Body */}
+              {selectedLead.message && (
+                <div className="space-y-2">
+                  <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider">
+                    Client Inquiry Message
+                  </h4>
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 leading-relaxed whitespace-pre-wrap font-body">
+                    {selectedLead.message}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div className="pt-4 border-t border-slate-800 space-y-2">
+                <h4 className="font-heading font-bold text-slate-400 text-[11px] uppercase tracking-wider">
+                  Client Quick Actions
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`mailto:${selectedLead.email}?subject=Reply%20from%20Dev%20Krafters`}
+                    className="py-2.5 px-3 rounded-xl bg-accent text-white font-heading font-bold text-center text-xs hover:bg-accent-dark transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Send Email</span>
+                  </a>
+                  {selectedLead.phone ? (
+                    <a
+                      href={`https://wa.me/${selectedLead.phone.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-xl bg-emerald-600 text-white font-heading font-bold text-center text-xs hover:bg-emerald-500 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>WhatsApp Client</span>
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => copyToClipboard(selectedLead.email, 'action-copy')}
+                      className="py-2.5 px-3 rounded-xl bg-slate-800 text-slate-200 font-heading font-bold text-center text-xs hover:bg-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Email</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
