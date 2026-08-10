@@ -36,21 +36,26 @@ Guidelines:
 function getLocalFallbackReply(lastUserMessage: string): string {
   const query = lastUserMessage.toLowerCase();
 
-  if (query.includes('price') || query.includes('cost') || query.includes('package') || query.includes('rate') || query.includes('how much')) {
-    return "Our fixed pricing packages start at ₹5,000 for a Starter Page, ₹9,000 for a Landing Page, ₹25,000 for a Business Website (5-8 pages), and ₹75,000 for an E-commerce Site. Monthly maintenance is ₹3,000/mo. You can view all package details on our /pricing page or start a project at /contact!";
-  } else if (query.includes('service') || query.includes('build') || query.includes('bot') || query.includes('seo') || query.includes('what do you do')) {
-    return "We offer custom Business Websites, E-commerce Stores, Database & Backend Setup, SEO, AI Chatbots, Branding, and Maintenance. Check out our full offerings on the /services page!";
-  } else if (query.includes('contact') || query.includes('quote') || query.includes('hire') || query.includes('start') || query.includes('book') || query.includes('call')) {
-    return "Awesome! The best way to get started is by visiting our Contact page (/contact) or booking a call. You can also share your name and email right here, and we'll reach out within 24 hours!";
-  } else if (query.includes('health') || query.includes('score') || query.includes('audit')) {
-    return "You can use our free Website Health Check tool on the home page! Just paste your website URL to instantly scan mobile responsiveness, SEO basics, page speed, and security.";
+  if (query.includes('price') || query.includes('cost') || query.includes('package') || query.includes('rate') || query.includes('how much') || query.includes('fee')) {
+    return "Our fixed pricing packages are:\n\n• **Starter Page (₹5,000)**: 1-page site, 3-day delivery\n• **Landing Page (₹9,000)**: Custom design, basic SEO, 5-day delivery\n• **Business Website (₹25,000)**: 5–8 pages, Maps, SEO, 10-day delivery (Most Popular)\n• **E-commerce Store (₹75,000)**: Up to 30 products, Razorpay/Stripe, 20-day delivery\n\nCheck full details on our /pricing page or start your project at /contact!";
+  } else if (query.includes('service') || query.includes('build') || query.includes('bot') || query.includes('seo') || query.includes('what do you do') || query.includes('offer')) {
+    return "We specialize in custom Business Websites, E-Commerce Stores, Database & Backend Setup, SEO Optimization, AI Chatbots, Branding, and Ongoing Maintenance (₹3,000/mo). Explore all options on /services!";
+  } else if (query.includes('time') || query.includes('duration') || query.includes('how long') || query.includes('days') || query.includes('delivery')) {
+    return "Our turnaround times are super fast:\n• Starter Page: 3 Days\n• Landing Page: 5 Days\n• Business Website: 10 Days\n• E-Commerce Store: 20 Days\n\nWe work directly with you to launch quickly without cutting corners!";
+  } else if (query.includes('contact') || query.includes('quote') || query.includes('hire') || query.includes('start') || query.includes('book') || query.includes('call') || query.includes('phone') || query.includes('email') || query.includes('reach')) {
+    return "Awesome! You can share your name and email right here in this chat, or visit our /contact page to request a callback. We reply within 24 hours!";
+  } else if (query.includes('health') || query.includes('score') || query.includes('audit') || query.includes('check')) {
+    return "Try our free Website Health Check tool on our home page! It scans mobile responsiveness, SSL security, page speed, and SEO in 5 seconds.";
+  } else if (query.includes('hi') || query.includes('hello') || query.includes('hey') || query.includes('namaste')) {
+    return "Hello! 👋 I'm Dev Krafters' AI assistant. How can I help you today? Ask me about website packages, timelines, custom features, or getting a quote!";
+  } else if (query.includes('thanks') || query.includes('thank') || query.includes('ok') || query.includes('okay') || query.includes('great') || query.includes('cool')) {
+    return "You're very welcome! If you're ready to get your business online or have any other questions, feel free to ask or head over to our /contact page!";
   } else {
-    return "Hi there! I'm Dev Krafters' AI assistant. I can help you with details about our web design services, fixed pricing packages, and launch timelines. How can I help your business today?";
+    return "Thanks for your question! We build fast, high-converting websites starting at ₹5,000. Would you like details on our popular ₹25,000 Business Package, or would you like to request a custom quote at /contact?";
   }
 }
 
 export async function POST(request: Request) {
-  // Step 1: Log incoming request to verify API route is hit
   console.log('[Chat API Route] POST /api/chat request received at', new Date().toISOString());
 
   try {
@@ -69,9 +74,6 @@ export async function POST(request: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
     const isGeminiKeySet = apiKey && apiKey !== 'your_gemini_api_key_here';
 
-    // Step 2 & 3: Check API key and model name
-    console.log('[Chat API Route] Gemini API key status:', isGeminiKeySet ? 'SET' : 'NOT SET');
-
     let botReply = '';
 
     if (isGeminiKeySet) {
@@ -79,19 +81,20 @@ export async function POST(request: Request) {
         console.log('[Chat API Route] Attempting Gemini API call with model: gemini-2.0-flash');
         const ai = new GoogleGenAI({ apiKey });
 
-        const formattedContents = [
-          { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-          { role: 'model', parts: [{ text: "Understood! I am Dev Krafters' official AI assistant. I will provide accurate pricing, services, and redirect visitors to start a project at /contact." }] },
-          ...messages.slice(-8).map((m: { role: string; content: string }) => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }],
-          })),
-        ];
+        // Filter out initial welcome message from assistant to ensure strict user/model role alternation
+        const chatHistory = messages.filter((m, idx) => !(idx === 0 && m.role === 'assistant'));
+
+        // Map messages into Gemini API contents structure
+        const formattedContents = chatHistory.slice(-10).map((m: { role: string; content: string }) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        }));
 
         const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash', // Correct, standard model name for Google GenAI SDK
+          model: 'gemini-2.0-flash',
           contents: formattedContents,
           config: {
+            systemInstruction: SYSTEM_PROMPT,
             maxOutputTokens: 300,
             temperature: 0.7,
           },
@@ -100,14 +103,11 @@ export async function POST(request: Request) {
         botReply = response.text || '';
         console.log('[Chat API Route] Gemini API response generated successfully');
       } catch (geminiError: unknown) {
-        // Step 4: Log exact Gemini error object to server console
         console.error('=================== [GEMINI API ERROR LOG] ===================');
         console.error('Gemini API call failed with error:', geminiError);
         if (geminiError instanceof Error) {
           console.error('Error message:', geminiError.message);
-          console.error('Error stack:', geminiError.stack);
         }
-        console.error('Falling back to built-in free rule-based engine to keep chatbot functional.');
         console.error('==============================================================');
 
         botReply = getLocalFallbackReply(lastUserMessage);
