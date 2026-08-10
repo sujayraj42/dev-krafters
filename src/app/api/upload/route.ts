@@ -25,7 +25,8 @@ export async function POST(request: Request) {
       const clientPromise = (await import('@/lib/mongodb')).default;
       if (clientPromise) {
         const client = await clientPromise;
-        const db = client.db('dev_krafters');
+        const dbName = process.env.MONGODB_DB || 'dev_krafters';
+        const db = client.db(dbName);
         await db.collection('uploads').insertOne({
           fileName: file.name,
           fileSize: file.size,

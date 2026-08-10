@@ -43,7 +43,8 @@ async function getMongoDb() {
     ),
   ]);
 
-  return client.db('dev_krafters');
+  const dbName = process.env.MONGODB_DB || 'dev_krafters';
+  return client.db(dbName);
 }
 
 // ─────────────────────────────────────────────
