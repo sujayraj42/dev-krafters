@@ -140,33 +140,63 @@ export default function AdminPage() {
     }
   };
 
-  const addSampleLead = async () => {
+  const seed5SampleLeads = async () => {
     setIsAdding(true);
-    const demoContact = {
-      type: 'contact',
-      name: 'Rahul Sharma',
-      email: 'rahul@sharmaclinic.com',
-      phone: '+91 98765 43210',
-      projectType: 'Business Website (₹25,000)',
-      budget: '₹25,000 – ₹75,000',
-      message: 'Need a custom 6-page site for my dental clinic.',
-      date: new Date().toISOString(),
-    };
+    const demoLeads = [
+      {
+        type: 'contact',
+        name: 'Dr. Anita Verma',
+        email: 'anita@smiledental.com',
+        phone: '+91 98765 43210',
+        projectType: 'Business Website (₹25,000)',
+        budget: '₹25,000 – ₹50,000',
+        message: 'Need a multi-page website with online appointment booking for dental clinic in Patna.',
+        date: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      },
+      {
+        type: 'contact',
+        name: 'Vikram Singh',
+        email: 'vikram@royalbistro.in',
+        phone: '+91 91234 56789',
+        projectType: 'Landing Page (₹12,000)',
+        budget: '₹10,000 – ₹20,000',
+        message: 'Looking for a high-converting digital menu & party reservation landing page.',
+        date: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      },
+      {
+        type: 'newsletter',
+        email: 'rahul.mehta99@gmail.com',
+        date: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
+      },
+      {
+        type: 'estimate',
+        projectType: 'E-Commerce Store',
+        pages: 10,
+        totalEstimateFormatted: '₹45,000',
+        totalEstimateInr: 45000,
+        date: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
+      },
+      {
+        type: 'chatbot',
+        name: 'Priya Sharma (AI Chat)',
+        email: 'priya@sareestudio.com',
+        message: 'Can you build an online shop for my saree boutique with WhatsApp order integration?',
+        projectType: 'Captured via AI Chatbot',
+        date: new Date().toISOString(),
+      },
+    ];
 
     try {
-      const res = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(demoContact),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        setDbError(`Failed to add lead: ${data.error || 'Unknown error'}`);
-        setDbStatus('error');
+      for (const lead of demoLeads) {
+        await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(lead),
+        });
       }
     } catch (err) {
-      console.error('Failed to post sample lead:', err);
-      setDbError(err instanceof Error ? err.message : 'Failed to add lead');
+      console.error('Failed to seed sample leads:', err);
+      setDbError(err instanceof Error ? err.message : 'Failed to seed sample leads');
       setDbStatus('error');
     }
     await loadLeads();
@@ -427,11 +457,11 @@ export default function AdminPage() {
             </div>
 
             <button
-              onClick={addSampleLead}
+              onClick={seed5SampleLeads}
               disabled={isAdding}
               className={`px-3 py-1.5 rounded-xl border border-gray-200 text-[11px] font-heading font-semibold text-accent hover:bg-accent/10 transition-colors whitespace-nowrap cursor-pointer ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
             >
-              {isAdding ? '⏳ Adding...' : '+ Add Test Lead'}
+              {isAdding ? '⏳ Seeding 5 Leads...' : '+ Seed 5 Test Leads'}
             </button>
           </div>
         </div>
@@ -450,11 +480,11 @@ export default function AdminPage() {
                 </p>
               </div>
               <button
-                onClick={addSampleLead}
+                onClick={seed5SampleLeads}
                 disabled={isAdding}
                 className={`px-4 py-2 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-colors cursor-pointer ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
               >
-                {isAdding ? '⏳ Adding...' : 'Add Test Lead'}
+                {isAdding ? '⏳ Seeding 5 Leads...' : '+ Seed 5 Test Leads'}
               </button>
             </div>
           ) : (
