@@ -46,10 +46,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save lead persistently to database
+    // Save lead persistently to MongoDB Cloud Database
     try {
-      const { saveLead } = await import('@/lib/db');
-      saveLead({
+      const { saveLeadAsync } = await import('@/lib/db');
+      await saveLeadAsync({
         type: 'contact',
         name: name.trim(),
         email: email.trim(),

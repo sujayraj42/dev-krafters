@@ -24,6 +24,11 @@ if (uri) {
     client = new MongoClient(uri, options);
     clientPromise = client.connect();
   }
+} else {
+  console.warn(
+    '[MongoDB] MONGODB_URI is not set. Database features will not work. ' +
+    'Add MONGODB_URI to your Vercel Environment Variables.'
+  );
 }
 
 export default clientPromise;
