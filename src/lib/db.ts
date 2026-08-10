@@ -8,7 +8,7 @@ export interface LeadRecord {
   id: string;
   type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | string;
   name?: string;
-  email: string;
+  email?: string;
   phone?: string;
   projectType?: string;
   pages?: number;

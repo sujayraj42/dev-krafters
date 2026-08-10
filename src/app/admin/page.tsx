@@ -36,7 +36,7 @@ export interface LeadRecord {
   id: string;
   type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | string;
   name?: string;
-  email: string;
+  email?: string;
   phone?: string;
   projectType?: string;
   pages?: number;
@@ -170,6 +170,7 @@ export default function AdminPage() {
       {
         id: `seed_4_${timestamp}`,
         type: 'estimate',
+        email: 'quote.calculator@devkrafters.com',
         projectType: 'E-Commerce Store',
         pages: 10,
         totalEstimateFormatted: '₹45,000',
