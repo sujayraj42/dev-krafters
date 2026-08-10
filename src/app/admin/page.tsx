@@ -753,7 +753,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-accent/20 text-accent flex items-center justify-center font-heading font-bold text-base">
-                  {(selectedLead.name || selectedLead.email).slice(0, 2).toUpperCase()}
+                  {(selectedLead.name || selectedLead.email || 'Lead').slice(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="font-heading font-bold text-white text-lg">
@@ -801,13 +801,15 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Email Address:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-white">{selectedLead.email}</span>
-                      <button
-                        onClick={() => copyToClipboard(selectedLead.email, 'email')}
-                        className="text-slate-400 hover:text-accent cursor-pointer"
-                      >
-                        {copiedId === 'email' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
+                      <span className="font-mono text-white">{selectedLead.email || 'N/A'}</span>
+                      {selectedLead.email && (
+                        <button
+                          onClick={() => copyToClipboard(selectedLead.email || '', 'email')}
+                          className="text-slate-400 hover:text-accent cursor-pointer"
+                        >
+                          {copiedId === 'email' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -876,7 +878,7 @@ export default function AdminPage() {
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
                   <a
-                    href={`mailto:${selectedLead.email}?subject=Reply%20from%20Dev%20Krafters`}
+                    href={`mailto:${selectedLead.email || ''}?subject=Reply%20from%20Dev%20Krafters`}
                     className="py-2.5 px-3 rounded-xl bg-accent text-white font-heading font-bold text-center text-xs hover:bg-accent-dark transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Mail className="w-3.5 h-3.5" />
@@ -894,7 +896,7 @@ export default function AdminPage() {
                     </a>
                   ) : (
                     <button
-                      onClick={() => copyToClipboard(selectedLead.email, 'action-copy')}
+                      onClick={() => copyToClipboard(selectedLead.email || '', 'action-copy')}
                       className="py-2.5 px-3 rounded-xl bg-slate-800 text-slate-200 font-heading font-bold text-center text-xs hover:bg-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Copy className="w-3.5 h-3.5" />
