@@ -4,9 +4,27 @@ import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// GET /api/leads - Retrieve all leads from database
+// GET /api/leads - Retrieve all leads from MongoDB
 export async function GET() {
   try {
+    // Quick check: Is MONGODB_URI configured?
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'MONGODB_URI is not configured. Add it to Vercel Environment Variables.',
+          leads: [],
+          count: 0,
+        },
+        {
+          status: 503,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+          },
+        }
+      );
+    }
+
     const leads = await getAllLeadsAsync();
     return NextResponse.json(
       { success: true, leads, count: leads.length },
@@ -20,13 +38,23 @@ export async function GET() {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Database fetch failed';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: message, leads: [], count: 0 },
+      { status: 500 }
+    );
   }
 }
 
-// POST /api/leads - Save a new lead to database
+// POST /api/leads - Save a new lead to MongoDB
 export async function POST(request: Request) {
   try {
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { success: false, error: 'MONGODB_URI is not configured. Add it to Vercel Environment Variables.' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
 
     if (!body.email && !body.name) {

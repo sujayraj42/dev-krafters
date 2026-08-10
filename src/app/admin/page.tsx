@@ -55,13 +55,23 @@ export default function AdminPage() {
   const [estimateLeads, setEstimateLeads] = useState<EstimateLead[]>([]);
 
   const [copied, setCopied] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'loading' | 'connected' | 'error'>('loading');
+  const [dbError, setDbError] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
-  // Load leads directly from MongoDB Server Database API
+  // Load leads from MongoDB Cloud Database API
   const loadLeads = async () => {
     try {
       const res = await fetch('/api/leads', { cache: 'no-store' });
       const data = await res.json();
-      if (data.success && Array.isArray(data.leads)) {
+
+      if (!res.ok || !data.success) {
+        setDbStatus('error');
+        setDbError(data.error || `Server returned ${res.status}`);
+        return;
+      }
+
+      if (Array.isArray(data.leads)) {
         const contacts = data.leads.filter((l: { type: string }) => l.type === 'contact' || l.type === 'chatbot');
         const newsletter = data.leads.filter((l: { type: string }) => l.type === 'newsletter');
         const estimates = data.leads.filter((l: { type: string }) => l.type === 'estimate');
@@ -69,20 +79,14 @@ export default function AdminPage() {
         setContactLeads(contacts);
         setNewsletterLeads(newsletter);
         setEstimateLeads(estimates);
-        return;
+        setDbStatus('connected');
+        setDbError('');
       }
     } catch (err) {
       console.error('Failed to fetch leads from DB API:', err);
+      setDbStatus('error');
+      setDbError(err instanceof Error ? err.message : 'Network error — cannot reach API');
     }
-
-    // Fallback to local storage only if offline
-    const localContacts: ContactLead[] = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
-    const localNewsletters: NewsletterLead[] = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
-    const localEstimates: EstimateLead[] = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
-
-    setContactLeads(localContacts);
-    setNewsletterLeads(localNewsletters);
-    setEstimateLeads(localEstimates);
   };
 
   useEffect(() => {
@@ -91,13 +95,14 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       loadLeads();
 
-      // Live auto-sync interval every 5 seconds
+      // Live auto-sync interval every 8 seconds
       const interval = setInterval(() => {
         loadLeads();
-      }, 5000);
+      }, 8000);
 
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -136,6 +141,7 @@ export default function AdminPage() {
   };
 
   const addSampleLead = async () => {
+    setIsAdding(true);
     const demoContact = {
       type: 'contact',
       name: 'Rahul Sharma',
@@ -148,15 +154,23 @@ export default function AdminPage() {
     };
 
     try {
-      await fetch('/api/leads', {
+      const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(demoContact),
       });
+      const data = await res.json();
+      if (!data.success) {
+        setDbError(`Failed to add lead: ${data.error || 'Unknown error'}`);
+        setDbStatus('error');
+      }
     } catch (err) {
       console.error('Failed to post sample lead:', err);
+      setDbError(err instanceof Error ? err.message : 'Failed to add lead');
+      setDbStatus('error');
     }
-    loadLeads();
+    await loadLeads();
+    setIsAdding(false);
   };
 
   const exportCSV = () => {
@@ -267,6 +281,20 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-surface font-body text-primary py-12 px-6">
       <div className="max-w-content mx-auto space-y-8">
+        {/* DB Connection Status Banner */}
+        {dbStatus === 'error' && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 flex items-start gap-3 animate-fade-in-up">
+            <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-lg">⚠️</span>
+            </div>
+            <div className="text-xs space-y-1">
+              <p className="font-heading font-bold text-sm">MongoDB Connection Failed</p>
+              <p>{dbError || 'Cannot connect to database. Check MONGODB_URI in Vercel Environment Variables.'}</p>
+              <p className="text-rose-500">Go to <strong>Vercel Dashboard → Settings → Environment Variables</strong> and add your <code className="bg-rose-100 px-1 rounded">MONGODB_URI</code> with the real password.</p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-200/60">
           <div>
@@ -274,9 +302,23 @@ export default function AdminPage() {
               <ShieldCheck className="w-3.5 h-3.5" /> Site Owner Admin
             </div>
             <h1 className="text-3xl font-heading font-extrabold text-primary">Leads & Inquiries Manager</h1>
-            <p className="text-xs text-muted mt-1">
-              Where lead data is stored: Saved locally in browser storage (<code className="bg-gray-100 px-1 py-0.5 rounded">localStorage</code>) whenever visitors submit forms.
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-muted">
+                Connected to MongoDB Atlas Cloud Database
+              </p>
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                dbStatus === 'connected' ? 'bg-emerald-100 text-emerald-700' :
+                dbStatus === 'error' ? 'bg-rose-100 text-rose-700' :
+                'bg-amber-100 text-amber-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  dbStatus === 'connected' ? 'bg-emerald-500' :
+                  dbStatus === 'error' ? 'bg-rose-500' :
+                  'bg-amber-500 animate-pulse'
+                }`} />
+                {dbStatus === 'connected' ? 'Connected' : dbStatus === 'error' ? 'Disconnected' : 'Connecting...'}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -386,9 +428,10 @@ export default function AdminPage() {
 
             <button
               onClick={addSampleLead}
-              className="px-3 py-1.5 rounded-xl border border-gray-200 text-[11px] font-heading font-semibold text-accent hover:bg-accent/10 transition-colors whitespace-nowrap cursor-pointer"
+              disabled={isAdding}
+              className={`px-3 py-1.5 rounded-xl border border-gray-200 text-[11px] font-heading font-semibold text-accent hover:bg-accent/10 transition-colors whitespace-nowrap cursor-pointer ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
             >
-              + Add Test Lead
+              {isAdding ? '⏳ Adding...' : '+ Add Test Lead'}
             </button>
           </div>
         </div>
@@ -408,9 +451,10 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={addSampleLead}
-                className="px-4 py-2 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-colors cursor-pointer"
+                disabled={isAdding}
+                className={`px-4 py-2 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-colors cursor-pointer ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
               >
-                Add Test Lead
+                {isAdding ? '⏳ Adding...' : 'Add Test Lead'}
               </button>
             </div>
           ) : (
