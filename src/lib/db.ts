@@ -25,9 +25,9 @@ export interface LeadRecord {
 // ─────────────────────────────────────────────
 async function getMongoDb() {
   const uri = process.env.MONGODB_URI;
-  if (!uri) {
+  if (!uri || uri.includes('<db_password>')) {
     throw new Error(
-      'MONGODB_URI is not configured. Add it to your Vercel Environment Variables.'
+      'MONGODB_URI contains placeholder <db_password>. Please set your actual MongoDB Atlas password in Vercel Environment Variables.'
     );
   }
 

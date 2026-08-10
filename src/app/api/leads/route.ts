@@ -7,12 +7,13 @@ export const revalidate = 0;
 // GET /api/leads - Retrieve all leads from MongoDB
 export async function GET() {
   try {
-    // Quick check: Is MONGODB_URI configured?
-    if (!process.env.MONGODB_URI) {
+    // Quick check: Is MONGODB_URI configured with a real password?
+    const uri = process.env.MONGODB_URI;
+    if (!uri || uri.includes('<db_password>')) {
       return NextResponse.json(
         {
           success: false,
-          error: 'MONGODB_URI is not configured. Add it to Vercel Environment Variables.',
+          error: 'MONGODB_URI contains placeholder <db_password>. Set your real MongoDB Atlas password in Vercel Dashboard → Environment Variables.',
           leads: [],
           count: 0,
         },
@@ -48,9 +49,10 @@ export async function GET() {
 // POST /api/leads - Save a new lead to MongoDB
 export async function POST(request: Request) {
   try {
-    if (!process.env.MONGODB_URI) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri || uri.includes('<db_password>')) {
       return NextResponse.json(
-        { success: false, error: 'MONGODB_URI is not configured. Add it to Vercel Environment Variables.' },
+        { success: false, error: 'MONGODB_URI contains placeholder <db_password>. Set your real MongoDB Atlas password in Vercel Dashboard → Environment Variables.' },
         { status: 503 }
       );
     }
