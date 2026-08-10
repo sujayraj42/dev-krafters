@@ -66,28 +66,39 @@ export default function AdminPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [csvExported, setCsvExported] = useState(false);
 
-  // Load leads from MongoDB Cloud API
+  // Load leads from MongoDB Cloud API with localStorage fallback
   const loadLeads = async () => {
+    let loadedFromApi = false;
+
     try {
       const res = await fetch('/api/leads', { cache: 'no-store' });
       const data = await res.json();
 
-      if (!res.ok || !data.success) {
-        setDbStatus('error');
-        setDbError(data.error || `Server HTTP ${res.status}`);
-        return;
-      }
-
-      if (Array.isArray(data.leads)) {
+      if (res.ok && data.success && Array.isArray(data.leads) && data.leads.length > 0) {
         setLeads(data.leads);
         setDbStatus('connected');
         setDbError('');
         if (data.dbName) setDbName(data.dbName);
+        loadedFromApi = true;
+        return;
+      }
+
+      if (!res.ok || !data.success) {
+        setDbStatus('error');
+        setDbError(data.error || `Server HTTP ${res.status}`);
       }
     } catch (err) {
       console.error('Failed to fetch leads from DB API:', err);
       setDbStatus('error');
       setDbError(err instanceof Error ? err.message : 'Network error — cannot reach API');
+    }
+
+    // Fallback: If API returned empty array or failed, load local backup leads
+    if (!loadedFromApi) {
+      const localBackup: LeadRecord[] = JSON.parse(localStorage.getItem('dev_krafters_leads_backup') || '[]');
+      if (localBackup.length > 0) {
+        setLeads(localBackup);
+      }
     }
   };
 
@@ -126,8 +137,10 @@ export default function AdminPage() {
 
   const seed5SampleLeads = async () => {
     setIsSeeding(true);
-    const demoLeads = [
+    const timestamp = Date.now();
+    const demoLeads: LeadRecord[] = [
       {
+        id: `seed_1_${timestamp}`,
         type: 'contact',
         name: 'Dr. Anita Verma',
         email: 'anita@smiledental.com',
@@ -138,6 +151,7 @@ export default function AdminPage() {
         date: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
       },
       {
+        id: `seed_2_${timestamp}`,
         type: 'contact',
         name: 'Vikram Singh',
         email: 'vikram@royalbistro.in',
@@ -148,11 +162,13 @@ export default function AdminPage() {
         date: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
       },
       {
+        id: `seed_3_${timestamp}`,
         type: 'newsletter',
         email: 'rahul.mehta99@gmail.com',
         date: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
       },
       {
+        id: `seed_4_${timestamp}`,
         type: 'estimate',
         projectType: 'E-Commerce Store',
         pages: 10,
@@ -161,6 +177,7 @@ export default function AdminPage() {
         date: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
       },
       {
+        id: `seed_5_${timestamp}`,
         type: 'chatbot',
         name: 'Priya Sharma (AI Chat)',
         email: 'priya@sareestudio.com',
@@ -170,6 +187,14 @@ export default function AdminPage() {
       },
     ];
 
+    // 1. Instantly display in UI & save to local backup
+    setLeads((prev) => {
+      const merged = [...demoLeads, ...prev];
+      localStorage.setItem('dev_krafters_leads_backup', JSON.stringify(merged));
+      return merged;
+    });
+
+    // 2. Attempt sync to MongoDB Atlas Cloud API
     try {
       for (const lead of demoLeads) {
         await fetch('/api/leads', {
@@ -179,21 +204,22 @@ export default function AdminPage() {
         });
       }
     } catch (err) {
-      console.error('Failed to seed leads:', err);
+      console.error('Failed to post seeded leads to MongoDB:', err);
     }
-    await loadLeads();
+
     setIsSeeding(false);
   };
 
   const clearAllData = async () => {
-    if (!confirm('Are you sure you want to clear ALL lead data from MongoDB Atlas?')) return;
+    if (!confirm('Are you sure you want to clear ALL lead data?')) return;
     setIsClearing(true);
     try {
       await fetch('/api/leads', { method: 'DELETE' });
     } catch (err) {
       console.error('Failed to clear DB:', err);
     }
-    await loadLeads();
+    localStorage.removeItem('dev_krafters_leads_backup');
+    setLeads([]);
     setIsClearing(false);
     setSelectedLead(null);
   };
