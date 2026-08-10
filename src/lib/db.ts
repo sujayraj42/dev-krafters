@@ -4,6 +4,9 @@
 // This module is fully serverless-compatible (Vercel, Render, etc.)
 // NO filesystem (fs) operations — everything goes to MongoDB Atlas.
 
+import { ObjectId } from 'mongodb';
+import dns from 'dns';
+
 export interface LeadRecord {
   id: string;
   type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | string;
@@ -18,9 +21,9 @@ export interface LeadRecord {
   message?: string;
   fileUrl?: string;
   date: string;
+  status?: 'new' | 'in_progress' | 'converted' | string;
+  notes?: string;
 }
-
-import dns from 'dns';
 
 // ─────────────────────────────────────────────
 // MONGODB ATLAS CONNECTION HELPER
@@ -69,7 +72,7 @@ export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
       id: doc._id.toString(),
       type: doc.type || 'contact',
       name: doc.name || undefined,
-      email: doc.email || '',
+      email: doc.email || undefined,
       phone: doc.phone || undefined,
       projectType: doc.projectType || undefined,
       pages: doc.pages || undefined,
@@ -78,6 +81,8 @@ export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
       totalEstimateInr: doc.totalEstimateInr || undefined,
       message: doc.message || undefined,
       fileUrl: doc.fileUrl || undefined,
+      status: doc.status || 'new',
+      notes: doc.notes || undefined,
       date:
         typeof doc.date === 'string'
           ? doc.date
@@ -103,6 +108,7 @@ export async function saveLeadAsync(
 
     const newDoc = {
       ...lead,
+      status: lead.status || 'new',
       date: lead.date || new Date().toISOString(),
       createdAt: new Date(),
     };
@@ -112,21 +118,50 @@ export async function saveLeadAsync(
     return {
       ...newDoc,
       id: res.insertedId.toString(),
-      email: newDoc.email || '',
     };
   } catch (error) {
     console.error(
       '[MongoDB Save Error]',
       error instanceof Error ? error.message : error
     );
-    // Return a fallback record so the API doesn't crash
     return {
       ...lead,
       id: `fallback_${Date.now()}`,
       type: lead.type || 'contact',
-      email: lead.email || '',
+      status: lead.status || 'new',
       date: lead.date || new Date().toISOString(),
     };
+  }
+}
+
+// ─────────────────────────────────────────────
+// UPDATE A LEAD (STATUS & NOTES)
+// ─────────────────────────────────────────────
+export async function updateLeadAsync(
+  id: string,
+  updates: { status?: string; notes?: string }
+): Promise<boolean> {
+  try {
+    const db = await getMongoDb();
+    let query: Record<string, unknown> = { _id: id };
+    if (ObjectId.isValid(id)) {
+      query = { _id: new ObjectId(id) };
+    }
+
+    const res = await db.collection('leads').updateOne(query, {
+      $set: {
+        ...updates,
+        updatedAt: new Date(),
+      },
+    });
+
+    return res.modifiedCount > 0;
+  } catch (error) {
+    console.error(
+      '[MongoDB Update Error]',
+      error instanceof Error ? error.message : error
+    );
+    return false;
   }
 }
 
@@ -143,44 +178,4 @@ export async function clearLeadsAsync(): Promise<void> {
       error instanceof Error ? error.message : error
     );
   }
-}
-
-// ─────────────────────────────────────────────
-// LEGACY SYNC WRAPPERS (for backward compatibility)
-// These now just log warnings — real saving goes through async
-// ─────────────────────────────────────────────
-export function getAllLeads(): LeadRecord[] {
-  console.warn(
-    '[db.ts] getAllLeads() sync called — use getAllLeadsAsync() instead. Returning empty array.'
-  );
-  return [];
-}
-
-export function saveLead(
-  lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }
-): LeadRecord {
-  console.warn(
-    '[db.ts] saveLead() sync called — use saveLeadAsync() instead. Queuing async save.'
-  );
-  // Fire-and-forget async save to MongoDB
-  saveLeadAsync(lead).catch((err) =>
-    console.error('[saveLead async fallback error]', err)
-  );
-
-  return {
-    ...lead,
-    id: `queued_${Date.now()}`,
-    type: lead.type || 'contact',
-    email: lead.email || '',
-    date: lead.date || new Date().toISOString(),
-  };
-}
-
-export function clearLeads(): void {
-  console.warn(
-    '[db.ts] clearLeads() sync called — use clearLeadsAsync() instead.'
-  );
-  clearLeadsAsync().catch((err) =>
-    console.error('[clearLeads async fallback error]', err)
-  );
 }

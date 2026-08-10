@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Sparkles,
   Bot,
-  ExternalLink,
   Phone,
   Copy,
   RefreshCw,
@@ -22,13 +21,20 @@ import {
   FileSpreadsheet,
   Check,
   Zap,
-  Activity,
-  Calendar,
   AlertCircle,
-  Database,
   ArrowUpRight,
   ChevronRight,
-  Filter,
+  QrCode,
+  KeyRound,
+  CheckSquare,
+  Square,
+  IndianRupee,
+  StickyNote,
+  Clock,
+  TrendingUp,
+  Tag,
+  Shield,
+  Smartphone,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -46,27 +52,58 @@ export interface LeadRecord {
   message?: string;
   fileUrl?: string;
   date: string;
+  status?: 'new' | 'in_progress' | 'converted' | string;
+  notes?: string;
 }
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMode, setAuthMode] = useState<'totp' | 'pin'>('totp');
+  const [totpCode, setTotpCode] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'newsletter' | 'estimate' | 'chatbot'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
+  // 2FA Setup Modal
+  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [totpSecret, setTotpSecret] = useState('DEVKRAFTERS2FASECRET32');
 
+  // Leads Data State
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [dbStatus, setDbStatus] = useState<'loading' | 'connected' | 'error'>('loading');
   const [dbError, setDbError] = useState('');
-  const [dbName, setDbName] = useState('dev_krafters');
+  const [dbName, setDbName] = useState('Dev_Krafters');
+
+  // Filters & Selection
+  const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'newsletter' | 'estimate' | 'chatbot'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'in_progress' | 'converted'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Action Loading States
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isSavingNote, setIsSavingNote] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [csvExported, setCsvExported] = useState(false);
 
-  // Load leads from MongoDB Cloud API with localStorage fallback
+  // Edit Note / Status state for active Lead
+  const [leadNoteInput, setLeadNoteInput] = useState('');
+  const [leadStatusInput, setLeadStatusInput] = useState<'new' | 'in_progress' | 'converted'>('new');
+
+  // Load 2FA QR Code & Secret info
+  useEffect(() => {
+    fetch('/api/auth/verify-2fa')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.qrCodeUrl) setQrCodeUrl(data.qrCodeUrl);
+        if (data.secret) setTotpSecret(data.secret);
+      })
+      .catch((err) => console.error('Failed to load 2FA setup:', err));
+  }, []);
+
+  // Load leads from MongoDB Cloud API
   const loadLeads = async () => {
     try {
       const res = await fetch('/api/leads', { cache: 'no-store' });
@@ -81,11 +118,7 @@ export default function AdminPage() {
           setLeads(data.leads);
         } else {
           const localBackup: LeadRecord[] = JSON.parse(localStorage.getItem('dev_krafters_leads_backup') || '[]');
-          if (localBackup.length > 0) {
-            setLeads(localBackup);
-          } else {
-            setLeads([]);
-          }
+          setLeads(localBackup);
         }
         return;
       }
@@ -113,23 +146,42 @@ export default function AdminPage() {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pin === '1234' || pin === 'admin' || pin === 'devkrafters') {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
-      setError('');
-      loadLeads();
-    } else {
-      setError('Invalid PIN code. Default passcode is "1234"');
+  // Sync selected lead edits to local state when opening drawer
+  useEffect(() => {
+    if (selectedLead) {
+      setLeadNoteInput(selectedLead.notes || '');
+      setLeadStatusInput((selectedLead.status as 'new' | 'in_progress' | 'converted') || 'new');
     }
-  };
+  }, [selectedLead]);
 
-  const handleQuickUnlock = () => {
-    setIsAuthenticated(true);
-    sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
+  // Verify Google Authenticator 2FA or PIN
+  const handleVerifyAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError('');
-    loadLeads();
+
+    try {
+      const res = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: authMode === 'totp' ? totpCode : undefined,
+          pin: authMode === 'pin' ? pin : undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
+        setError('');
+        loadLeads();
+      } else {
+        setError(data.error || 'Invalid authentication code. Check Google Authenticator or PIN.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication verification failed.');
+    }
   };
 
   const seed5SampleLeads = async () => {
@@ -145,6 +197,7 @@ export default function AdminPage() {
         projectType: 'Business Website (₹25,000)',
         budget: '₹25,000 – ₹50,000',
         message: 'Need a custom 6-page website with online appointment booking for my dental clinic in Patna.',
+        status: 'new',
         date: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
       },
       {
@@ -156,12 +209,15 @@ export default function AdminPage() {
         projectType: 'Landing Page (₹12,000)',
         budget: '₹10,000 – ₹20,000',
         message: 'Looking for a high-converting digital menu & table reservation landing page for bistro.',
+        status: 'in_progress',
+        notes: 'Sent quote breakdown via WhatsApp on Monday.',
         date: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
       },
       {
         id: `seed_3_${timestamp}`,
         type: 'newsletter',
         email: 'rahul.mehta99@gmail.com',
+        status: 'new',
         date: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
       },
       {
@@ -172,6 +228,8 @@ export default function AdminPage() {
         pages: 10,
         totalEstimateFormatted: '₹45,000',
         totalEstimateInr: 45000,
+        status: 'converted',
+        notes: 'Deposit received. Project starts next week.',
         date: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
       },
       {
@@ -181,18 +239,17 @@ export default function AdminPage() {
         email: 'priya@sareestudio.com',
         message: 'Can you build an online catalog for my saree studio with WhatsApp quick order button?',
         projectType: 'Captured via AI Chatbot',
+        status: 'new',
         date: new Date().toISOString(),
       },
     ];
 
-    // 1. Instantly display in UI & save to local backup
     setLeads((prev) => {
       const merged = [...demoLeads, ...prev];
       localStorage.setItem('dev_krafters_leads_backup', JSON.stringify(merged));
       return merged;
     });
 
-    // 2. Attempt sync to MongoDB Atlas Cloud API
     try {
       for (const lead of demoLeads) {
         await fetch('/api/leads', {
@@ -206,6 +263,38 @@ export default function AdminPage() {
     }
 
     setIsSeeding(false);
+  };
+
+  const updateLeadStatusAndNotes = async () => {
+    if (!selectedLead) return;
+    setIsSavingNote(true);
+
+    try {
+      await fetch('/api/leads', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedLead.id,
+          status: leadStatusInput,
+          notes: leadNoteInput,
+        }),
+      });
+
+      // Update local state
+      setLeads((prev) =>
+        prev.map((l) =>
+          l.id === selectedLead.id ? { ...l, status: leadStatusInput, notes: leadNoteInput } : l
+        )
+      );
+
+      setSelectedLead((prev) =>
+        prev ? { ...prev, status: leadStatusInput, notes: leadNoteInput } : null
+      );
+    } catch (err) {
+      console.error('Failed to update lead:', err);
+    }
+
+    setIsSavingNote(false);
   };
 
   const clearAllData = async () => {
@@ -223,24 +312,26 @@ export default function AdminPage() {
   };
 
   const exportCSV = () => {
-    if (leads.length === 0) {
+    const listToExport = selectedIds.length > 0 ? leads.filter((l) => selectedIds.includes(l.id)) : leads;
+
+    if (listToExport.length === 0) {
       alert('No leads available to export.');
       return;
     }
 
-    const headers = 'ID,Type,Name,Email,Phone,Project Type,Budget/Estimate,Message,Date\n';
+    const headers = 'ID,Status,Type,Name,Email,Phone,Project Scope,Budget/Estimate,Notes,Message,Date\n';
     const csvContent =
       'data:text/csv;charset=utf-8,' +
       headers +
-      leads
+      listToExport
         .map(
           (r) =>
-            `"${r.id}","${r.type}","${r.name || ''}","${r.email || ''}","${r.phone || ''}","${
+            `"${r.id}","${r.status || 'new'}","${r.type}","${r.name || ''}","${r.email || ''}","${r.phone || ''}","${
               r.projectType || ''
-            }","${r.totalEstimateFormatted || r.budget || ''}","${(r.message || '').replace(
+            }","${r.totalEstimateFormatted || r.budget || ''}","${(r.notes || '').replace(
               /"/g,
               '""'
-            )}","${new Date(r.date).toLocaleString()}"`
+            )}","${(r.message || '').replace(/"/g, '""')}","${new Date(r.date).toLocaleString()}"`
         )
         .join('\n');
 
@@ -262,17 +353,26 @@ export default function AdminPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Filtered Leads
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredLeads.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredLeads.map((l) => l.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  };
+
+  // Filtered Leads Calculation
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       // Type Filter
-      if (activeTab !== 'all') {
-        if (activeTab === 'contact' && lead.type !== 'contact') return false;
-        if (activeTab === 'newsletter' && lead.type !== 'newsletter') return false;
-        if (activeTab === 'estimate' && lead.type !== 'estimate') return false;
-        if (activeTab === 'chatbot' && lead.type !== 'chatbot') return false;
-      }
-      // Search Query Filter
+      if (activeTab !== 'all' && lead.type !== activeTab) return false;
+      // Status Filter
+      if (statusFilter !== 'all' && (lead.status || 'new') !== statusFilter) return false;
+      // Search Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const nameMatch = (lead.name || '').toLowerCase().includes(q);
@@ -281,87 +381,190 @@ export default function AdminPage() {
         const typeMatch = (lead.type || '').toLowerCase().includes(q);
         const projectMatch = (lead.projectType || '').toLowerCase().includes(q);
         const messageMatch = (lead.message || '').toLowerCase().includes(q);
+        const notesMatch = (lead.notes || '').toLowerCase().includes(q);
 
-        return nameMatch || emailMatch || phoneMatch || typeMatch || projectMatch || messageMatch;
+        return nameMatch || emailMatch || phoneMatch || typeMatch || projectMatch || messageMatch || notesMatch;
       }
       return true;
     });
-  }, [leads, activeTab, searchQuery]);
+  }, [leads, activeTab, statusFilter, searchQuery]);
 
-  // Counts
-  const counts = useMemo(() => {
-    return {
-      all: leads.length,
-      contact: leads.filter((l) => l.type === 'contact').length,
-      newsletter: leads.filter((l) => l.type === 'newsletter').length,
-      estimate: leads.filter((l) => l.type === 'estimate').length,
-      chatbot: leads.filter((l) => l.type === 'chatbot').length,
-    };
+  // Analytics Insights Calculations
+  const analytics = useMemo(() => {
+    const totalLeads = leads.length;
+    const newLeads = leads.filter((l) => (l.status || 'new') === 'new').length;
+    const inProgress = leads.filter((l) => l.status === 'in_progress').length;
+    const converted = leads.filter((l) => l.status === 'converted').length;
+
+    // Calculate total pipeline value from estimate prices or budgets
+    const pipelineValue = leads.reduce((sum, l) => {
+      if (l.totalEstimateInr) return sum + l.totalEstimateInr;
+      if (l.projectType?.includes('25,000')) return sum + 25000;
+      if (l.projectType?.includes('12,000') || l.projectType?.includes('9,000')) return sum + 12000;
+      if (l.projectType?.includes('5,000')) return sum + 5000;
+      if (l.projectType?.includes('75,000')) return sum + 75000;
+      return sum;
+    }, 0);
+
+    const conversionRate = totalLeads > 0 ? Math.round((converted / totalLeads) * 100) : 0;
+
+    return { totalLeads, newLeads, inProgress, converted, pipelineValue, conversionRate };
   }, [leads]);
 
-  // Passcode Lock Screen
+  // 🔒 GOOGLE AUTHENTICATOR 2FA SECURITY LOCK SCREEN
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-body text-slate-100 relative overflow-hidden">
-        {/* Glowing Background Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Background Neon Glows */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-accent/20 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[140px] pointer-events-none" />
 
         <div className="max-w-md w-full bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl p-8 space-y-6 relative z-10 text-center animate-fade-in-up">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent to-accent-light text-white flex items-center justify-center mx-auto shadow-lg shadow-accent/30">
-            <Lock className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent to-accent-light text-white flex items-center justify-center mx-auto shadow-xl shadow-accent/30">
+            <Shield className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 text-accent text-xs font-heading font-bold uppercase tracking-wider">
-              <ShieldCheck className="w-3.5 h-3.5" /> Dev Krafters Admin Portal
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-heading font-bold uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5" /> Google Authenticator 2FA
             </div>
-            <h1 className="text-2xl font-heading font-extrabold text-white">Security Access Gate</h1>
+            <h1 className="text-2xl font-heading font-extrabold text-white">Owner Security Vault</h1>
             <p className="text-xs text-slate-400">
-              Enter your owner passcode to unlock the MongoDB leads management dashboard.
+              Enter your 6-digit Google Authenticator code or owner passcode PIN to proceed.
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                placeholder="Enter PIN Passcode..."
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-slate-700 text-white placeholder-slate-500 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                autoFocus
-              />
-              {error && <p className="text-xs text-rose-400 mt-2 font-medium">{error}</p>}
-            </div>
+          {/* Toggle between 2FA & PIN */}
+          <div className="flex bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs font-heading font-bold">
+            <button
+              type="button"
+              onClick={() => { setAuthMode('totp'); setError(''); }}
+              className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                authMode === 'totp' ? 'bg-accent text-white shadow-md' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Google 2FA</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('pin'); setError(''); }}
+              className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                authMode === 'pin' ? 'bg-accent text-white shadow-md' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Passcode PIN</span>
+            </button>
+          </div>
+
+          <form onSubmit={handleVerifyAuth} className="space-y-4">
+            {authMode === 'totp' ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="0 0 0 0 0 0"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white placeholder-slate-600 text-center text-2xl tracking-[0.4em] font-mono focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                  autoFocus
+                />
+                <p className="text-[11px] text-slate-500">Open Google Authenticator app on your phone</p>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="password"
+                  placeholder="Enter PIN Passcode..."
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            {error && <p className="text-xs text-rose-400 font-semibold">{error}</p>}
 
             <button
               type="submit"
               className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-accent to-accent-dark text-white font-heading font-bold text-sm hover:opacity-95 transition-all shadow-lg shadow-accent/25 flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Unlock Admin Vault</span>
+              <span>Verify & Unlock Dashboard</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="pt-4 border-t border-slate-800/80">
+          <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
             <button
-              onClick={handleQuickUnlock}
-              className="text-xs text-slate-400 hover:text-accent font-heading font-semibold transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+              onClick={() => setShow2FASetup(true)}
+              className="text-slate-400 hover:text-accent font-heading font-semibold transition-colors flex items-center gap-1 mx-auto cursor-pointer"
             >
-              <span>Quick Demo Unlock (PIN: 1234)</span>
+              <QrCode className="w-3.5 h-3.5 text-accent" />
+              <span>Setup Google Authenticator QR</span>
             </button>
           </div>
         </div>
+
+        {/* 2FA SETUP MODAL */}
+        {show2FASetup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+            <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5 shadow-2xl relative text-center">
+              <button
+                onClick={() => setShow2FASetup(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="w-12 h-12 rounded-2xl bg-accent/20 text-accent flex items-center justify-center mx-auto">
+                <QrCode className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="font-heading font-bold text-white text-lg">Google Authenticator Setup</h3>
+                <p className="text-xs text-slate-400">
+                  Scan this QR code using the <strong>Google Authenticator</strong> app on your iPhone or Android phone.
+                </p>
+              </div>
+
+              {qrCodeUrl ? (
+                <div className="p-3 bg-white rounded-2xl inline-block border-4 border-slate-800 shadow-md">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={qrCodeUrl} alt="Google Authenticator QR Code" className="w-44 h-44 mx-auto rounded-lg" />
+                </div>
+              ) : (
+                <div className="py-10 text-slate-500">Generating QR Code...</div>
+              )}
+
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1">
+                <span className="text-slate-500 uppercase tracking-wider text-[10px] font-heading font-bold block">
+                  Manual Secret Key
+                </span>
+                <code className="text-amber-400 font-mono font-bold text-sm tracking-wider block">
+                  {totpSecret}
+                </code>
+              </div>
+
+              <button
+                onClick={() => setShow2FASetup(false)}
+                className="w-full py-2.5 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-colors cursor-pointer"
+              >
+                Done / Back to Login
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-950 font-body text-slate-100 py-8 px-4 sm:px-8 relative overflow-hidden">
-      {/* Background Neon Lights */}
-      <div className="absolute top-0 right-1/3 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[140px] pointer-events-none" />
+      {/* Ambient Neon Orbs */}
+      <div className="absolute top-0 right-1/3 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         {/* DB Connection Status Warning Banner */}
@@ -374,7 +577,7 @@ export default function AdminPage() {
               <p className="font-heading font-bold text-sm text-white">MongoDB Cloud Connection Notice</p>
               <p className="text-rose-300">{dbError || 'Could not connect to MongoDB Atlas.'}</p>
               <p className="text-rose-400">
-                To fix this on Vercel: Go to <strong>Vercel Dashboard → Project Settings → Environment Variables</strong> and configure <code className="bg-rose-900/60 px-1.5 py-0.5 rounded text-white font-mono">MONGODB_URI</code> with your MongoDB Atlas password.
+                To fix this on Vercel: Go to <strong>Vercel Dashboard → Project Settings → Environment Variables</strong> and set <code className="bg-rose-900/60 px-1.5 py-0.5 rounded text-white font-mono">MONGODB_URI</code> to your MongoDB connection string.
               </p>
             </div>
             <button
@@ -392,7 +595,7 @@ export default function AdminPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-3 flex-wrap">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-xs font-heading font-bold uppercase tracking-wider">
-                <ShieldCheck className="w-3.5 h-3.5" /> Owner Operations Portal
+                <ShieldCheck className="w-3.5 h-3.5" /> 2FA Protected Admin Portal
               </div>
               <div
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-heading font-bold ${
@@ -422,7 +625,7 @@ export default function AdminPage() {
               </div>
             </div>
             <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-white tracking-tight">
-              Leads & Client Inquiries
+              Leads & Revenue Command Desk
             </h1>
             <p className="text-xs text-slate-400">
               Real-time submission pipeline synced with MongoDB Atlas Cloud Database.
@@ -431,6 +634,14 @@ export default function AdminPage() {
 
           {/* Action Toolbar */}
           <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setShow2FASetup(true)}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-heading font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <QrCode className="w-4 h-4 text-accent" />
+              <span>2FA QR</span>
+            </button>
+
             <button
               onClick={seed5SampleLeads}
               disabled={isSeeding}
@@ -447,7 +658,7 @@ export default function AdminPage() {
               className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800 font-heading font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
             >
               {csvExported ? <Check className="w-4 h-4 text-emerald-400" /> : <FileSpreadsheet className="w-4 h-4 text-emerald-400" />}
-              <span>{csvExported ? 'CSV Saved!' : 'Export CSV'}</span>
+              <span>{csvExported ? 'CSV Exported!' : 'Export CSV'}</span>
             </button>
 
             <button
@@ -468,163 +679,145 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* 📊 NEW FEATURE: REVENUE PIPELINE & ANALYTICS BAR */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card 1: Contact Form */}
-          <div
-            onClick={() => setActiveTab('contact')}
-            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
-              activeTab === 'contact' ? 'border-accent ring-1 ring-accent' : 'border-slate-800 hover:border-slate-700'
-            }`}
-          >
+          {/* Total Pipeline Value */}
+          <div className="p-5 rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 space-y-2 relative overflow-hidden">
+            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none" />
             <div className="flex justify-between items-center text-slate-400">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">Contact Form</span>
-              <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
-                <MessageSquare className="w-4 h-4" />
-              </div>
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">Pipeline Revenue</span>
+              <IndianRupee className="w-4 h-4 text-emerald-400" />
             </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-heading font-extrabold text-white">{counts.contact}</span>
-              <span className="text-xs text-slate-400 font-heading">Direct Quotes</span>
-            </div>
+            <p className="text-3xl font-heading font-extrabold text-emerald-400">
+              ₹{analytics.pipelineValue.toLocaleString('en-IN')}
+            </p>
+            <p className="text-[11px] text-slate-400">Estimated value across active quotes</p>
           </div>
 
-          {/* Card 2: Newsletter */}
-          <div
-            onClick={() => setActiveTab('newsletter')}
-            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
-              activeTab === 'newsletter' ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-800 hover:border-slate-700'
-            }`}
-          >
+          {/* Conversion Rate */}
+          <div className="p-5 rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 space-y-2 relative overflow-hidden">
             <div className="flex justify-between items-center text-slate-400">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">Newsletter</span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
-                <Mail className="w-4 h-4" />
-              </div>
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">Conversion Rate</span>
+              <TrendingUp className="w-4 h-4 text-accent" />
             </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-heading font-extrabold text-white">{counts.newsletter}</span>
-              <span className="text-xs text-slate-400 font-heading">Subscribers</span>
-            </div>
+            <p className="text-3xl font-heading font-extrabold text-white">{analytics.conversionRate}%</p>
+            <p className="text-[11px] text-slate-400">{analytics.converted} closed deals out of {analytics.totalLeads} inquiries</p>
           </div>
 
-          {/* Card 3: Calculator Estimates */}
-          <div
-            onClick={() => setActiveTab('estimate')}
-            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
-              activeTab === 'estimate' ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-slate-800 hover:border-slate-700'
-            }`}
-          >
+          {/* New Leads Needs Response */}
+          <div className="p-5 rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 space-y-2 relative overflow-hidden">
             <div className="flex justify-between items-center text-slate-400">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">Calculator</span>
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
-                <Calculator className="w-4 h-4" />
-              </div>
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">New Inquiries</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
             </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-heading font-extrabold text-white">{counts.estimate}</span>
-              <span className="text-xs text-slate-400 font-heading">Saved Estimates</span>
-            </div>
+            <p className="text-3xl font-heading font-extrabold text-rose-400">{analytics.newLeads}</p>
+            <p className="text-[11px] text-slate-400">Requires owner response</p>
           </div>
 
-          {/* Card 4: AI Chatbot */}
-          <div
-            onClick={() => setActiveTab('chatbot')}
-            className={`p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border transition-all cursor-pointer space-y-3 ${
-              activeTab === 'chatbot' ? 'border-teal-400 ring-1 ring-teal-400' : 'border-slate-800 hover:border-slate-700'
-            }`}
-          >
+          {/* Work In Progress */}
+          <div className="p-5 rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 space-y-2 relative overflow-hidden">
             <div className="flex justify-between items-center text-slate-400">
-              <span className="text-xs font-heading font-bold uppercase tracking-wider">AI Chatbot</span>
-              <div className="w-8 h-8 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center">
-                <Bot className="w-4 h-4" />
-              </div>
+              <span className="text-xs font-heading font-bold uppercase tracking-wider">In Contact</span>
+              <Clock className="w-4 h-4 text-amber-400" />
             </div>
-            <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-heading font-extrabold text-white">{counts.chatbot}</span>
-              <span className="text-xs text-slate-400 font-heading">Conversations</span>
-            </div>
+            <p className="text-3xl font-heading font-extrabold text-amber-400">{analytics.inProgress}</p>
+            <p className="text-[11px] text-slate-400">Quotes sent / follow up active</p>
           </div>
         </div>
 
         {/* Search & Filter Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
-          {/* Tabs */}
-          <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
+          {/* Channel Tabs */}
+          <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'all'
                   ? 'bg-accent text-white shadow-md shadow-accent/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              All Leads ({counts.all})
+              All Channels ({leads.length})
             </button>
             <button
               onClick={() => setActiveTab('contact')}
-              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'contact'
-                  ? 'bg-accent text-white shadow-md shadow-accent/20'
+                  ? 'bg-accent text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Contact ({counts.contact})
+              Contact ({leads.filter((l) => l.type === 'contact').length})
             </button>
             <button
               onClick={() => setActiveTab('newsletter')}
-              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'newsletter'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Newsletter ({counts.newsletter})
+              Newsletter ({leads.filter((l) => l.type === 'newsletter').length})
             </button>
             <button
               onClick={() => setActiveTab('estimate')}
-              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'estimate'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Estimates ({counts.estimate})
+              Estimates ({leads.filter((l) => l.type === 'estimate').length})
             </button>
             <button
               onClick={() => setActiveTab('chatbot')}
-              className={`px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'chatbot'
                   ? 'bg-teal-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              AI Chat ({counts.chatbot})
+              AI Chat ({leads.filter((l) => l.type === 'chatbot').length})
             </button>
           </div>
 
-          {/* Search Field */}
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search leads by name, email, query..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+          {/* Status Filter + Search */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {/* Status Filter Dropdown */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-heading font-bold focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="all">All Statuses</option>
+              <option value="new">🔴 New Leads</option>
+              <option value="in_progress">🟡 In Progress</option>
+              <option value="converted">🟢 Converted / Won</option>
+            </select>
+
+            {/* Search Input */}
+            <div className="relative flex-1 md:w-64">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search leads..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Lead Records Table */}
+        {/* Lead Table */}
         <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-xl overflow-hidden text-xs">
           {filteredLeads.length === 0 ? (
             <div className="p-16 text-center space-y-4">
@@ -632,19 +825,17 @@ export default function AdminPage() {
                 <Users className="w-7 h-7" />
               </div>
               <div className="space-y-1 max-w-sm mx-auto">
-                <h3 className="font-heading font-bold text-white text-base">No Leads Match Criteria</h3>
+                <h3 className="font-heading font-bold text-white text-base">No Matching Leads</h3>
                 <p className="text-xs text-slate-400">
                   {searchQuery
-                    ? `No leads found matching "${searchQuery}". Try a different keyword.`
-                    : 'Click below to automatically seed 5 sample leads into MongoDB Atlas.'}
+                    ? `No leads found matching "${searchQuery}".`
+                    : 'Click below to seed 5 sample leads into MongoDB Atlas.'}
                 </p>
               </div>
               <button
                 onClick={seed5SampleLeads}
                 disabled={isSeeding}
-                className={`px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark text-white font-heading font-bold text-xs hover:opacity-95 transition-all cursor-pointer shadow-md ${
-                  isSeeding ? 'opacity-50 cursor-wait' : ''
-                }`}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-dark text-white font-heading font-bold text-xs hover:opacity-95 transition-all cursor-pointer shadow-md"
               >
                 {isSeeding ? '⏳ Seeding 5 Leads...' : '+ Seed 5 Test Leads'}
               </button>
@@ -654,29 +845,37 @@ export default function AdminPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-950/80 border-b border-slate-800 font-heading text-slate-400 uppercase text-[11px] tracking-wider">
-                    <th className="py-4 px-5">Lead Channel</th>
-                    <th className="py-4 px-5">Client Contact</th>
-                    <th className="py-4 px-5">Project Scope / Budget</th>
-                    <th className="py-4 px-5">Submission Date</th>
-                    <th className="py-4 px-5 text-right">Action</th>
+                    <th className="py-4 px-4 w-10 text-center">
+                      <button onClick={toggleSelectAll} className="text-slate-400 hover:text-white cursor-pointer">
+                        {selectedIds.length > 0 && selectedIds.length === filteredLeads.length ? (
+                          <CheckSquare className="w-4 h-4 text-accent" />
+                        ) : (
+                          <Square className="w-4 h-4" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="py-4 px-4">Status</th>
+                    <th className="py-4 px-4">Channel</th>
+                    <th className="py-4 px-4">Client Contact</th>
+                    <th className="py-4 px-4">Scope / Budget</th>
+                    <th className="py-4 px-4">Date</th>
+                    <th className="py-4 px-4 text-right">Inspect</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-body">
                   {filteredLeads.map((lead) => {
-                    const isSelected = selectedLead?.id === lead.id;
+                    const isSelected = selectedIds.includes(lead.id);
+                    const leadStatus = lead.status || 'new';
 
-                    // Channel badge
-                    let badgeColor = 'bg-accent/20 text-accent border-accent/30';
-                    let channelLabel = 'Contact Inquiry';
-                    if (lead.type === 'newsletter') {
-                      badgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-                      channelLabel = 'Newsletter';
-                    } else if (lead.type === 'estimate') {
-                      badgeColor = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30';
-                      channelLabel = 'Pricing Estimate';
-                    } else if (lead.type === 'chatbot') {
-                      badgeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30';
-                      channelLabel = 'AI Chatbot';
+                    // Status Pill Color
+                    let statusColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+                    let statusLabel = '🔴 New';
+                    if (leadStatus === 'in_progress') {
+                      statusColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+                      statusLabel = '🟡 In Progress';
+                    } else if (leadStatus === 'converted') {
+                      statusColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                      statusLabel = '🟢 Won';
                     }
 
                     return (
@@ -684,35 +883,37 @@ export default function AdminPage() {
                         key={lead.id}
                         onClick={() => setSelectedLead(lead)}
                         className={`hover:bg-slate-800/40 transition-colors cursor-pointer ${
-                          isSelected ? 'bg-slate-800/60 border-l-4 border-l-accent' : ''
+                          isSelected ? 'bg-slate-800/60' : ''
                         }`}
                       >
-                        <td className="py-4 px-5 font-semibold text-white">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-heading font-bold border ${badgeColor}`}
-                          >
-                            {channelLabel}
+                        <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => toggleSelectOne(lead.id)} className="text-slate-400 hover:text-white cursor-pointer">
+                            {isSelected ? <CheckSquare className="w-4 h-4 text-accent" /> : <Square className="w-4 h-4" />}
+                          </button>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-heading font-bold border ${statusColor}`}>
+                            {statusLabel}
                           </span>
                         </td>
-                        <td className="py-4 px-5">
-                          <span className="font-bold text-white block">{lead.name || 'Anonymous Client'}</span>
-                          <span className="text-slate-400 font-mono text-[11px]">{lead.email}</span>
-                          {lead.phone && <span className="text-slate-500 block text-[11px]">{lead.phone}</span>}
+                        <td className="py-4 px-4 font-semibold text-white">
+                          <span className="capitalize text-slate-300 font-heading font-bold">{lead.type}</span>
                         </td>
-                        <td className="py-4 px-5">
+                        <td className="py-4 px-4">
+                          <span className="font-bold text-white block">{lead.name || 'Anonymous'}</span>
+                          <span className="text-slate-400 font-mono text-[11px]">{lead.email || lead.phone || 'N/A'}</span>
+                        </td>
+                        <td className="py-4 px-4">
                           <span className="font-semibold text-slate-200 block">
-                            {lead.projectType || (lead.type === 'newsletter' ? 'Weekly Web Tips Subscriber' : 'Website Inquiry')}
+                            {lead.projectType || (lead.type === 'newsletter' ? 'Weekly Tips Subscriber' : 'Website Query')}
                           </span>
                           {lead.totalEstimateFormatted && (
                             <span className="text-emerald-400 font-heading font-bold text-xs block">
-                              Quote: {lead.totalEstimateFormatted}
+                              {lead.totalEstimateFormatted}
                             </span>
                           )}
-                          {lead.budget && (
-                            <span className="text-slate-400 text-[11px] block">Budget: {lead.budget}</span>
-                          )}
                         </td>
-                        <td className="py-4 px-5 text-slate-400">
+                        <td className="py-4 px-4 text-slate-400">
                           {new Date(lead.date).toLocaleString([], {
                             month: 'short',
                             day: 'numeric',
@@ -720,7 +921,7 @@ export default function AdminPage() {
                             minute: '2-digit',
                           })}
                         </td>
-                        <td className="py-4 px-5 text-right">
+                        <td className="py-4 px-4 text-right">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -742,13 +943,63 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Slide-over Lead Detail Drawer */}
+      {/* 2FA SETUP MODAL (ACCESSIBLE VIA TOOLBAR) */}
+      {show2FASetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5 shadow-2xl relative text-center">
+            <button
+              onClick={() => setShow2FASetup(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-accent/20 text-accent flex items-center justify-center mx-auto">
+              <QrCode className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-heading font-bold text-white text-lg">Google Authenticator Setup</h3>
+              <p className="text-xs text-slate-400">
+                Scan this QR code using the <strong>Google Authenticator</strong> app on your iPhone or Android phone.
+              </p>
+            </div>
+
+            {qrCodeUrl ? (
+              <div className="p-3 bg-white rounded-2xl inline-block border-4 border-slate-800 shadow-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrCodeUrl} alt="Google Authenticator QR Code" className="w-44 h-44 mx-auto rounded-lg" />
+              </div>
+            ) : (
+              <div className="py-10 text-slate-500">Generating QR Code...</div>
+            )}
+
+            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1">
+              <span className="text-slate-500 uppercase tracking-wider text-[10px] font-heading font-bold block">
+                Manual Secret Key
+              </span>
+              <code className="text-amber-400 font-mono font-bold text-sm tracking-wider block">
+                {totpSecret}
+              </code>
+            </div>
+
+            <button
+              onClick={() => setShow2FASetup(false)}
+              className="w-full py-2.5 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition-colors cursor-pointer"
+            >
+              Close Setup Modal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SLIDE-OVER LEAD INSPECTION & STATUS MANAGER DRAWER */}
       {selectedLead && (
         <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-lg bg-slate-900 border-l border-slate-800 h-full p-6 space-y-6 overflow-y-auto shadow-2xl relative">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-accent/20 text-accent flex items-center justify-center font-heading font-bold text-base">
                   {(selectedLead.name || selectedLead.email || 'Lead').slice(0, 2).toUpperCase()}
                 </div>
@@ -769,28 +1020,47 @@ export default function AdminPage() {
 
             {/* Content Details */}
             <div className="space-y-5 text-xs">
-              {/* Channel & Date */}
-              <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-                <div>
-                  <span className="text-slate-500 uppercase tracking-wider font-heading font-bold text-[10px] block">
-                    Submission Channel
-                  </span>
-                  <span className="font-heading font-bold text-accent text-sm capitalize">
-                    {selectedLead.type}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500 uppercase tracking-wider font-heading font-bold text-[10px] block">
-                    Date & Time
-                  </span>
-                  <span className="font-semibold text-slate-300">
-                    {new Date(selectedLead.date).toLocaleString()}
-                  </span>
+              {/* 🏷️ STATUS UPDATE MANAGER */}
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <span className="text-slate-400 font-heading font-bold uppercase text-[10px] tracking-wider block">
+                  Lead Status Pipeline Stage
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setLeadStatusInput('new')}
+                    className={`py-2 rounded-xl font-heading font-bold text-xs transition-all border cursor-pointer ${
+                      leadStatusInput === 'new'
+                        ? 'bg-rose-500/20 text-rose-300 border-rose-500 shadow-sm'
+                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                    }`}
+                  >
+                    🔴 New
+                  </button>
+                  <button
+                    onClick={() => setLeadStatusInput('in_progress')}
+                    className={`py-2 rounded-xl font-heading font-bold text-xs transition-all border cursor-pointer ${
+                      leadStatusInput === 'in_progress'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500 shadow-sm'
+                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                    }`}
+                  >
+                    🟡 In Progress
+                  </button>
+                  <button
+                    onClick={() => setLeadStatusInput('converted')}
+                    className={`py-2 rounded-xl font-heading font-bold text-xs transition-all border cursor-pointer ${
+                      leadStatusInput === 'converted'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 shadow-sm'
+                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                    }`}
+                  >
+                    🟢 Won / Closed
+                  </button>
                 </div>
               </div>
 
               {/* Client Contact Info */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider">
                   Contact Information
                 </h4>
@@ -815,10 +1085,7 @@ export default function AdminPage() {
                       <span className="text-slate-400">Phone Number:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-white">{selectedLead.phone}</span>
-                        <a
-                          href={`tel:${selectedLead.phone}`}
-                          className="text-slate-400 hover:text-emerald-400"
-                        >
+                        <a href={`tel:${selectedLead.phone}`} className="text-slate-400 hover:text-emerald-400">
                           <Phone className="w-3.5 h-3.5" />
                         </a>
                       </div>
@@ -828,9 +1095,9 @@ export default function AdminPage() {
               </div>
 
               {/* Project Scope & Pricing */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider">
-                  Project Details
+                  Project Scope & Pricing
                 </h4>
                 <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
                   {selectedLead.projectType && (
@@ -856,11 +1123,33 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              {/* 📝 OWNER PRIVATE NOTES */}
+              <div className="space-y-2">
+                <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <StickyNote className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Owner Private Notes</span>
+                </h4>
+                <textarea
+                  rows={3}
+                  placeholder="Add private follow-up notes, agreement details, or phone call summary..."
+                  value={leadNoteInput}
+                  onChange={(e) => setLeadNoteInput(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+                <button
+                  onClick={updateLeadStatusAndNotes}
+                  disabled={isSavingNote}
+                  className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-accent font-heading font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {isSavingNote ? 'Saving Changes...' : 'Save Lead Notes & Status'}
+                </button>
+              </div>
+
               {/* Message Body */}
               {selectedLead.message && (
                 <div className="space-y-2">
                   <h4 className="font-heading font-bold text-white text-xs uppercase tracking-wider">
-                    Client Inquiry Message
+                    Client Message
                   </h4>
                   <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 leading-relaxed whitespace-pre-wrap font-body">
                     {selectedLead.message}

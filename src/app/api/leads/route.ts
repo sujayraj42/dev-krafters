@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync } from '@/lib/db';
+import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync, updateLeadAsync } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -7,7 +7,6 @@ export const revalidate = 0;
 // GET /api/leads - Retrieve all leads from MongoDB
 export async function GET() {
   try {
-    // Quick check: Is MONGODB_URI configured with a real password?
     const uri = process.env.MONGODB_URI;
     if (!uri || uri.includes('<db_password>')) {
       return NextResponse.json(
@@ -75,12 +74,32 @@ export async function POST(request: Request) {
       totalEstimateFormatted: body.totalEstimateFormatted || '',
       totalEstimateInr: body.totalEstimateInr,
       message: body.message || '',
+      status: body.status || 'new',
+      notes: body.notes || '',
       date: body.date,
     });
 
     return NextResponse.json({ success: true, lead: savedRecord });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to save lead to database';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
+
+// PATCH /api/leads - Update lead status or notes
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, status, notes } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Lead ID is required' }, { status: 400 });
+    }
+
+    const updated = await updateLeadAsync(id, { status, notes });
+    return NextResponse.json({ success: true, updated });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update lead';
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
