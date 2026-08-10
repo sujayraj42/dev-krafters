@@ -20,10 +20,16 @@ export interface LeadRecord {
   date: string;
 }
 
+import dns from 'dns';
+
 // ─────────────────────────────────────────────
 // MONGODB ATLAS CONNECTION HELPER
 // ─────────────────────────────────────────────
 async function getMongoDb() {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+  } catch {}
+
   const uri = process.env.MONGODB_URI;
   if (!uri || uri.includes('<db_password>')) {
     throw new Error(
@@ -43,7 +49,7 @@ async function getMongoDb() {
     ),
   ]);
 
-  const dbName = process.env.MONGODB_DB || 'dev_krafters';
+  const dbName = process.env.MONGODB_DB || 'Dev_Krafters';
   return client.db(dbName);
 }
 

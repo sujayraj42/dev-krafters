@@ -27,7 +27,7 @@ export async function GET() {
     }
 
     const leads = await getAllLeadsAsync();
-    const dbName = process.env.MONGODB_DB || 'dev_krafters';
+    const dbName = process.env.MONGODB_DB || 'Dev_Krafters';
     return NextResponse.json(
       { success: true, leads, count: leads.length, dbName },
       {
