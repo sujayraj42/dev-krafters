@@ -27,8 +27,9 @@ export async function GET() {
     }
 
     const leads = await getAllLeadsAsync();
+    const dbName = process.env.MONGODB_DB || 'dev_krafters';
     return NextResponse.json(
-      { success: true, leads, count: leads.length },
+      { success: true, leads, count: leads.length, dbName },
       {
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',

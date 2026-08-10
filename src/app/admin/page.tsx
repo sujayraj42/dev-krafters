@@ -68,37 +68,34 @@ export default function AdminPage() {
 
   // Load leads from MongoDB Cloud API with localStorage fallback
   const loadLeads = async () => {
-    let loadedFromApi = false;
-
     try {
       const res = await fetch('/api/leads', { cache: 'no-store' });
       const data = await res.json();
 
-      if (res.ok && data.success && Array.isArray(data.leads) && data.leads.length > 0) {
-        setLeads(data.leads);
+      if (res.ok && data.success) {
         setDbStatus('connected');
         setDbError('');
         if (data.dbName) setDbName(data.dbName);
-        loadedFromApi = true;
+
+        if (Array.isArray(data.leads) && data.leads.length > 0) {
+          setLeads(data.leads);
+        } else {
+          const localBackup: LeadRecord[] = JSON.parse(localStorage.getItem('dev_krafters_leads_backup') || '[]');
+          if (localBackup.length > 0) {
+            setLeads(localBackup);
+          } else {
+            setLeads([]);
+          }
+        }
         return;
       }
 
-      if (!res.ok || !data.success) {
-        setDbStatus('error');
-        setDbError(data.error || `Server HTTP ${res.status}`);
-      }
+      setDbStatus('error');
+      setDbError(data.error || `Server HTTP ${res.status}`);
     } catch (err) {
       console.error('Failed to fetch leads from DB API:', err);
       setDbStatus('error');
       setDbError(err instanceof Error ? err.message : 'Network error — cannot reach API');
-    }
-
-    // Fallback: If API returned empty array or failed, load local backup leads
-    if (!loadedFromApi) {
-      const localBackup: LeadRecord[] = JSON.parse(localStorage.getItem('dev_krafters_leads_backup') || '[]');
-      if (localBackup.length > 0) {
-        setLeads(localBackup);
-      }
     }
   };
 
