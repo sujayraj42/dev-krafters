@@ -71,7 +71,7 @@ interface OptionCard {
 const businessTypeCards: OptionCard[] = [
   { value: 'salon-beauty', title: 'Salon & Spa', subtitle: 'Bookings & Services', icon: '💇' },
   { value: 'restaurant-cafe', title: 'Restaurant / Cafe', subtitle: 'Digital Menu & Orders', icon: '🍽️' },
-  { value: 'clinic-dental', title: 'Clinic & Healthcare', title: 'Dental & Medical', subtitle: 'Patient Appointments', icon: '🏥', popular: true },
+  { value: 'clinic-dental', title: 'Clinic & Healthcare', subtitle: 'Dental & Medical Appointments', icon: '🏥', popular: true },
   { value: 'professional-services', title: 'Legal & Consulting', subtitle: 'Lead Gen & Retainers', icon: '⚖️' },
   { value: 'retail-store', title: 'Retail Shop / Boutique', subtitle: 'Storefront & Products', icon: '🏬' },
   { value: 'real-estate', title: 'Real Estate & Build', subtitle: 'Property Listings', icon: '🏗️' },
