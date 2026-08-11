@@ -2,11 +2,12 @@
 
 import React, { useState, useCallback, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/Card';
-import { Input, Textarea, FileDropzone, ChipGroup, ChipOption } from '@/components/FormControls';
+import { Input, Textarea, FileDropzone } from '@/components/FormControls';
 import { Button } from '@/components/Button';
 import { Alert } from '@/components/Alert';
-import { AnimateOnScroll, FloatingParticles } from '@/components/ScrollAnimations';
+import { FloatingParticles } from '@/components/ScrollAnimations';
 import {
   Mail,
   User,
@@ -31,10 +32,13 @@ import {
   Clock,
   Layers,
   Check,
+  HelpCircle,
+  TrendingUp,
+  Flame,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
-// FORM DATA TYPES & OPTIONS
+// FORM TYPES & INTERACTIVE DATA
 // ─────────────────────────────────────────────
 interface FormData {
   name: string;
@@ -54,130 +58,197 @@ interface FieldErrors {
   message?: string;
 }
 
-const businessTypeChips: ChipOption[] = [
-  { value: 'salon-beauty', label: 'Salon / Spa', icon: '💇' },
-  { value: 'restaurant-cafe', label: 'Restaurant / Cafe', icon: '🍽️' },
-  { value: 'clinic-dental', label: 'Clinic / Healthcare', icon: '🏥' },
-  { value: 'professional-services', label: 'Legal / Consulting', icon: '⚖️' },
-  { value: 'retail-store', label: 'Retail / Boutique', icon: '🏬' },
-  { value: 'real-estate', label: 'Real Estate', icon: '🏗️' },
-  { value: 'other', label: 'Other Business', icon: '🌐' },
+interface OptionCard {
+  value: string;
+  title: string;
+  subtitle?: string;
+  price?: number;
+  delivery?: string;
+  icon: string;
+  popular?: boolean;
+}
+
+const businessTypeCards: OptionCard[] = [
+  { value: 'salon-beauty', title: 'Salon & Spa', subtitle: 'Bookings & Services', icon: '💇' },
+  { value: 'restaurant-cafe', title: 'Restaurant / Cafe', subtitle: 'Digital Menu & Orders', icon: '🍽️' },
+  { value: 'clinic-dental', title: 'Clinic & Healthcare', title: 'Dental & Medical', subtitle: 'Patient Appointments', icon: '🏥', popular: true },
+  { value: 'professional-services', title: 'Legal & Consulting', subtitle: 'Lead Gen & Retainers', icon: '⚖️' },
+  { value: 'retail-store', title: 'Retail Shop / Boutique', subtitle: 'Storefront & Products', icon: '🏬' },
+  { value: 'real-estate', title: 'Real Estate & Build', subtitle: 'Property Listings', icon: '🏗️' },
+  { value: 'other', title: 'Other Industry', subtitle: 'Custom Enterprise', icon: '🌐' },
 ];
 
-const projectTypeChips: ChipOption[] = [
-  { value: 'starter-page', label: 'Starter Page (₹5,000)', icon: '⚡', badge: '3-Day' },
-  { value: 'landing-page', label: 'Landing Page (₹9,000)', icon: '🚀', badge: '5-Day' },
-  { value: 'business-website', label: 'Business Website (₹25,000)', icon: '💼', badge: '10-Day Popular' },
-  { value: 'ecommerce', label: 'E-commerce Store (₹75,000)', icon: '🛒', badge: '20-Day' },
-  { value: 'maintenance', label: 'Care & Maintenance (₹3,000/mo)', icon: '🛠️' },
-  { value: 'ai-chatbot', label: 'AI Lead Chatbot', icon: '🤖' },
-  { value: 'other', label: 'Custom Scope', icon: '✨' },
+const projectTypeCards: OptionCard[] = [
+  { value: 'starter-page', title: 'Starter Page', price: 5000, delivery: '3 Days', subtitle: '1-Page Quick Launch', icon: '⚡' },
+  { value: 'landing-page', title: 'Landing Page', price: 9000, delivery: '5 Days', subtitle: 'High Conversion Campaign', icon: '🚀' },
+  { value: 'business-website', title: 'Business Website', price: 25000, delivery: '10 Days', subtitle: '5-8 Pages + SEO + Maps', icon: '💼', popular: true },
+  { value: 'ecommerce', title: 'E-commerce Store', price: 75000, delivery: '20 Days', subtitle: 'Storefront + Payments', icon: '🛒' },
+  { value: 'maintenance', title: 'Care & Support', price: 3000, delivery: 'Monthly', subtitle: 'Uptime + Edits', icon: '🛠️' },
+  { value: 'ai-chatbot', title: 'AI Lead Chatbot', price: 8000, delivery: '2 Days', subtitle: '24/7 Auto Replying Bot', icon: '🤖' },
 ];
 
-const budgetChips: ChipOption[] = [
-  { value: 'under-10k', label: 'Under ₹10,000', icon: '🟢' },
-  { value: '10k-25k', label: '₹10,000 – ₹25,000', icon: '🔵' },
-  { value: '25k-75k', label: '₹25,000 – ₹75,000', icon: '🟣' },
-  { value: '75k-plus', label: '₹75,000+', icon: '🌟' },
-  { value: 'not-sure', label: 'Flexible / Not Sure', icon: '❓' },
+const budgetCards: OptionCard[] = [
+  { value: 'under-10k', title: 'Under ₹10,000', subtitle: 'Starter Budget', icon: '🟢' },
+  { value: '10k-25k', title: '₹10,000 – ₹25,000', subtitle: 'Standard Business', icon: '🔵', popular: true },
+  { value: '25k-75k', title: '₹25,000 – ₹75,000', subtitle: 'Growth Scale Scope', icon: '🟣' },
+  { value: '75k-plus', title: '₹75,000+', subtitle: 'Full Enterprise Store', icon: '🌟' },
+  { value: 'not-sure', title: 'Flexible / Open', subtitle: 'Advise Me on Scope', icon: '❓' },
 ];
 
-const timelineChips: ChipOption[] = [
-  { value: 'asap', label: 'ASAP — Rush Build', icon: '⚡' },
-  { value: '1-2-weeks', label: '1 – 2 Weeks', icon: '🗓️' },
-  { value: '1-month', label: 'About 1 Month', icon: '📆' },
-  { value: 'flexible', label: 'Flexible / No Rush', icon: '⏳' },
+const timelineCards: OptionCard[] = [
+  { value: 'asap', title: 'ASAP — Rush Build', subtitle: 'Priority Queue (3-5 Days)', icon: '⚡', popular: true },
+  { value: '1-2-weeks', title: '1 – 2 Weeks', subtitle: 'Standard Delivery', icon: '🗓️' },
+  { value: '1-month', title: 'About 1 Month', subtitle: 'Planned Launch', icon: '📆' },
+  { value: 'flexible', title: 'Flexible / Open', subtitle: 'No Rush Needed', icon: '⏳' },
 ];
 
-// ─────────────────────────────────────────────
-// WIZARD STEPS CONFIG
-// ─────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: 'About You', description: 'Contact details' },
-  { id: 2, label: 'Your Project', description: 'Scope & package' },
-  { id: 3, label: 'Details', description: 'Brief & attachments' },
-] as const;
-
-// ─────────────────────────────────────────────
-// SIDEBAR DATA
-// ─────────────────────────────────────────────
-const whyUsPoints = [
-  {
-    icon: UserCheck,
-    title: 'Direct Developer Access',
-    description: 'You work directly with the engineer building your site — no middle managers or handoffs.',
-  },
-  {
-    icon: Zap,
-    title: 'Fast AI Turnaround',
-    description: 'AI-assisted development workflow means launch-ready sites in as fast as 3 days.',
-  },
-  {
-    icon: Tag,
-    title: '100% Fixed Transparent Pricing',
-    description: 'Zero hidden line items. The price on your quote is the exact price you pay.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Post-Launch Support Included',
-    description: 'Every site includes a free 30-day bug-fix guarantee and optional ongoing care.',
-  },
+  { id: 1, label: 'Your Info', description: 'Contact details' },
+  { id: 2, label: 'Scope & Price', description: 'Select package' },
+  { id: 3, label: 'Requirements', description: 'Brief & details' },
 ];
 
-const testimonial = {
-  quote:
-    "Dev Krafters built our clinic website in 8 days — clean design, fast load times, and the AI chatbot has been a game-changer for appointment bookings.",
-  author: 'Dr. Meera Joshi',
-  role: 'Smile Dental Clinic, Patna',
-  rating: 5,
-};
+// ─────────────────────────────────────────────
+// ANIMATED STEP PROGRESS BAR
+// ─────────────────────────────────────────────
+function AnimatedStepProgressBar({ currentStep }: { currentStep: number }) {
+  const progressPercent = ((currentStep - 1) / (STEPS.length - 1)) * 100;
 
-// ─────────────────────────────────────────────
-// STEP PROGRESS BAR
-// ─────────────────────────────────────────────
-function StepProgressBar({ currentStep }: { currentStep: number }) {
   return (
-    <div className="flex items-center justify-between mb-8 font-body">
-      {STEPS.map((step, idx) => {
-        const isActive = currentStep === step.id;
-        const isCompleted = currentStep > step.id;
-        return (
-          <React.Fragment key={step.id}>
-            {/* Step circle + label */}
-            <div className="flex flex-col items-center gap-1.5 min-w-0">
-              <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center font-heading font-bold text-sm transition-all duration-300 ${
+    <div className="w-full space-y-4 mb-8 font-body">
+      {/* Top Percentage Indicator */}
+      <div className="flex justify-between items-center text-xs">
+        <span className="font-heading font-bold text-accent uppercase tracking-wider flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+          Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].label}
+        </span>
+        <span className="font-heading font-extrabold text-primary bg-accent/10 px-2.5 py-0.5 rounded-full text-[11px]">
+          {Math.round(progressPercent)}% Completed
+        </span>
+      </div>
+
+      {/* Progress Track */}
+      <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden p-0.5 border border-gray-200/80 relative">
+        <motion.div
+          className="h-full rounded-full bg-gradient-to-r from-accent via-amber-400 to-emerald-400 shadow-md"
+          initial={{ width: 0 }}
+          animate={{ width: `${progressPercent}%` }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        />
+      </div>
+
+      {/* Step Circle Badges */}
+      <div className="flex justify-between items-center">
+        {STEPS.map((step) => {
+          const isActive = currentStep === step.id;
+          const isCompleted = currentStep > step.id;
+
+          return (
+            <div key={step.id} className="flex items-center gap-2">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center font-heading font-bold text-xs transition-all duration-300 ${
                   isCompleted
                     ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
                     : isActive
-                    ? 'bg-accent text-white shadow-md shadow-accent/30 ring-4 ring-accent/20 scale-105'
+                    ? 'bg-accent text-white shadow-lg shadow-accent/30 ring-4 ring-accent/20'
                     : 'bg-gray-100 text-muted border border-gray-200'
                 }`}
               >
-                {isCompleted ? <Check className="w-5 h-5 stroke-[3]" /> : step.id}
-              </div>
-              <div className="text-center hidden sm:block">
-                <p
-                  className={`font-heading text-xs font-semibold transition-colors ${
-                    isActive || isCompleted ? 'text-primary' : 'text-muted'
-                  }`}
-                >
+                {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : step.id}
+              </motion.div>
+              <div className="hidden sm:block text-left">
+                <p className={`font-heading text-xs font-bold ${isActive || isCompleted ? 'text-primary' : 'text-muted'}`}>
                   {step.label}
                 </p>
-                <p className="font-body text-[10px] text-muted">{step.description}</p>
               </div>
             </div>
-            {/* Connector line */}
-            {idx < STEPS.length - 1 && (
-              <div className="flex-1 mx-2 sm:mx-4 h-1 rounded-full bg-gray-200 relative overflow-hidden self-start mt-4">
-                <div
-                  className={`absolute inset-y-0 left-0 bg-accent rounded-full transition-all duration-500 ease-out ${
-                    currentStep > step.id ? 'w-full' : 'w-0'
-                  }`}
-                />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// INTERACTIVE OPTION CARD GRID WITH HOVER & GLOW
+// ─────────────────────────────────────────────
+function AnimatedCardGrid({
+  options,
+  selectedValue,
+  onChange,
+  columns = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+}: {
+  options: OptionCard[];
+  selectedValue: string;
+  onChange: (val: string) => void;
+  columns?: string;
+}) {
+  return (
+    <div className={`grid ${columns} gap-3 font-body`}>
+      {options.map((opt) => {
+        const isSelected = selectedValue === opt.value;
+
+        return (
+          <motion.div
+            key={opt.value}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onChange(opt.value)}
+            className={`relative p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer text-left select-none overflow-hidden ${
+              isSelected
+                ? 'border-accent bg-accent/5 ring-4 ring-accent/15 shadow-xl shadow-accent/10'
+                : 'border-gray-200/90 bg-white hover:border-gray-300 hover:bg-surface-alt/50 shadow-xs'
+            }`}
+          >
+            {/* Popular Badge */}
+            {opt.popular && (
+              <div className="absolute top-0 right-0 bg-accent text-white text-[9px] font-heading font-extrabold uppercase px-2.5 py-0.5 rounded-bl-xl shadow-xs">
+                Popular
               </div>
             )}
-          </React.Fragment>
+
+            <div className="flex items-start gap-3">
+              <div className="text-2xl shrink-0 p-2 rounded-xl bg-gray-50 border border-gray-100 shadow-2xs">
+                {opt.icon}
+              </div>
+
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <div className="flex justify-between items-center gap-2">
+                  <h4 className="font-heading font-bold text-xs text-primary truncate">
+                    {opt.title}
+                  </h4>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="w-4 h-4 rounded-full bg-accent text-white flex items-center justify-center shrink-0"
+                    >
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </motion.div>
+                  )}
+                </div>
+
+                {opt.subtitle && (
+                  <p className="font-body text-[11px] text-muted truncate">{opt.subtitle}</p>
+                )}
+
+                {opt.price !== undefined && (
+                  <div className="pt-1.5 flex items-center justify-between">
+                    <span className="font-heading font-extrabold text-sm text-accent">
+                      ₹{opt.price.toLocaleString()}
+                    </span>
+                    {opt.delivery && (
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                        ⏱️ {opt.delivery}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
         );
       })}
     </div>
@@ -185,120 +256,102 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
 }
 
 // ─────────────────────────────────────────────
-// ANIMATED COUNTER
+// SUCCESS STATE WITH CELEBRATION
 // ─────────────────────────────────────────────
-function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
-  const ref = React.useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasStarted) {
-          setHasStarted(true);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [hasStarted]);
-
-  useEffect(() => {
-    if (!hasStarted) return;
-    const duration = 1200;
-    const stepTime = 30;
-    const steps = Math.ceil(duration / stepTime);
-    let current = 0;
-    const timer = setInterval(() => {
-      current++;
-      const progress = current / steps;
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
-      if (current >= steps) {
-        setCount(target);
-        clearInterval(timer);
-      }
-    }, stepTime);
-    return () => clearInterval(timer);
-  }, [hasStarted, target]);
-
-  return (
-    <span ref={ref} className="tabular-nums">
-      {count}
-      {suffix}
-    </span>
-  );
-}
-
-// ─────────────────────────────────────────────
-// SUCCESS STATE
-// ─────────────────────────────────────────────
-function SuccessState({
+function AnimatedSuccessState({
   formData,
   onReset,
 }: {
   formData: FormData;
   onReset: () => void;
 }) {
+  const selectedPkg = projectTypeCards.find((p) => p.value === formData.projectType);
+
   return (
-    <div className="space-y-6 py-6 text-center animate-fade-in-up font-body">
-      {/* Big animated checkmark */}
-      <div className="flex justify-center">
-        <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-xl shadow-emerald-500/10">
-          <CheckCircle2 className="w-10 h-10 animate-bounce" />
-        </div>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="space-y-6 py-6 text-center font-body"
+    >
+      {/* Animated Check Icon */}
+      <motion.div
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+        className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30"
+      >
+        <CheckCircle2 className="w-10 h-10" />
+      </motion.div>
 
       <div className="space-y-2">
-        <h3 className="font-heading font-extrabold text-2xl text-primary">
-          Project Inquiry Received! 🎉
+        <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-primary">
+          Inquiry Successfully Logged! 🚀
         </h3>
-        <p className="font-body text-sm text-muted max-w-sm mx-auto">
-          We&apos;ve logged your details into our client portal. Our lead developer will review your request and get back within 24 hours.
+        <p className="font-body text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
+          We&apos;ve dispatched your proposal to our lead engineer. You will receive an official quote & turnaround timeline via email/WhatsApp within 24 hours.
         </p>
       </div>
 
-      {/* Submission summary */}
-      <div className="p-5 bg-surface-alt/80 rounded-2xl border border-gray-200/80 text-left space-y-3 font-body text-xs text-primary max-w-md mx-auto shadow-xs">
-        <h4 className="font-heading font-bold text-sm text-primary flex items-center gap-2 border-b border-gray-200/60 pb-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          Submission Breakdown
-        </h4>
-        <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
-          <span className="font-semibold text-muted">Client Name:</span>
-          <span className="font-bold text-primary">{formData.name}</span>
-          <span className="font-semibold text-muted">Email:</span>
-          <span className="font-mono text-primary">{formData.email}</span>
+      {/* Itemized Confirmation Receipt */}
+      <div className="p-5 bg-surface-alt/90 rounded-2xl border border-gray-200 text-left space-y-3 font-body text-xs text-primary max-w-md mx-auto shadow-sm">
+        <div className="flex items-center justify-between border-b border-gray-200/80 pb-2">
+          <span className="font-heading font-bold text-sm text-primary">Proposal Receipt</span>
+          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
+            Logged to Vault
+          </span>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex justify-between">
+            <span className="text-muted">Client Name:</span>
+            <span className="font-bold text-primary">{formData.name}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted">Email Contact:</span>
+            <span className="font-mono text-primary">{formData.email}</span>
+          </div>
           {formData.phone && (
-            <>
-              <span className="font-semibold text-muted">Phone:</span>
+            <div className="flex justify-between">
+              <span className="text-muted">WhatsApp / Phone:</span>
               <span className="font-mono text-primary">{formData.phone}</span>
-            </>
+            </div>
           )}
-          {formData.projectType && (
-            <>
-              <span className="font-semibold text-muted">Package Scope:</span>
-              <span className="font-bold text-accent">
-                {projectTypeChips.find((o) => o.value === formData.projectType)?.label || formData.projectType}
-              </span>
-            </>
+          {selectedPkg && (
+            <div className="flex justify-between pt-1 border-t border-gray-200/60 font-bold">
+              <span className="text-primary">Selected Package:</span>
+              <span className="text-accent">{selectedPkg.title} (₹{selectedPkg.price?.toLocaleString()})</span>
+            </div>
           )}
         </div>
+
+        {/* WhatsApp Fast-Track Button */}
+        {formData.phone && (
+          <a
+            href={`https://wa.me/919999999999?text=Hi!%20I%20just%20submitted%20a%20project%20inquiry%20for%20${encodeURIComponent(
+              formData.name
+            )}%20(${encodeURIComponent(selectedPkg?.title || 'Web Project')}).`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all mt-2"
+          >
+            <MessageCircle className="w-4 h-4 fill-white" />
+            <span>Fast-Track Proposal on WhatsApp</span>
+          </a>
+        )}
       </div>
 
       <Button variant="secondary" size="md" onClick={onReset} className="font-bold">
-        Send Another Inquiry
+        Send Another Proposal
       </Button>
-    </div>
+    </motion.div>
   );
 }
 
 // ─────────────────────────────────────────────
-// MAIN FORM CONTENT
+// MAIN INTERACTIVE FORM CONTENT
 // ─────────────────────────────────────────────
-function ContactFormContent() {
+function InteractiveFormContent() {
   const searchParams = useSearchParams();
   const initialPackage =
     searchParams.get('package') ||
@@ -307,17 +360,17 @@ function ContactFormContent() {
     '';
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [slideDirection, setSlideDirection] = useState<'right' | 'left'>('right');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
-    businessType: '',
-    projectType: initialPackage || '',
-    budget: '',
+    businessType: 'clinic-dental',
+    projectType: initialPackage || 'business-website',
+    budget: '10k-25k',
     message: '',
-    timeline: '',
+    timeline: 'asap',
   });
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -335,19 +388,19 @@ function ContactFormContent() {
     [errors]
   );
 
-  const handleChipChange = (field: keyof FormData, value: string) => {
+  const handleCardSelect = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ── Validation ──
+  // Validation
   const validateStep = useCallback(
     (step: number): boolean => {
       const newErrors: FieldErrors = {};
 
       if (step === 1) {
-        if (!formData.name.trim()) newErrors.name = 'Name is required';
+        if (!formData.name.trim()) newErrors.name = 'Please enter your name';
         if (!formData.email.trim()) {
-          newErrors.email = 'Email is required';
+          newErrors.email = 'Please enter your email address';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
           newErrors.email = 'Please enter a valid email address';
         }
@@ -357,8 +410,7 @@ function ContactFormContent() {
       }
 
       if (step === 3) {
-        if (!formData.message.trim()) newErrors.message = 'Please tell us about your project goals or requirements';
-        if (formData.message.length > 2000) newErrors.message = 'Message is too long (max 2,000 characters)';
+        if (!formData.message.trim()) newErrors.message = 'Please tell us briefly about your project requirements';
       }
 
       setErrors(newErrors);
@@ -369,16 +421,14 @@ function ContactFormContent() {
 
   const goNext = useCallback(() => {
     if (!validateStep(currentStep)) return;
-    setSlideDirection('right');
     setCurrentStep((s) => Math.min(s + 1, 3));
   }, [currentStep, validateStep]);
 
   const goBack = useCallback(() => {
-    setSlideDirection('left');
     setCurrentStep((s) => Math.max(s - 1, 1));
   }, []);
 
-  // ── Submit ──
+  // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -388,15 +438,12 @@ function ContactFormContent() {
 
     const parts = [formData.message.trim()];
     if (formData.budget) {
-      const budgetLabel = budgetChips.find((o) => o.value === formData.budget)?.label || formData.budget;
-      parts.push(`\n--- Budget Info ---\n${budgetLabel}`);
+      const bCard = budgetCards.find((b) => b.value === formData.budget);
+      parts.push(`\n--- Budget Range ---\n${bCard?.title || formData.budget}`);
     }
     if (formData.timeline) {
-      const timelineLabel = timelineChips.find((o) => o.value === formData.timeline)?.label || formData.timeline;
-      parts.push(`Preferred Timeline: ${timelineLabel}`);
-    }
-    if (selectedFile) {
-      parts.push(`Attached file: ${selectedFile.name}`);
+      const tCard = timelineCards.find((t) => t.value === formData.timeline);
+      parts.push(`Preferred Timeline: ${tCard?.title || formData.timeline}`);
     }
 
     try {
@@ -412,19 +459,19 @@ function ContactFormContent() {
           const uploadResult = await uploadRes.json();
           if (uploadResult.success) {
             fileUrl = uploadResult.fileUrl;
-            parts.push(`Attached file URL: ${fileUrl}`);
+            parts.push(`Attached Brief URL: ${fileUrl}`);
           }
         } catch (uploadErr) {
-          console.error('File upload failed:', uploadErr);
+          console.error('File upload error:', uploadErr);
         }
       }
 
-      const contactSubmission = {
+      const submissionPayload = {
         type: 'contact',
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        projectType: formData.projectType || 'General Inquiry',
+        projectType: projectTypeCards.find((p) => p.value === formData.projectType)?.title || formData.projectType,
         budget: formData.budget,
         message: parts.join('\n'),
         fileUrl,
@@ -435,14 +482,11 @@ function ContactFormContent() {
         await fetch('/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contactSubmission),
+          body: JSON.stringify(submissionPayload),
         });
       } catch (dbErr) {
-        console.error('Failed to post contact to /api/leads', dbErr);
+        console.error('DB Post failed:', dbErr);
       }
-
-      const existingContacts = JSON.parse(localStorage.getItem('dev_krafters_contacts') || '[]');
-      localStorage.setItem('dev_krafters_contacts', JSON.stringify([contactSubmission, ...existingContacts]));
 
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -458,198 +502,223 @@ function ContactFormContent() {
       });
 
       const result = await response.json();
-
       if (!response.ok || result.error) {
-        throw new Error(
-          result.error ||
-            'Something went wrong — please try again or email us directly at hello@devkrafters.com.'
-        );
+        throw new Error(result.error || 'Failed to submit proposal.');
       }
 
       setIsSubmitted(true);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Something went wrong — please try again or email us directly at hello@devkrafters.com.';
-      setSubmitError(message);
+      setSubmitError(err instanceof Error ? err.message : 'Submission failed.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReset = () => {
-    setIsSubmitted(false);
-    setCurrentStep(1);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      businessType: '',
-      projectType: '',
-      budget: '',
-      message: '',
-      timeline: '',
-    });
-    setSelectedFile(null);
-    setErrors({});
-    setSubmitError('');
-  };
-
-  const slideClass =
-    slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left';
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div key="step-1" className={`space-y-5 ${slideClass}`}>
-            <Input
-              label="Full Name"
-              name="name"
-              icon={User}
-              placeholder="e.g. Priya Sharma"
-              value={formData.name}
-              onChange={handleChange}
-              error={errors.name}
-              required
-            />
-            <Input
-              label="Email Address"
-              name="email"
-              type="email"
-              icon={Mail}
-              placeholder="e.g. priya@mybusiness.com"
-              value={formData.email}
-              onChange={handleChange}
-              error={errors.email}
-              required
-            />
-            <Input
-              label="Phone Number (Optional)"
-              name="phone"
-              type="tel"
-              icon={Phone}
-              placeholder="e.g. +91 98765 43210"
-              value={formData.phone}
-              onChange={handleChange}
-              error={errors.phone}
-              helperText="We only call if you prefer WhatsApp or phone over email"
-            />
-          </div>
-        );
-      case 2:
-        return (
-          <div key="step-2" className={`space-y-6 ${slideClass}`}>
-            <ChipGroup
-              label="Select Your Business Industry"
-              options={businessTypeChips}
-              selectedValue={formData.businessType}
-              onChange={(val) => handleChipChange('businessType', val)}
-            />
-
-            <ChipGroup
-              label="Select Desired Package Scope"
-              options={projectTypeChips}
-              selectedValue={formData.projectType}
-              onChange={(val) => handleChipChange('projectType', val)}
-              required
-            />
-
-            <ChipGroup
-              label="Approximate Budget Range"
-              options={budgetChips}
-              selectedValue={formData.budget}
-              onChange={(val) => handleChipChange('budget', val)}
-            />
-          </div>
-        );
-      case 3:
-        return (
-          <div key="step-3" className={`space-y-6 ${slideClass}`}>
-            <Textarea
-              label="Tell us about your project & goals"
-              name="message"
-              placeholder="What features, design styles, or deadlines do you have in mind?"
-              value={formData.message}
-              onChange={handleChange}
-              rows={5}
-              error={errors.message}
-              showCount
-              maxChars={2000}
-              required
-            />
-
-            <ChipGroup
-              label="Preferred Launch Timeline"
-              options={timelineChips}
-              selectedValue={formData.timeline}
-              onChange={(val) => handleChipChange('timeline', val)}
-            />
-
-            <FileDropzone
-              selectedFile={selectedFile}
-              onFileSelect={setSelectedFile}
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  // Selected Scope Badge Calculation
-  const selectedScopeName = projectTypeChips.find((p) => p.value === formData.projectType)?.label;
+  const activePackageObj = projectTypeCards.find((p) => p.value === formData.projectType);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-start font-body">
-      {/* ────── FORM CARD ────── */}
-      <div className="lg:col-span-7">
-        <div className="glass-card rounded-card p-6 sm:p-8 border border-gray-200/80 shadow-2xl relative overflow-hidden bg-white/95 backdrop-blur-xl">
+      {/* ────── FORM CONTAINER CARD ────── */}
+      <div className="lg:col-span-8">
+        <div className="glass-card rounded-card p-6 sm:p-9 border border-gray-200/80 shadow-2xl relative overflow-hidden bg-white/95 backdrop-blur-xl">
           {isSubmitted ? (
-            <SuccessState formData={formData} onReset={handleReset} />
+            <AnimatedSuccessState formData={formData} onReset={() => { setIsSubmitted(false); setCurrentStep(1); }} />
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Form Title & Subtitle */}
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-[11px] font-heading font-extrabold uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5" /> Direct Inquiry Desk
+                  <Flame className="w-3.5 h-3.5 animate-bounce" /> Interactive Project Inquiry
                 </div>
                 <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-primary">
-                  Start Your Project
+                  Request Your Custom Proposal
                 </h2>
                 <p className="font-body text-xs sm:text-sm text-muted">
-                  Fill in the quick steps below to get your custom proposal & timeline.
+                  Tap through the options below to generate your exact project scope & price.
                 </p>
               </div>
 
-              {/* Step Progress bar */}
-              <StepProgressBar currentStep={currentStep} />
+              {/* Step Progress Bar */}
+              <AnimatedStepProgressBar currentStep={currentStep} />
 
-              {/* Submission error */}
+              {/* Submit Error Alert */}
               {submitError && (
                 <Alert type="error" onClose={() => setSubmitError('')}>
                   {submitError}
                 </Alert>
               )}
 
-              {/* Step content */}
-              <div className="min-h-[280px]">{renderStepContent()}</div>
+              {/* STEP ANIMATED CONTENT */}
+              <AnimatePresence mode="wait">
+                {currentStep === 1 && (
+                  <motion.div
+                    key="step-1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-5"
+                  >
+                    <div className="border-b border-gray-100 pb-2">
+                      <h3 className="font-heading font-bold text-sm text-primary uppercase tracking-wider">
+                        1. Contact Information
+                      </h3>
+                      <p className="font-body text-xs text-muted">Where should we deliver your proposal?</p>
+                    </div>
 
-              {/* 🌟 LIVE SELECTED SCOPE SUMMARY BADGE */}
-              {selectedScopeName && (
-                <div className="p-3.5 rounded-2xl bg-accent/5 border border-accent/20 flex items-center justify-between text-xs animate-fade-in">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-accent animate-pulse" />
-                    <span className="font-heading font-bold text-primary">Selected Package:</span>
-                    <span className="font-heading font-bold text-accent">{selectedScopeName}</span>
+                    <Input
+                      label="Your Full Name"
+                      name="name"
+                      icon={User}
+                      placeholder="e.g. Dr. Ananya Sen"
+                      value={formData.name}
+                      onChange={handleChange}
+                      error={errors.name}
+                      required
+                    />
+                    <Input
+                      label="Email Address"
+                      name="email"
+                      type="email"
+                      icon={Mail}
+                      placeholder="e.g. ananya@mybusiness.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      error={errors.email}
+                      required
+                    />
+                    <Input
+                      label="Phone / WhatsApp Number (Optional)"
+                      name="phone"
+                      type="tel"
+                      icon={Phone}
+                      placeholder="e.g. +91 98765 43210"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      error={errors.phone}
+                      helperText="For quick WhatsApp quote updates & fast response"
+                    />
+                  </motion.div>
+                )}
+
+                {currentStep === 2 && (
+                  <motion.div
+                    key="step-2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-6"
+                  >
+                    {/* Industry Selector */}
+                    <div className="space-y-2">
+                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                        Select Your Industry / Business Type:
+                      </label>
+                      <AnimatedCardGrid
+                        options={businessTypeCards}
+                        selectedValue={formData.businessType}
+                        onChange={(val) => handleCardSelect('businessType', val)}
+                        columns="grid-cols-2 sm:grid-cols-3"
+                      />
+                    </div>
+
+                    {/* Package Selector */}
+                    <div className="space-y-2 pt-2">
+                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                        Select Desired Package Scope:
+                      </label>
+                      <AnimatedCardGrid
+                        options={projectTypeCards}
+                        selectedValue={formData.projectType}
+                        onChange={(val) => handleCardSelect('projectType', val)}
+                        columns="grid-cols-1 sm:grid-cols-2"
+                      />
+                    </div>
+
+                    {/* Budget Selector */}
+                    <div className="space-y-2 pt-2">
+                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                        Estimated Budget Range:
+                      </label>
+                      <AnimatedCardGrid
+                        options={budgetCards}
+                        selectedValue={formData.budget}
+                        onChange={(val) => handleCardSelect('budget', val)}
+                        columns="grid-cols-2 sm:grid-cols-3"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 3 && (
+                  <motion.div
+                    key="step-3"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-6"
+                  >
+                    <Textarea
+                      label="Tell us about your project requirements"
+                      name="message"
+                      placeholder="What goals, features, competitors, or specific deadlines do you have in mind?"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={5}
+                      error={errors.message}
+                      showCount
+                      maxChars={2000}
+                      required
+                    />
+
+                    {/* Timeline Selector */}
+                    <div className="space-y-2">
+                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                        Preferred Launch Timeline:
+                      </label>
+                      <AnimatedCardGrid
+                        options={timelineCards}
+                        selectedValue={formData.timeline}
+                        onChange={(val) => handleCardSelect('timeline', val)}
+                        columns="grid-cols-2 sm:grid-cols-2"
+                      />
+                    </div>
+
+                    <FileDropzone
+                      selectedFile={selectedFile}
+                      onFileSelect={setSelectedFile}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* 🌟 LIVE ESTIMATED COST BADGE */}
+              {activePackageObj && activePackageObj.price && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-2xl bg-gradient-to-r from-primary via-primary-dark to-primary text-white flex items-center justify-between shadow-lg"
+                >
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-heading font-bold text-accent uppercase tracking-wider block">
+                      Live Quote Estimate
+                    </span>
+                    <span className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
+                      <span>{activePackageObj.title}</span>
+                      <span className="text-xs text-emerald-400 font-semibold">• ⏱️ {activePackageObj.delivery}</span>
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                    Fixed Pricing
-                  </span>
-                </div>
+                  <div className="text-right">
+                    <span className="font-heading font-extrabold text-2xl text-accent">
+                      ₹{activePackageObj.price.toLocaleString()}
+                    </span>
+                  </div>
+                </motion.div>
               )}
 
-              {/* Navigation buttons */}
+              {/* Form Navigation Bar */}
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                 {currentStep > 1 ? (
                   <Button
@@ -688,7 +757,7 @@ function ContactFormContent() {
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Submitting Proposal...
+                        Generating Proposal...
                       </span>
                     ) : (
                       <>
@@ -702,112 +771,52 @@ function ContactFormContent() {
             </form>
           )}
         </div>
-
-        {/* Trust badges */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-6 text-xs">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-alt border border-gray-200 text-muted font-heading font-semibold">
-            <Lock className="w-3.5 h-3.5 text-accent" />
-            Zero-Spam Guarantee
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-alt border border-gray-200 text-muted font-heading font-semibold">
-            <Zap className="w-3.5 h-3.5 text-amber-500" />
-            24-Hour Proposal Turnaround
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-alt border border-gray-200 text-muted font-heading font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            30-Day Support Guarantee
-          </span>
-        </div>
       </div>
 
-      {/* ────── SIDEBAR ────── */}
-      <div className="lg:col-span-5 space-y-6">
-        {/* Stats counter */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-card p-5 text-center border border-gray-200/80 shadow-xs">
-            <p className="font-heading font-extrabold text-3xl text-accent">
-              <AnimatedCounter target={50} suffix="+" />
-            </p>
-            <p className="font-body text-xs text-muted mt-1 font-semibold">Projects Delivered</p>
-          </div>
-          <div className="bg-white rounded-card p-5 text-center border border-gray-200/80 shadow-xs">
-            <p className="font-heading font-extrabold text-3xl text-accent">
-              <AnimatedCounter target={24} suffix="h" />
-            </p>
-            <p className="font-body text-xs text-muted mt-1 font-semibold">Avg Response Time</p>
-          </div>
-        </div>
-
-        {/* Testimonial card */}
-        <Card variant="default" hoverEffect={false} className="border border-gray-200/80 shadow-xs space-y-4 relative overflow-hidden bg-white">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-accent rounded-r-full" />
-          <div className="flex gap-0.5">
-            {Array.from({ length: testimonial.rating }).map((_, i) => (
-              <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-            ))}
-          </div>
-          <blockquote className="font-body text-sm text-primary leading-relaxed italic">
-            &ldquo;{testimonial.quote}&rdquo;
-          </blockquote>
-          <div className="flex items-center gap-3 pt-1">
-            <div className="w-9 h-9 rounded-full bg-accent/10 text-accent flex items-center justify-center font-heading font-bold text-sm">
-              {testimonial.author.charAt(0)}
-            </div>
-            <div>
-              <p className="font-heading font-bold text-xs text-primary">
-                {testimonial.author}
-              </p>
-              <p className="font-body text-[11px] text-muted font-medium">{testimonial.role}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Why Choose Us */}
-        <Card variant="default" hoverEffect={false} className="border border-gray-200/80 shadow-xs space-y-5 bg-white">
-          <h3 className="font-heading font-bold text-base text-primary border-b border-gray-100 pb-3 uppercase tracking-wider">
+      {/* ────── SIDEBAR SUMMARY ────── */}
+      <div className="lg:col-span-4 space-y-6">
+        <Card variant="default" hoverEffect={false} className="border border-gray-200/80 shadow-xs space-y-4 bg-white">
+          <h3 className="font-heading font-bold text-sm text-primary uppercase tracking-wider border-b border-gray-100 pb-2">
             Why Choose Dev Krafters?
           </h3>
-          <div className="space-y-4">
-            {whyUsPoints.map((point, idx) => {
-              const IconComp = point.icon;
-              return (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-accent/10 text-accent flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <IconComp className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <h4 className="font-heading font-bold text-sm text-primary">
-                      {point.title}
-                    </h4>
-                    <p className="font-body text-xs text-muted leading-relaxed">
-                      {point.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="space-y-3.5 text-xs">
+            <div className="flex items-start gap-2.5">
+              <UserCheck className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-primary block">Direct Developer Access</span>
+                <span className="text-muted">Work directly with the engineer building your site.</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-primary block">Fast Turnaround</span>
+                <span className="text-muted">Launch-ready sites in as fast as 3 to 10 days.</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-primary block">Fixed Pricing Guarantee</span>
+                <span className="text-muted">Zero hidden fees or unexpected line items.</span>
+              </div>
+            </div>
           </div>
         </Card>
 
-        {/* Direct Contact Card */}
-        <Card variant="alt" hoverEffect={false} className="space-y-4 bg-surface-alt border border-gray-200/80">
-          <h3 className="font-heading font-bold text-base text-primary">
-            Direct Contact
-          </h3>
-          <p className="font-body text-xs text-muted leading-relaxed">
-            Prefer direct email or WhatsApp? Reach out to our lead engineer directly:
-          </p>
-
+        {/* Direct Email Card */}
+        <Card variant="alt" hoverEffect={false} className="space-y-3 bg-surface-alt border border-gray-200/80">
+          <h4 className="font-heading font-bold text-xs text-primary uppercase tracking-wider">
+            Direct Contact Options
+          </h4>
           <a
             href="mailto:hello@devkrafters.com"
-            className="flex items-center gap-3 p-3.5 rounded-xl bg-white border border-gray-200 text-primary hover:border-accent hover:text-accent transition-all shadow-2xs group"
+            className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-200 text-primary hover:border-accent hover:text-accent transition-all text-xs group"
           >
-            <div className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors">
-              <Mail className="w-4 h-4" />
-            </div>
+            <Mail className="w-4 h-4 text-accent" />
             <div>
-              <p className="font-heading font-semibold text-[10px] text-muted uppercase tracking-wider">Direct Email</p>
-              <p className="font-body font-bold text-xs">hello@devkrafters.com</p>
+              <span className="font-bold block">hello@devkrafters.com</span>
+              <span className="text-[10px] text-muted">Direct Email Inbox</span>
             </div>
           </a>
         </Card>
@@ -818,22 +827,21 @@ function ContactFormContent() {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-surface py-12 sm:py-16 relative overflow-hidden">
+    <div className="min-h-screen bg-surface py-12 sm:py-16 relative overflow-hidden font-body">
       <FloatingParticles count={15} />
 
       <div className="max-w-content mx-auto px-4 sm:px-6 relative z-10 space-y-10">
-        {/* Header section */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <h1 className="font-heading font-extrabold text-3xl sm:text-5xl text-primary tracking-tight">
             Let&apos;s Build Your <span className="text-accent">Digital Presence</span>
           </h1>
           <p className="font-body text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
-            Have a project in mind or need a custom web quote? Fill out the interactive form below and we&apos;ll get back to you within 24 hours.
+            Choose your project requirements below to receive a custom quote & launch timeline within 24 hours.
           </p>
         </div>
 
         <Suspense fallback={<div className="text-center py-12 text-muted font-heading font-bold">Loading Inquiry Desk...</div>}>
-          <ContactFormContent />
+          <InteractiveFormContent />
         </Suspense>
       </div>
     </div>
