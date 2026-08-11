@@ -35,813 +35,681 @@ import {
   HelpCircle,
   TrendingUp,
   Flame,
+  Store,
+  PhoneCall,
+  MapPin,
+  Camera,
+  FileText,
+  Smartphone,
+  CheckSquare,
+  Bot,
+  SlidersHorizontal,
+  RefreshCw,
+  QrCode,
+  ThumbsUp,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
-// FORM TYPES & INTERACTIVE DATA
+// DATA & TYPES
 // ─────────────────────────────────────────────
-interface FormData {
+interface ShopFeature {
+  id: string;
   name: string;
-  email: string;
-  phone: string;
-  businessType: string;
-  projectType: string;
-  budget: string;
-  message: string;
-  timeline: string;
-}
-
-interface FieldErrors {
-  name?: string;
-  email?: string;
-  phone?: string;
-  message?: string;
-}
-
-interface OptionCard {
-  value: string;
-  title: string;
-  subtitle?: string;
-  price?: number;
-  delivery?: string;
   icon: string;
-  popular?: boolean;
+  description: string;
 }
 
-const businessTypeCards: OptionCard[] = [
-  { value: 'salon-beauty', title: 'Salon & Spa', subtitle: 'Bookings & Services', icon: '💇' },
-  { value: 'restaurant-cafe', title: 'Restaurant / Cafe', subtitle: 'Digital Menu & Orders', icon: '🍽️' },
-  { value: 'clinic-dental', title: 'Clinic & Healthcare', subtitle: 'Dental & Medical Appointments', icon: '🏥', popular: true },
-  { value: 'professional-services', title: 'Legal & Consulting', subtitle: 'Lead Gen & Retainers', icon: '⚖️' },
-  { value: 'retail-store', title: 'Retail Shop / Boutique', subtitle: 'Storefront & Products', icon: '🏬' },
-  { value: 'real-estate', title: 'Real Estate & Build', subtitle: 'Property Listings', icon: '🏗️' },
-  { value: 'other', title: 'Other Industry', subtitle: 'Custom Enterprise', icon: '🌐' },
+const SHOP_FEATURES: ShopFeature[] = [
+  { id: 'maps', name: 'Google Maps Location', icon: '📍', description: 'Customers find your shop address easily' },
+  { id: 'whatsapp', name: 'WhatsApp Order Button', icon: '📱', description: 'Direct customer orders on your phone' },
+  { id: 'gallery', name: 'Product Photo Gallery', icon: '📸', description: 'Show photos of your shop & items' },
+  { id: 'pricelist', name: 'Rate List / Menu', icon: '📋', description: 'Show item prices & service menu' },
+  { id: 'reviews', name: 'Customer Ratings & Reviews', icon: '🌟', description: 'Show 5-star Google customer reviews' },
+  { id: 'upi', name: 'UPI QR Payment Code', icon: '💳', description: 'Instant payment via GPay/PhonePe/Paytm' },
 ];
 
-const projectTypeCards: OptionCard[] = [
-  { value: 'starter-page', title: 'Starter Page', price: 5000, delivery: '3 Days', subtitle: '1-Page Quick Launch', icon: '⚡' },
-  { value: 'landing-page', title: 'Landing Page', price: 9000, delivery: '5 Days', subtitle: 'High Conversion Campaign', icon: '🚀' },
-  { value: 'business-website', title: 'Business Website', price: 25000, delivery: '10 Days', subtitle: '5-8 Pages + SEO + Maps', icon: '💼', popular: true },
-  { value: 'ecommerce', title: 'E-commerce Store', price: 75000, delivery: '20 Days', subtitle: 'Storefront + Payments', icon: '🛒' },
-  { value: 'maintenance', title: 'Care & Support', price: 3000, delivery: 'Monthly', subtitle: 'Uptime + Edits', icon: '🛠️' },
-  { value: 'ai-chatbot', title: 'AI Lead Chatbot', price: 8000, delivery: '2 Days', subtitle: '24/7 Auto Replying Bot', icon: '🤖' },
+const SHOP_TYPES = [
+  { value: 'retail', title: 'Kirana & Hardware Shop', icon: '🏪', sampleName: 'Amrjeet Hardware Store' },
+  { value: 'salon', title: 'Salon & Beauty Parlour', icon: '💇', sampleName: 'Aura Hair & Beauty Studio' },
+  { value: 'restaurant', title: 'Restaurant & Dhaba', icon: '🍽️', sampleName: 'Spice Craft Bistro' },
+  { value: 'clinic', title: 'Clinic & Doctor', icon: '🏥', sampleName: 'BrightSmile Dental Clinic' },
+  { value: 'boutique', title: 'Clothing Boutique', icon: '👗', sampleName: 'Urban Threads Boutique' },
+  { value: 'services', title: 'Builder & Contractor', icon: '🏗️', sampleName: 'Apex Construction Co.' },
 ];
 
-const budgetCards: OptionCard[] = [
-  { value: 'under-10k', title: 'Under ₹10,000', subtitle: 'Starter Budget', icon: '🟢' },
-  { value: '10k-25k', title: '₹10,000 – ₹25,000', subtitle: 'Standard Business', icon: '🔵', popular: true },
-  { value: '25k-75k', title: '₹25,000 – ₹75,000', subtitle: 'Growth Scale Scope', icon: '🟣' },
-  { value: '75k-plus', title: '₹75,000+', subtitle: 'Full Enterprise Store', icon: '🌟' },
-  { value: 'not-sure', title: 'Flexible / Open', subtitle: 'Advise Me on Scope', icon: '❓' },
-];
-
-const timelineCards: OptionCard[] = [
-  { value: 'asap', title: 'ASAP — Rush Build', subtitle: 'Priority Queue (3-5 Days)', icon: '⚡', popular: true },
-  { value: '1-2-weeks', title: '1 – 2 Weeks', subtitle: 'Standard Delivery', icon: '🗓️' },
-  { value: '1-month', title: 'About 1 Month', subtitle: 'Planned Launch', icon: '📆' },
-  { value: 'flexible', title: 'Flexible / Open', subtitle: 'No Rush Needed', icon: '⏳' },
-];
-
-const STEPS = [
-  { id: 1, label: 'Your Info', description: 'Contact details' },
-  { id: 2, label: 'Scope & Price', description: 'Select package' },
-  { id: 3, label: 'Requirements', description: 'Brief & details' },
+const PACKAGE_OPTIONS = [
+  { value: 'express', title: '1-Page Express Site', price: 5000, days: '3 Days', badge: 'Fast Launch' },
+  { value: 'standard', title: 'Full Shop Website', price: 15000, days: '7 Days', badge: 'Most Popular', popular: true },
+  { value: 'store', title: 'Online Selling Store', price: 35000, days: '14 Days', badge: 'Full Online Store' },
 ];
 
 // ─────────────────────────────────────────────
-// ANIMATED STEP PROGRESS BAR
+// CHAT BOT MESSAGE INTERFACE
 // ─────────────────────────────────────────────
-function AnimatedStepProgressBar({ currentStep }: { currentStep: number }) {
-  const progressPercent = ((currentStep - 1) / (STEPS.length - 1)) * 100;
-
-  return (
-    <div className="w-full space-y-4 mb-8 font-body">
-      {/* Top Percentage Indicator */}
-      <div className="flex justify-between items-center text-xs">
-        <span className="font-heading font-bold text-accent uppercase tracking-wider flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-          Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].label}
-        </span>
-        <span className="font-heading font-extrabold text-primary bg-accent/10 px-2.5 py-0.5 rounded-full text-[11px]">
-          {Math.round(progressPercent)}% Completed
-        </span>
-      </div>
-
-      {/* Progress Track */}
-      <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden p-0.5 border border-gray-200/80 relative">
-        <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-accent via-amber-400 to-emerald-400 shadow-md"
-          initial={{ width: 0 }}
-          animate={{ width: `${progressPercent}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        />
-      </div>
-
-      {/* Step Circle Badges */}
-      <div className="flex justify-between items-center">
-        {STEPS.map((step) => {
-          const isActive = currentStep === step.id;
-          const isCompleted = currentStep > step.id;
-
-          return (
-            <div key={step.id} className="flex items-center gap-2">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className={`w-8 h-8 rounded-xl flex items-center justify-center font-heading font-bold text-xs transition-all duration-300 ${
-                  isCompleted
-                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
-                    : isActive
-                    ? 'bg-accent text-white shadow-lg shadow-accent/30 ring-4 ring-accent/20'
-                    : 'bg-gray-100 text-muted border border-gray-200'
-                }`}
-              >
-                {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : step.id}
-              </motion.div>
-              <div className="hidden sm:block text-left">
-                <p className={`font-heading text-xs font-bold ${isActive || isCompleted ? 'text-primary' : 'text-muted'}`}>
-                  {step.label}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+interface ChatMessage {
+  id: number;
+  sender: 'bot' | 'user';
+  text: string;
+  options?: { label: string; action: () => void }[];
 }
 
 // ─────────────────────────────────────────────
-// INTERACTIVE OPTION CARD GRID WITH HOVER & GLOW
+// MAIN INTERACTIVE EXPERIMENTAL FORM
 // ─────────────────────────────────────────────
-function AnimatedCardGrid({
-  options,
-  selectedValue,
-  onChange,
-  columns = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-}: {
-  options: OptionCard[];
-  selectedValue: string;
-  onChange: (val: string) => void;
-  columns?: string;
-}) {
-  return (
-    <div className={`grid ${columns} gap-3 font-body`}>
-      {options.map((opt) => {
-        const isSelected = selectedValue === opt.value;
-
-        return (
-          <motion.div
-            key={opt.value}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onChange(opt.value)}
-            className={`relative p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer text-left select-none overflow-hidden ${
-              isSelected
-                ? 'border-accent bg-accent/5 ring-4 ring-accent/15 shadow-xl shadow-accent/10'
-                : 'border-gray-200/90 bg-white hover:border-gray-300 hover:bg-surface-alt/50 shadow-xs'
-            }`}
-          >
-            {/* Popular Badge */}
-            {opt.popular && (
-              <div className="absolute top-0 right-0 bg-accent text-white text-[9px] font-heading font-extrabold uppercase px-2.5 py-0.5 rounded-bl-xl shadow-xs">
-                Popular
-              </div>
-            )}
-
-            <div className="flex items-start gap-3">
-              <div className="text-2xl shrink-0 p-2 rounded-xl bg-gray-50 border border-gray-100 shadow-2xs">
-                {opt.icon}
-              </div>
-
-              <div className="space-y-0.5 flex-1 min-w-0">
-                <div className="flex justify-between items-center gap-2">
-                  <h4 className="font-heading font-bold text-xs text-primary truncate">
-                    {opt.title}
-                  </h4>
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="w-4 h-4 rounded-full bg-accent text-white flex items-center justify-center shrink-0"
-                    >
-                      <Check className="w-3 h-3 stroke-[3]" />
-                    </motion.div>
-                  )}
-                </div>
-
-                {opt.subtitle && (
-                  <p className="font-body text-[11px] text-muted truncate">{opt.subtitle}</p>
-                )}
-
-                {opt.price !== undefined && (
-                  <div className="pt-1.5 flex items-center justify-between">
-                    <span className="font-heading font-extrabold text-sm text-accent">
-                      ₹{opt.price.toLocaleString()}
-                    </span>
-                    {opt.delivery && (
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                        ⏱️ {opt.delivery}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// SUCCESS STATE WITH CELEBRATION
-// ─────────────────────────────────────────────
-function AnimatedSuccessState({
-  formData,
-  onReset,
-}: {
-  formData: FormData;
-  onReset: () => void;
-}) {
-  const selectedPkg = projectTypeCards.find((p) => p.value === formData.projectType);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="space-y-6 py-6 text-center font-body"
-    >
-      {/* Animated Check Icon */}
-      <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-        className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30"
-      >
-        <CheckCircle2 className="w-10 h-10" />
-      </motion.div>
-
-      <div className="space-y-2">
-        <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-primary">
-          Inquiry Successfully Logged! 🚀
-        </h3>
-        <p className="font-body text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
-          We&apos;ve dispatched your proposal to our lead engineer. You will receive an official quote & turnaround timeline via email/WhatsApp within 24 hours.
-        </p>
-      </div>
-
-      {/* Itemized Confirmation Receipt */}
-      <div className="p-5 bg-surface-alt/90 rounded-2xl border border-gray-200 text-left space-y-3 font-body text-xs text-primary max-w-md mx-auto shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-200/80 pb-2">
-          <span className="font-heading font-bold text-sm text-primary">Proposal Receipt</span>
-          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
-            Logged to Vault
-          </span>
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex justify-between">
-            <span className="text-muted">Client Name:</span>
-            <span className="font-bold text-primary">{formData.name}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted">Email Contact:</span>
-            <span className="font-mono text-primary">{formData.email}</span>
-          </div>
-          {formData.phone && (
-            <div className="flex justify-between">
-              <span className="text-muted">WhatsApp / Phone:</span>
-              <span className="font-mono text-primary">{formData.phone}</span>
-            </div>
-          )}
-          {selectedPkg && (
-            <div className="flex justify-between pt-1 border-t border-gray-200/60 font-bold">
-              <span className="text-primary">Selected Package:</span>
-              <span className="text-accent">{selectedPkg.title} (₹{selectedPkg.price?.toLocaleString()})</span>
-            </div>
-          )}
-        </div>
-
-        {/* WhatsApp Fast-Track Button */}
-        {formData.phone && (
-          <a
-            href={`https://wa.me/919999999999?text=Hi!%20I%20just%20submitted%20a%20project%20inquiry%20for%20${encodeURIComponent(
-              formData.name
-            )}%20(${encodeURIComponent(selectedPkg?.title || 'Web Project')}).`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all mt-2"
-          >
-            <MessageCircle className="w-4 h-4 fill-white" />
-            <span>Fast-Track Proposal on WhatsApp</span>
-          </a>
-        )}
-      </div>
-
-      <Button variant="secondary" size="md" onClick={onReset} className="font-bold">
-        Send Another Proposal
-      </Button>
-    </motion.div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// MAIN INTERACTIVE FORM CONTENT
-// ─────────────────────────────────────────────
-function InteractiveFormContent() {
+function ExperimentalFormContent() {
   const searchParams = useSearchParams();
-  const initialPackage =
-    searchParams.get('package') ||
-    searchParams.get('service') ||
-    searchParams.get('waitlist') ||
-    '';
+  const [formMode, setFormMode] = useState<'configurator' | 'chat'>('configurator');
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    phone: '',
-    businessType: 'clinic-dental',
-    projectType: initialPackage || 'business-website',
-    budget: '10k-25k',
-    message: '',
-    timeline: 'asap',
-  });
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  // Configurator State
+  const [shopType, setShopType] = useState('retail');
+  const [shopName, setShopName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [selectedPackage, setSelectedPackage] = useState('standard');
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['maps', 'whatsapp', 'gallery']);
+  
+  // Submit state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
-      if (errors[name as keyof FieldErrors]) {
-        setErrors((prev) => ({ ...prev, [name]: undefined }));
-      }
-    },
-    [errors]
-  );
+  // Chat State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
 
-  const handleCardSelect = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const currentShopTypeObj = SHOP_TYPES.find((t) => t.value === shopType) || SHOP_TYPES[0];
+  const currentPkgObj = PACKAGE_OPTIONS.find((p) => p.value === selectedPackage) || PACKAGE_OPTIONS[1];
+
+  const toggleFeature = (id: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+    );
   };
 
-  // Validation
-  const validateStep = useCallback(
-    (step: number): boolean => {
-      const newErrors: FieldErrors = {};
-
-      if (step === 1) {
-        if (!formData.name.trim()) newErrors.name = 'Please enter your name';
-        if (!formData.email.trim()) {
-          newErrors.email = 'Please enter your email address';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-          newErrors.email = 'Please enter a valid email address';
-        }
-        if (formData.phone && !/^[+]?\d[\d\s\-()]{6,}$/.test(formData.phone.trim())) {
-          newErrors.phone = 'Please enter a valid phone number';
-        }
-      }
-
-      if (step === 3) {
-        if (!formData.message.trim()) newErrors.message = 'Please tell us briefly about your project requirements';
-      }
-
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    },
-    [formData]
-  );
-
-  const goNext = useCallback(() => {
-    if (!validateStep(currentStep)) return;
-    setCurrentStep((s) => Math.min(s + 1, 3));
-  }, [currentStep, validateStep]);
-
-  const goBack = useCallback(() => {
-    setCurrentStep((s) => Math.max(s - 1, 1));
-  }, []);
-
-  // Submit Handler
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleConfiguratorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!phone.trim()) {
+      setSubmitError('Please enter your Mobile or WhatsApp number.');
+      return;
+    }
     setSubmitError('');
-    if (!validateStep(3)) return;
-
     setIsSubmitting(true);
 
-    const parts = [formData.message.trim()];
-    if (formData.budget) {
-      const bCard = budgetCards.find((b) => b.value === formData.budget);
-      parts.push(`\n--- Budget Range ---\n${bCard?.title || formData.budget}`);
-    }
-    if (formData.timeline) {
-      const tCard = timelineCards.find((t) => t.value === formData.timeline);
-      parts.push(`Preferred Timeline: ${tCard?.title || formData.timeline}`);
-    }
+    const featureNames = selectedFeatures
+      .map((fid) => SHOP_FEATURES.find((f) => f.id === fid)?.name)
+      .filter(Boolean)
+      .join(', ');
+
+    const payloadMessage = `
+Visual Shop Builder Submission:
+Shop Name: ${shopName || currentShopTypeObj.sampleName}
+Shop Type: ${currentShopTypeObj.title}
+Selected Package: ${currentPkgObj.title} (₹${currentPkgObj.price})
+Chosen Features: ${featureNames || 'Standard Features'}
+    `.trim();
 
     try {
-      let fileUrl = '';
-      if (selectedFile) {
-        try {
-          const fileData = new FormData();
-          fileData.append('file', selectedFile);
-          const uploadRes = await fetch('/api/upload', {
-            method: 'POST',
-            body: fileData,
-          });
-          const uploadResult = await uploadRes.json();
-          if (uploadResult.success) {
-            fileUrl = uploadResult.fileUrl;
-            parts.push(`Attached Brief URL: ${fileUrl}`);
-          }
-        } catch (uploadErr) {
-          console.error('File upload error:', uploadErr);
-        }
-      }
-
-      const submissionPayload = {
-        type: 'contact',
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        projectType: projectTypeCards.find((p) => p.value === formData.projectType)?.title || formData.projectType,
-        budget: formData.budget,
-        message: parts.join('\n'),
-        fileUrl,
-        date: new Date().toISOString(),
-      };
-
-      try {
-        await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(submissionPayload),
-        });
-      } catch (dbErr) {
-        console.error('DB Post failed:', dbErr);
-      }
-
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          businessType: formData.businessType,
-          projectType: formData.projectType,
-          message: parts.join('\n'),
+          name: shopName || 'Shop Owner',
+          email: `${phone.trim()}@whatsapp.devkrafters.com`,
+          phone: phone.trim(),
+          businessType: currentShopTypeObj.title,
+          projectType: currentPkgObj.title,
+          message: payloadMessage,
         }),
       });
 
-      const result = await response.json();
-      if (!response.ok || result.error) {
-        throw new Error(result.error || 'Failed to submit proposal.');
+      const resData = await response.json();
+      if (!response.ok || resData.error) {
+        throw new Error(resData.error || 'Submission failed');
       }
 
       setIsSubmitted(true);
     } catch (err: unknown) {
-      setSubmitError(err instanceof Error ? err.message : 'Submission failed.');
+      setSubmitError(err instanceof Error ? err.message : 'Error submitting enquiry');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const activePackageObj = projectTypeCards.find((p) => p.value === formData.projectType);
+  // Initialize Chat Mode Conversation
+  useEffect(() => {
+    if (formMode === 'chat' && chatMessages.length === 0) {
+      setChatMessages([
+        {
+          id: 1,
+          sender: 'bot',
+          text: 'Namaste! 👋 I am Dev Krafters AI Shop Assistant. I can help you launch a website for your shop in 1 minute.',
+        },
+        {
+          id: 2,
+          sender: 'bot',
+          text: 'What type of shop or business do you run?',
+          options: SHOP_TYPES.map((st) => ({
+            label: `${st.icon} ${st.title}`,
+            action: () => handleChatShopTypeSelect(st.title),
+          })),
+        },
+      ]);
+    }
+  }, [formMode, chatMessages]);
+
+  const handleChatShopTypeSelect = (selectedType: string) => {
+    setChatMessages((prev) => [
+      ...prev,
+      { id: Date.now(), sender: 'user', text: `My shop is: ${selectedType}` },
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: 'Awesome! Which website package fits your budget?',
+        options: PACKAGE_OPTIONS.map((pkg) => ({
+          label: `${pkg.title} — ₹${pkg.price.toLocaleString()} (${pkg.days})`,
+          action: () => handleChatPkgSelect(selectedType, pkg.title, pkg.price),
+        })),
+      },
+    ]);
+  };
+
+  const handleChatPkgSelect = (sType: string, pkgTitle: string, pkgPrice: number) => {
+    setChatMessages((prev) => [
+      ...prev,
+      { id: Date.now(), sender: 'user', text: `Selected Package: ${pkgTitle} (₹${pkgPrice})` },
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: 'Great choice! Please enter your Mobile / WhatsApp number so our team can send you live design demos:',
+      },
+    ]);
+  };
+
+  const handleChatInputSend = async () => {
+    if (!chatInput.trim()) return;
+    const val = chatInput.trim();
+    setChatInput('');
+
+    setChatMessages((prev) => [
+      ...prev,
+      { id: Date.now(), sender: 'user', text: val },
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `Thank you! We've saved your contact (${val}). Our lead developer will call or message you on WhatsApp within 2 hours! 🚀`,
+      },
+    ]);
+
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Chat Lead',
+          email: `${val}@chat.devkrafters.com`,
+          phone: val,
+          businessType: 'Chat Inquiry',
+          projectType: 'Website Inquiry',
+          message: `Lead via Chat Assistant: ${val}`,
+        }),
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-start font-body">
-      {/* ────── FORM CONTAINER CARD ────── */}
-      <div className="lg:col-span-8">
-        <div className="glass-card rounded-card p-6 sm:p-9 border border-gray-200/80 shadow-2xl relative overflow-hidden bg-white/95 backdrop-blur-xl">
-          {isSubmitted ? (
-            <AnimatedSuccessState formData={formData} onReset={() => { setIsSubmitted(false); setCurrentStep(1); }} />
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Form Title & Subtitle */}
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-[11px] font-heading font-extrabold uppercase tracking-wider">
-                  <Flame className="w-3.5 h-3.5 animate-bounce" /> Interactive Project Inquiry
+    <div className="space-y-10 font-body">
+      {/* ────── OUT-OF-THE-BOX MODE TOGGLE HEADER ────── */}
+      <div className="text-center max-w-2xl mx-auto space-y-4">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold tracking-wide">
+          <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" />
+          <span>Non-Traditional Out-of-the-Box Form</span>
+        </div>
+        <h1 className="font-heading font-extrabold text-3xl sm:text-5xl text-primary tracking-tight">
+          Build Your Shop Website <span className="text-accent">Visually</span>
+        </h1>
+        <p className="font-body text-sm sm:text-base text-muted">
+          No forms to struggle with! Tap options on the left and see your shop website come alive on the live smartphone preview.
+        </p>
+
+        {/* Mode Selector Switcher */}
+        <div className="inline-flex p-1.5 rounded-2xl bg-white border border-gray-200 shadow-md gap-1">
+          <button
+            onClick={() => setFormMode('configurator')}
+            className={`px-5 py-2.5 rounded-xl font-heading text-xs font-bold transition-all flex items-center gap-2 ${
+              formMode === 'configurator'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-muted hover:text-primary hover:bg-gray-100'
+            }`}
+          >
+            <SlidersHorizontal size={15} />
+            <span>Visual Live Configurator</span>
+          </button>
+
+          <button
+            onClick={() => setFormMode('chat')}
+            className={`px-5 py-2.5 rounded-xl font-heading text-xs font-bold transition-all flex items-center gap-2 ${
+              formMode === 'chat'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-muted hover:text-primary hover:bg-gray-100'
+            }`}
+          >
+            <Bot size={15} />
+            <span>WhatsApp AI Chat Assistant</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────
+          MODE 1: VISUAL LIVE CONFIGURATOR + LIVE SMARTPHONE PREVIEW
+      ───────────────────────────────────────────── */}
+      {formMode === 'configurator' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* LEFT PANEL: INTERACTIVE CONFIGURATOR (7 COLS) */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white rounded-card p-6 sm:p-8 border border-gray-200/80 shadow-2xl space-y-6">
+              {isSubmitted ? (
+                <div className="text-center py-10 space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg">
+                    <CheckCircle2 size={36} />
+                  </div>
+                  <h3 className="font-heading font-extrabold text-2xl text-primary">
+                    Your Shop Site Order Received! 🚀
+                  </h3>
+                  <p className="font-body text-sm text-muted max-w-sm mx-auto">
+                    We will send design previews for <strong>{shopName || currentShopTypeObj.sampleName}</strong> to your WhatsApp number ({phone}).
+                  </p>
+                  <a
+                    href={`https://wa.me/919999999999?text=Hi!%20I%20just%20built%20my%20website%20preview%20for%20${encodeURIComponent(
+                      shopName || currentShopTypeObj.sampleName
+                    )}.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-heading font-bold text-xs shadow-md hover:bg-emerald-700 transition"
+                  >
+                    <MessageCircle size={16} /> Chat on WhatsApp Now
+                  </a>
                 </div>
-                <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-primary">
-                  Request Your Custom Proposal
-                </h2>
-                <p className="font-body text-xs sm:text-sm text-muted">
-                  Tap through the options below to generate your exact project scope & price.
-                </p>
-              </div>
-
-              {/* Step Progress Bar */}
-              <AnimatedStepProgressBar currentStep={currentStep} />
-
-              {/* Submit Error Alert */}
-              {submitError && (
-                <Alert type="error" onClose={() => setSubmitError('')}>
-                  {submitError}
-                </Alert>
-              )}
-
-              {/* STEP ANIMATED CONTENT */}
-              <AnimatePresence mode="wait">
-                {currentStep === 1 && (
-                  <motion.div
-                    key="step-1"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-5"
-                  >
-                    <div className="border-b border-gray-100 pb-2">
-                      <h3 className="font-heading font-bold text-sm text-primary uppercase tracking-wider">
-                        1. Contact Information
-                      </h3>
-                      <p className="font-body text-xs text-muted">Where should we deliver your proposal?</p>
+              ) : (
+                <form onSubmit={handleConfiguratorSubmit} className="space-y-6">
+                  
+                  {/* STEP 1: SHOP TYPE Visual Selector */}
+                  <div className="space-y-3">
+                    <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                      1. Select Your Shop Category:
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {SHOP_TYPES.map((st) => {
+                        const isSelected = shopType === st.value;
+                        return (
+                          <div
+                            key={st.value}
+                            onClick={() => setShopType(st.value)}
+                            className={`p-3 rounded-2xl border-2 transition-all cursor-pointer select-none text-center space-y-1 ${
+                              isSelected
+                                ? 'border-accent bg-accent/5 shadow-md scale-[1.02]'
+                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                            }`}
+                          >
+                            <span className="text-2xl block">{st.icon}</span>
+                            <span className="font-heading font-bold text-xs text-primary block truncate">
+                              {st.title}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
-
-                    <Input
-                      label="Your Full Name"
-                      name="name"
-                      icon={User}
-                      placeholder="e.g. Dr. Ananya Sen"
-                      value={formData.name}
-                      onChange={handleChange}
-                      error={errors.name}
-                      required
-                    />
-                    <Input
-                      label="Email Address"
-                      name="email"
-                      type="email"
-                      icon={Mail}
-                      placeholder="e.g. ananya@mybusiness.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      error={errors.email}
-                      required
-                    />
-                    <Input
-                      label="Phone / WhatsApp Number (Optional)"
-                      name="phone"
-                      type="tel"
-                      icon={Phone}
-                      placeholder="e.g. +91 98765 43210"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      error={errors.phone}
-                      helperText="For quick WhatsApp quote updates & fast response"
-                    />
-                  </motion.div>
-                )}
-
-                {currentStep === 2 && (
-                  <motion.div
-                    key="step-2"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-6"
-                  >
-                    {/* Industry Selector */}
-                    <div className="space-y-2">
-                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                        Select Your Industry / Business Type:
-                      </label>
-                      <AnimatedCardGrid
-                        options={businessTypeCards}
-                        selectedValue={formData.businessType}
-                        onChange={(val) => handleCardSelect('businessType', val)}
-                        columns="grid-cols-2 sm:grid-cols-3"
-                      />
-                    </div>
-
-                    {/* Package Selector */}
-                    <div className="space-y-2 pt-2">
-                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                        Select Desired Package Scope:
-                      </label>
-                      <AnimatedCardGrid
-                        options={projectTypeCards}
-                        selectedValue={formData.projectType}
-                        onChange={(val) => handleCardSelect('projectType', val)}
-                        columns="grid-cols-1 sm:grid-cols-2"
-                      />
-                    </div>
-
-                    {/* Budget Selector */}
-                    <div className="space-y-2 pt-2">
-                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                        Estimated Budget Range:
-                      </label>
-                      <AnimatedCardGrid
-                        options={budgetCards}
-                        selectedValue={formData.budget}
-                        onChange={(val) => handleCardSelect('budget', val)}
-                        columns="grid-cols-2 sm:grid-cols-3"
-                      />
-                    </div>
-                  </motion.div>
-                )}
-
-                {currentStep === 3 && (
-                  <motion.div
-                    key="step-3"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-6"
-                  >
-                    <Textarea
-                      label="Tell us about your project requirements"
-                      name="message"
-                      placeholder="What goals, features, competitors, or specific deadlines do you have in mind?"
-                      value={formData.message}
-                      onChange={handleChange}
-                      rows={5}
-                      error={errors.message}
-                      showCount
-                      maxChars={2000}
-                      required
-                    />
-
-                    {/* Timeline Selector */}
-                    <div className="space-y-2">
-                      <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                        Preferred Launch Timeline:
-                      </label>
-                      <AnimatedCardGrid
-                        options={timelineCards}
-                        selectedValue={formData.timeline}
-                        onChange={(val) => handleCardSelect('timeline', val)}
-                        columns="grid-cols-2 sm:grid-cols-2"
-                      />
-                    </div>
-
-                    <FileDropzone
-                      selectedFile={selectedFile}
-                      onFileSelect={setSelectedFile}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* 🌟 LIVE ESTIMATED COST BADGE */}
-              {activePackageObj && activePackageObj.price && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-2xl bg-gradient-to-r from-primary via-primary-dark to-primary text-white flex items-center justify-between shadow-lg"
-                >
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] font-heading font-bold text-accent uppercase tracking-wider block">
-                      Live Quote Estimate
-                    </span>
-                    <span className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
-                      <span>{activePackageObj.title}</span>
-                      <span className="text-xs text-emerald-400 font-semibold">• ⏱️ {activePackageObj.delivery}</span>
-                    </span>
                   </div>
-                  <div className="text-right">
-                    <span className="font-heading font-extrabold text-2xl text-accent">
-                      ₹{activePackageObj.price.toLocaleString()}
-                    </span>
+
+                  {/* STEP 2: FEATURE TOGGLE CHIPS */}
+                  <div className="space-y-3 pt-2">
+                    <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                      2. Toggle Features For Your Website (Updates Preview Live):
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {SHOP_FEATURES.map((feat) => {
+                        const isChecked = selectedFeatures.includes(feat.id);
+                        return (
+                          <div
+                            key={feat.id}
+                            onClick={() => toggleFeature(feat.id)}
+                            className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 select-none ${
+                              isChecked
+                                ? 'border-emerald-500 bg-emerald-50/50 shadow-xs'
+                                : 'border-gray-200 bg-white opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="text-xl shrink-0">{feat.icon}</span>
+                              <div className="min-w-0">
+                                <span className="font-heading font-bold text-xs text-primary block truncate">
+                                  {feat.name}
+                                </span>
+                                <span className="font-body text-[10px] text-muted block truncate">
+                                  {feat.description}
+                                </span>
+                              </div>
+                            </div>
+                            <div
+                              className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition ${
+                                isChecked ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 bg-white'
+                              }`}
+                            >
+                              {isChecked && <Check size={12} strokeWidth={3} />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </motion.div>
-              )}
 
-              {/* Form Navigation Bar */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                {currentStep > 1 ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="md"
-                    onClick={goBack}
-                    className="font-bold"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-1" />
-                    <span>Back</span>
-                  </Button>
-                ) : (
-                  <div />
-                )}
+                  {/* STEP 3: PACKAGE CARDS */}
+                  <div className="space-y-3 pt-2">
+                    <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                      3. Select Package & Price:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {PACKAGE_OPTIONS.map((pkg) => {
+                        const isSelected = selectedPackage === pkg.value;
+                        return (
+                          <div
+                            key={pkg.value}
+                            onClick={() => setSelectedPackage(pkg.value)}
+                            className={`p-3 rounded-2xl border-2 text-center transition-all cursor-pointer select-none space-y-1 ${
+                              isSelected
+                                ? 'border-accent bg-accent/5 shadow-md ring-2 ring-accent/20'
+                                : 'border-gray-200 bg-white hover:border-gray-300'
+                            }`}
+                          >
+                            <span className="font-heading font-extrabold text-sm text-accent block">
+                              ₹{pkg.price.toLocaleString()}
+                            </span>
+                            <span className="font-heading font-bold text-[11px] text-primary block truncate">
+                              {pkg.title}
+                            </span>
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full inline-block">
+                              ⏱️ {pkg.days}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-                {currentStep < 3 ? (
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="md"
-                    onClick={goNext}
-                    className="font-bold bg-accent hover:bg-accent-dark text-white border-none shadow-md shadow-accent/20"
-                  >
-                    <span>Next Step</span>
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                ) : (
+                  {/* STEP 4: SHOP NAME & MOBILE NUMBER */}
+                  <div className="space-y-3 pt-2 border-t border-gray-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-heading font-bold text-xs text-primary block mb-1">
+                          Your Shop Name (दुकान का नाम):
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={`e.g. ${currentShopTypeObj.sampleName}`}
+                          value={shopName}
+                          onChange={(e) => setShopName(e.target.value)}
+                          className="w-full px-3.5 py-2.5 bg-surface-alt border border-gray-200 rounded-btn text-xs font-body text-primary outline-none focus:border-accent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-heading font-bold text-xs text-primary block mb-1">
+                          Mobile / WhatsApp Number:
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="e.g. 9876543210"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full px-3.5 py-2.5 bg-surface-alt border border-gray-200 rounded-btn text-xs font-body text-primary outline-none focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {submitError && (
+                    <Alert type="error" onClose={() => setSubmitError('')}>
+                      {submitError}
+                    </Alert>
+                  )}
+
+                  {/* SUBMIT BUTTON */}
                   <Button
                     type="submit"
                     variant="primary"
                     size="lg"
                     disabled={isSubmitting}
-                    className="font-bold bg-accent hover:bg-accent-dark text-white border-none shadow-lg shadow-accent/30"
+                    className="w-full font-bold bg-accent hover:bg-accent-dark text-white border-none shadow-xl shadow-accent/20"
                   >
                     {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Generating Proposal...
-                      </span>
+                      <span>Launching Live Preview...</span>
                     ) : (
                       <>
-                        <span>Submit Project Proposal</span>
-                        <Send className="w-4 h-4 ml-1.5" />
+                        <span>Get This Website Built for ₹{currentPkgObj.price.toLocaleString()}</span>
+                        <ArrowRight size={16} className="ml-1" />
                       </>
                     )}
                   </Button>
-                )}
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
+                </form>
+              )}
+            </div>
+          </div>
 
-      {/* ────── SIDEBAR SUMMARY ────── */}
-      <div className="lg:col-span-4 space-y-6">
-        <Card variant="default" hoverEffect={false} className="border border-gray-200/80 shadow-xs space-y-4 bg-white">
-          <h3 className="font-heading font-bold text-sm text-primary uppercase tracking-wider border-b border-gray-100 pb-2">
-            Why Choose Dev Krafters?
-          </h3>
-          <div className="space-y-3.5 text-xs">
-            <div className="flex items-start gap-2.5">
-              <UserCheck className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-primary block">Direct Developer Access</span>
-                <span className="text-muted">Work directly with the engineer building your site.</span>
-              </div>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-primary block">Fast Turnaround</span>
-                <span className="text-muted">Launch-ready sites in as fast as 3 to 10 days.</span>
-              </div>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-primary block">Fixed Pricing Guarantee</span>
-                <span className="text-muted">Zero hidden fees or unexpected line items.</span>
+          {/* RIGHT PANEL: REAL-TIME SMARTPHONE LIVE MOCKUP PREVIEW (5 COLS) */}
+          <div className="lg:col-span-5 sticky top-24">
+            <div className="bg-gray-950 p-4 rounded-[2.5rem] border-4 border-gray-800 shadow-2xl max-w-sm mx-auto">
+              
+              {/* Smartphone Inner Display Screen */}
+              <div className="bg-surface-alt rounded-[2rem] overflow-hidden text-gray-900 font-body relative border border-gray-800 space-y-3 pb-6">
+                
+                {/* Status Bar */}
+                <div className="bg-primary text-white px-4 py-2 flex items-center justify-between text-[10px] font-mono">
+                  <span>9:41 AM</span>
+                  <span className="font-bold">DEV KRAFTERS LIVE PREVIEW</span>
+                  <span>100% 🔋</span>
+                </div>
+
+                {/* Shop Header Banner */}
+                <div className="px-4 py-4 bg-gradient-to-r from-primary via-primary-dark to-primary text-white text-center space-y-1 relative">
+                  <span className="text-3xl block">{currentShopTypeObj.icon}</span>
+                  <h3 className="font-heading font-extrabold text-base leading-tight">
+                    {shopName.trim() || currentShopTypeObj.sampleName}
+                  </h3>
+                  <span className="text-[10px] text-accent font-heading font-semibold uppercase tracking-wider block">
+                    {currentShopTypeObj.title}
+                  </span>
+                </div>
+
+                {/* Live Feature Mockup Badges */}
+                <div className="px-4 space-y-2.5">
+                  <span className="text-[10px] font-heading font-bold text-muted uppercase tracking-wider block text-center">
+                    Active Features Installed:
+                  </span>
+
+                  {selectedFeatures.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedFeatures.includes('whatsapp') && (
+                        <div className="p-2.5 rounded-xl bg-emerald-500 text-white font-heading font-bold text-xs flex items-center justify-between shadow-xs">
+                          <span className="flex items-center gap-1.5">
+                            <MessageCircle size={14} /> Order on WhatsApp
+                          </span>
+                          <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded">Active</span>
+                        </div>
+                      )}
+
+                      {selectedFeatures.includes('maps') && (
+                        <div className="p-2 rounded-xl bg-white border border-gray-200 text-xs flex items-center justify-between text-primary font-semibold">
+                          <span className="flex items-center gap-1.5">
+                            <MapPin size={14} className="text-accent" /> Shop Location on Maps
+                          </span>
+                          <span className="text-[9px] text-emerald-600 font-bold">Patna, Bihar</span>
+                        </div>
+                      )}
+
+                      {selectedFeatures.includes('gallery') && (
+                        <div className="p-2.5 rounded-xl bg-white border border-gray-200 space-y-1">
+                          <span className="text-[10px] font-bold text-muted flex items-center gap-1">
+                            <Camera size={12} /> Product Gallery (4 Photos)
+                          </span>
+                          <div className="grid grid-cols-4 gap-1">
+                            {['📦', '📦', '📦', '📦'].map((p, i) => (
+                              <div key={i} className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-xs">
+                                {p}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedFeatures.includes('pricelist') && (
+                        <div className="p-2 rounded-xl bg-white border border-gray-200 text-[11px] space-y-1">
+                          <span className="font-bold text-primary flex items-center gap-1">
+                            <FileText size={12} /> Price & Rate List
+                          </span>
+                          <div className="flex justify-between text-muted text-[10px]">
+                            <span>Item / Service A</span>
+                            <span className="font-bold text-primary">₹250</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedFeatures.includes('reviews') && (
+                        <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-[11px] flex items-center justify-between text-amber-900 font-semibold">
+                          <span className="flex items-center gap-1">
+                            <Star size={12} className="fill-amber-500 text-amber-500" /> 4.9 ★ Google Reviews
+                          </span>
+                          <span className="text-[9px] font-bold text-amber-700">120+ Ratings</span>
+                        </div>
+                      )}
+
+                      {selectedFeatures.includes('upi') && (
+                        <div className="p-2 rounded-xl bg-purple-50 border border-purple-200 text-[11px] flex items-center justify-between text-purple-900 font-semibold">
+                          <span className="flex items-center gap-1">
+                            <QrCode size={12} /> Pay via UPI QR Code
+                          </span>
+                          <span className="text-[9px] font-bold text-purple-700">Instant</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-xs text-muted">
+                      Tap features on the left to add them here!
+                    </div>
+                  )}
+
+                  {/* Price Bar in Phone */}
+                  <div className="pt-2 border-t border-gray-200 text-center space-y-1">
+                    <span className="text-[10px] text-muted block">Live Calculated Price</span>
+                    <span className="font-heading font-extrabold text-xl text-accent block">
+                      ₹{currentPkgObj.price.toLocaleString()}
+                    </span>
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                      Ready in {currentPkgObj.days}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
+      )}
 
-        {/* Direct Email Card */}
-        <Card variant="alt" hoverEffect={false} className="space-y-3 bg-surface-alt border border-gray-200/80">
-          <h4 className="font-heading font-bold text-xs text-primary uppercase tracking-wider">
-            Direct Contact Options
-          </h4>
-          <a
-            href="mailto:hello@devkrafters.com"
-            className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-200 text-primary hover:border-accent hover:text-accent transition-all text-xs group"
-          >
-            <Mail className="w-4 h-4 text-accent" />
-            <div>
-              <span className="font-bold block">hello@devkrafters.com</span>
-              <span className="text-[10px] text-muted">Direct Email Inbox</span>
+      {/* ─────────────────────────────────────────────
+          MODE 2: WHATSAPP AI CHAT ASSISTANT
+      ───────────────────────────────────────────── */}
+      {formMode === 'chat' && (
+        <div className="max-w-xl mx-auto bg-white rounded-card border border-gray-200 shadow-2xl overflow-hidden">
+          
+          {/* Chat Header */}
+          <div className="bg-primary text-white p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center font-bold shadow-md">
+              <Bot size={20} />
             </div>
-          </a>
-        </Card>
-      </div>
+            <div>
+              <h3 className="font-heading font-extrabold text-sm">Dev Krafters AI Assistant</h3>
+              <p className="text-[11px] text-emerald-300 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Online • Replies Instantly
+              </p>
+            </div>
+          </div>
+
+          {/* Chat Bubbles */}
+          <div className="p-4 space-y-4 max-h-[420px] overflow-y-auto bg-surface-alt/60">
+            {chatMessages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-2`}
+              >
+                <div
+                  className={`p-3.5 rounded-2xl max-w-[85%] text-xs font-body leading-relaxed shadow-2xs ${
+                    msg.sender === 'user'
+                      ? 'bg-accent text-white rounded-br-none font-semibold'
+                      : 'bg-white border border-gray-200 text-primary rounded-bl-none'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+
+                {/* Option Buttons */}
+                {msg.options && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {msg.options.map((opt, i) => (
+                      <button
+                        key={i}
+                        onClick={opt.action}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-gray-200 hover:border-accent hover:bg-accent/10 text-primary text-xs font-heading font-bold shadow-2xs transition-all"
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Chat Input Footer */}
+          <div className="p-3 bg-white border-t border-gray-200 flex gap-2">
+            <input
+              type="tel"
+              placeholder="Type your WhatsApp / Mobile number..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleChatInputSend()}
+              className="flex-1 px-4 py-2.5 bg-surface-alt border border-gray-200 rounded-xl text-xs font-body text-primary outline-none focus:border-accent"
+            />
+            <button
+              onClick={handleChatInputSend}
+              className="px-4 py-2.5 rounded-xl bg-accent text-white font-heading font-bold text-xs hover:bg-accent-dark transition shadow-md"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-surface py-12 sm:py-16 relative overflow-hidden font-body">
+    <div className="min-h-screen bg-surface-alt relative overflow-hidden py-12 sm:py-20">
       <FloatingParticles count={15} />
 
-      <div className="max-w-content mx-auto px-4 sm:px-6 relative z-10 space-y-10">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <h1 className="font-heading font-extrabold text-3xl sm:text-5xl text-primary tracking-tight">
-            Let&apos;s Build Your <span className="text-accent">Digital Presence</span>
-          </h1>
-          <p className="font-body text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
-            Choose your project requirements below to receive a custom quote & launch timeline within 24 hours.
-          </p>
-        </div>
-
-        <Suspense fallback={<div className="text-center py-12 text-muted font-heading font-bold">Loading Inquiry Desk...</div>}>
-          <InteractiveFormContent />
+      <div className="max-w-content mx-auto px-6 relative z-10 space-y-10">
+        <Suspense
+          fallback={
+            <div className="text-center py-20">
+              <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="font-body text-xs text-muted mt-3">Loading interactive builder...</p>
+            </div>
+          }
+        >
+          <ExperimentalFormContent />
         </Suspense>
       </div>
     </div>
