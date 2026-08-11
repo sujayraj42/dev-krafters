@@ -47,40 +47,43 @@ import {
   RefreshCw,
   QrCode,
   ThumbsUp,
+  Globe,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
-// DATA & TYPES
+// UNIVERSAL DATA & TYPES FOR ALL NON-TECH CLIENTS
 // ─────────────────────────────────────────────
-interface ShopFeature {
+interface BusinessFeature {
   id: string;
   name: string;
   icon: string;
   description: string;
 }
 
-const SHOP_FEATURES: ShopFeature[] = [
-  { id: 'maps', name: 'Google Maps Location', icon: '📍', description: 'Customers find your shop address easily' },
-  { id: 'whatsapp', name: 'WhatsApp Order Button', icon: '📱', description: 'Direct customer orders on your phone' },
-  { id: 'gallery', name: 'Product Photo Gallery', icon: '📸', description: 'Show photos of your shop & items' },
-  { id: 'pricelist', name: 'Rate List / Menu', icon: '📋', description: 'Show item prices & service menu' },
-  { id: 'reviews', name: 'Customer Ratings & Reviews', icon: '🌟', description: 'Show 5-star Google customer reviews' },
-  { id: 'upi', name: 'UPI QR Payment Code', icon: '💳', description: 'Instant payment via GPay/PhonePe/Paytm' },
+const BUSINESS_FEATURES: BusinessFeature[] = [
+  { id: 'maps', name: 'Google Maps Location', icon: '📍', description: 'Customers find your address & directions easily' },
+  { id: 'whatsapp', name: 'WhatsApp Order / Inquiry Button', icon: '📱', description: 'Direct customer messages on your mobile' },
+  { id: 'gallery', name: 'Photo & Portfolio Showcase', icon: '📸', description: 'Show photos of your products, work or clinic' },
+  { id: 'pricelist', name: 'Services & Rate List', icon: '📋', description: 'Show service prices, packages & rate card' },
+  { id: 'reviews', name: 'Customer Ratings & Reviews', icon: '🌟', description: 'Show 5-star Google customer testimonials' },
+  { id: 'upi', name: 'Online Payments & UPI QR', icon: '💳', description: 'Instant payment via GPay/PhonePe/Paytm' },
 ];
 
-const SHOP_TYPES = [
-  { value: 'retail', title: 'Kirana & Hardware Shop', icon: '🏪', sampleName: 'Amrjeet Hardware Store' },
-  { value: 'salon', title: 'Salon & Beauty Parlour', icon: '💇', sampleName: 'Aura Hair & Beauty Studio' },
-  { value: 'restaurant', title: 'Restaurant & Dhaba', icon: '🍽️', sampleName: 'Spice Craft Bistro' },
-  { value: 'clinic', title: 'Clinic & Doctor', icon: '🏥', sampleName: 'BrightSmile Dental Clinic' },
-  { value: 'boutique', title: 'Clothing Boutique', icon: '👗', sampleName: 'Urban Threads Boutique' },
-  { value: 'services', title: 'Builder & Contractor', icon: '🏗️', sampleName: 'Apex Construction Co.' },
+const BUSINESS_CATEGORIES = [
+  { value: 'retail', title: 'Local Business & Retail', icon: '🏪', sampleName: 'Amrjeet Hardware Store' },
+  { value: 'salon', title: 'Salon, Beauty & Wellness', icon: '💇', sampleName: 'Aura Hair & Beauty Studio' },
+  { value: 'restaurant', title: 'Restaurant, Cafe & Food', icon: '🍽️', sampleName: 'Spice Craft Bistro' },
+  { value: 'clinic', title: 'Clinic, Dental & Doctor', icon: '🏥', sampleName: 'BrightSmile Dental Clinic' },
+  { value: 'realestate', title: 'Builder & Real Estate', icon: '🏗️', sampleName: 'Apex Properties & Builders' },
+  { value: 'services', title: 'Lawyer, CA & Consulting', icon: '💼', sampleName: 'Vanguard Legal Advisors' },
+  { value: 'creator', title: 'Startup, Creator & Agency', icon: '🚀', sampleName: 'Nova Digital Agency' },
+  { value: 'other', title: 'Other Custom Business', icon: '🌐', sampleName: 'My Custom Business' },
 ];
 
 const PACKAGE_OPTIONS = [
   { value: 'express', title: '1-Page Express Site', price: 5000, days: '3 Days', badge: 'Fast Launch' },
-  { value: 'standard', title: 'Full Shop Website', price: 15000, days: '7 Days', badge: 'Most Popular', popular: true },
-  { value: 'store', title: 'Online Selling Store', price: 35000, days: '14 Days', badge: 'Full Online Store' },
+  { value: 'standard', title: 'Full Business Website', price: 15000, days: '7 Days', badge: 'Most Popular', popular: true },
+  { value: 'store', title: 'E-commerce & Online Store', price: 35000, days: '14 Days', badge: 'Full Online Store' },
 ];
 
 // ─────────────────────────────────────────────
@@ -101,8 +104,8 @@ function ExperimentalFormContent() {
   const [formMode, setFormMode] = useState<'configurator' | 'chat'>('configurator');
 
   // Configurator State
-  const [shopType, setShopType] = useState('retail');
-  const [shopName, setShopName] = useState('');
+  const [businessCategory, setBusinessCategory] = useState('retail');
+  const [businessName, setBusinessName] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedPackage, setSelectedPackage] = useState('standard');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['maps', 'whatsapp', 'gallery']);
@@ -116,7 +119,7 @@ function ExperimentalFormContent() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
-  const currentShopTypeObj = SHOP_TYPES.find((t) => t.value === shopType) || SHOP_TYPES[0];
+  const currentCategoryObj = BUSINESS_CATEGORIES.find((t) => t.value === businessCategory) || BUSINESS_CATEGORIES[0];
   const currentPkgObj = PACKAGE_OPTIONS.find((p) => p.value === selectedPackage) || PACKAGE_OPTIONS[1];
 
   const toggleFeature = (id: string) => {
@@ -128,23 +131,23 @@ function ExperimentalFormContent() {
   const handleConfiguratorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim()) {
-      setSubmitError('Please enter your Mobile or WhatsApp number.');
+      setSubmitError('Please enter your Mobile or WhatsApp number so we can send design samples.');
       return;
     }
     setSubmitError('');
     setIsSubmitting(true);
 
     const featureNames = selectedFeatures
-      .map((fid) => SHOP_FEATURES.find((f) => f.id === fid)?.name)
+      .map((fid) => BUSINESS_FEATURES.find((f) => f.id === fid)?.name)
       .filter(Boolean)
       .join(', ');
 
     const payloadMessage = `
-Visual Shop Builder Submission:
-Shop Name: ${shopName || currentShopTypeObj.sampleName}
-Shop Type: ${currentShopTypeObj.title}
-Selected Package: ${currentPkgObj.title} (₹${currentPkgObj.price})
-Chosen Features: ${featureNames || 'Standard Features'}
+Visual Site Builder Submission:
+Business Name: ${businessName || currentCategoryObj.sampleName}
+Category: ${currentCategoryObj.title}
+Package: ${currentPkgObj.title} (₹${currentPkgObj.price})
+Features: ${featureNames || 'Standard Features'}
     `.trim();
 
     try {
@@ -152,10 +155,10 @@ Chosen Features: ${featureNames || 'Standard Features'}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: shopName || 'Shop Owner',
+          name: businessName || 'Business Owner',
           email: `${phone.trim()}@whatsapp.devkrafters.com`,
           phone: phone.trim(),
-          businessType: currentShopTypeObj.title,
+          businessType: currentCategoryObj.title,
           projectType: currentPkgObj.title,
           message: payloadMessage,
         }),
@@ -181,29 +184,29 @@ Chosen Features: ${featureNames || 'Standard Features'}
         {
           id: 1,
           sender: 'bot',
-          text: 'Namaste! 👋 I am Dev Krafters AI Shop Assistant. I can help you launch a website for your shop in 1 minute.',
+          text: 'Hello! 👋 Welcome to Dev Krafters. I am your AI Business Assistant. Let\'s build a custom website for your business in 60 seconds.',
         },
         {
           id: 2,
           sender: 'bot',
-          text: 'What type of shop or business do you run?',
-          options: SHOP_TYPES.map((st) => ({
+          text: 'What type of business or service do you run?',
+          options: BUSINESS_CATEGORIES.map((st) => ({
             label: `${st.icon} ${st.title}`,
-            action: () => handleChatShopTypeSelect(st.title),
+            action: () => handleChatCategorySelect(st.title),
           })),
         },
       ]);
     }
   }, [formMode, chatMessages]);
 
-  const handleChatShopTypeSelect = (selectedType: string) => {
+  const handleChatCategorySelect = (selectedType: string) => {
     setChatMessages((prev) => [
       ...prev,
-      { id: Date.now(), sender: 'user', text: `My shop is: ${selectedType}` },
+      { id: Date.now(), sender: 'user', text: `My business type is: ${selectedType}` },
       {
         id: Date.now() + 1,
         sender: 'bot',
-        text: 'Awesome! Which website package fits your budget?',
+        text: 'Great! Which website package best matches your business goals?',
         options: PACKAGE_OPTIONS.map((pkg) => ({
           label: `${pkg.title} — ₹${pkg.price.toLocaleString()} (${pkg.days})`,
           action: () => handleChatPkgSelect(selectedType, pkg.title, pkg.price),
@@ -219,7 +222,7 @@ Chosen Features: ${featureNames || 'Standard Features'}
       {
         id: Date.now() + 1,
         sender: 'bot',
-        text: 'Great choice! Please enter your Mobile / WhatsApp number so our team can send you live design demos:',
+        text: 'Excellent choice! Please enter your WhatsApp or Mobile number so our engineering lead can send you live design samples & a exact quote:',
       },
     ]);
   };
@@ -235,7 +238,7 @@ Chosen Features: ${featureNames || 'Standard Features'}
       {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Thank you! We've saved your contact (${val}). Our lead developer will call or message you on WhatsApp within 2 hours! 🚀`,
+        text: `Thank you! We\'ve received your contact number (${val}). Our lead developer will call or message you on WhatsApp within 2 hours! 🚀`,
       },
     ]);
 
@@ -249,7 +252,7 @@ Chosen Features: ${featureNames || 'Standard Features'}
           phone: val,
           businessType: 'Chat Inquiry',
           projectType: 'Website Inquiry',
-          message: `Lead via Chat Assistant: ${val}`,
+          message: `Lead via AI Chat Assistant: ${val}`,
         }),
       });
     } catch (e) {
@@ -263,13 +266,13 @@ Chosen Features: ${featureNames || 'Standard Features'}
       <div className="text-center max-w-2xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold tracking-wide">
           <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" />
-          <span>Non-Traditional Out-of-the-Box Form</span>
+          <span>Non-Technical Out-of-the-Box Experience</span>
         </div>
-        <h1 className="font-heading font-extrabold text-3xl sm:text-5xl text-primary tracking-tight">
-          Build Your Shop Website <span className="text-accent">Visually</span>
+        <h1 className="font-heading font-extrabold text-3xl sm:text-5xl text-primary tracking-tight leading-tight">
+          Build Your Business Website <span className="text-accent">Visually</span>
         </h1>
-        <p className="font-body text-sm sm:text-base text-muted">
-          No forms to struggle with! Tap options on the left and see your shop website come alive on the live smartphone preview.
+        <p className="font-body text-sm sm:text-base text-muted leading-relaxed">
+          Designed for everyday non-technical business owners. No complex technical jargon! Tap options on the left to watch your site being built live on the smartphone preview.
         </p>
 
         {/* Mode Selector Switcher */}
@@ -295,7 +298,7 @@ Chosen Features: ${featureNames || 'Standard Features'}
             }`}
           >
             <Bot size={15} />
-            <span>WhatsApp AI Chat Assistant</span>
+            <span>AI Chat Assistant</span>
           </button>
         </div>
       </div>
@@ -315,14 +318,14 @@ Chosen Features: ${featureNames || 'Standard Features'}
                     <CheckCircle2 size={36} />
                   </div>
                   <h3 className="font-heading font-extrabold text-2xl text-primary">
-                    Your Shop Site Order Received! 🚀
+                    Website Request Submitted! 🚀
                   </h3>
                   <p className="font-body text-sm text-muted max-w-sm mx-auto">
-                    We will send design previews for <strong>{shopName || currentShopTypeObj.sampleName}</strong> to your WhatsApp number ({phone}).
+                    We will deliver design previews for <strong>{businessName || currentCategoryObj.sampleName}</strong> directly to your WhatsApp number ({phone}).
                   </p>
                   <a
-                    href={`https://wa.me/919999999999?text=Hi!%20I%20just%20built%20my%20website%20preview%20for%20${encodeURIComponent(
-                      shopName || currentShopTypeObj.sampleName
+                    href={`https://wa.me/919999999999?text=Hi%20Dev%20Krafters!%20I%20just%20built%20my%20website%20preview%20for%20${encodeURIComponent(
+                      businessName || currentCategoryObj.sampleName
                     )}.`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -334,18 +337,18 @@ Chosen Features: ${featureNames || 'Standard Features'}
               ) : (
                 <form onSubmit={handleConfiguratorSubmit} className="space-y-6">
                   
-                  {/* STEP 1: SHOP TYPE Visual Selector */}
+                  {/* STEP 1: BUSINESS CATEGORY VISUAL SELECTOR */}
                   <div className="space-y-3">
                     <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                      1. Select Your Shop Category:
+                      1. Select Your Business Category:
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                      {SHOP_TYPES.map((st) => {
-                        const isSelected = shopType === st.value;
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {BUSINESS_CATEGORIES.map((st) => {
+                        const isSelected = businessCategory === st.value;
                         return (
                           <div
                             key={st.value}
-                            onClick={() => setShopType(st.value)}
+                            onClick={() => setBusinessCategory(st.value)}
                             className={`p-3 rounded-2xl border-2 transition-all cursor-pointer select-none text-center space-y-1 ${
                               isSelected
                                 ? 'border-accent bg-accent/5 shadow-md scale-[1.02]'
@@ -353,7 +356,7 @@ Chosen Features: ${featureNames || 'Standard Features'}
                             }`}
                           >
                             <span className="text-2xl block">{st.icon}</span>
-                            <span className="font-heading font-bold text-xs text-primary block truncate">
+                            <span className="font-heading font-bold text-[11px] text-primary block leading-tight truncate">
                               {st.title}
                             </span>
                           </div>
@@ -365,10 +368,10 @@ Chosen Features: ${featureNames || 'Standard Features'}
                   {/* STEP 2: FEATURE TOGGLE CHIPS */}
                   <div className="space-y-3 pt-2">
                     <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                      2. Toggle Features For Your Website (Updates Preview Live):
+                      2. Toggle Features For Your Website (Updates Live Preview):
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {SHOP_FEATURES.map((feat) => {
+                      {BUSINESS_FEATURES.map((feat) => {
                         const isChecked = selectedFeatures.includes(feat.id);
                         return (
                           <div
@@ -437,25 +440,25 @@ Chosen Features: ${featureNames || 'Standard Features'}
                     </div>
                   </div>
 
-                  {/* STEP 4: SHOP NAME & MOBILE NUMBER */}
+                  {/* STEP 4: BUSINESS NAME & PHONE INPUT */}
                   <div className="space-y-3 pt-2 border-t border-gray-100">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="font-heading font-bold text-xs text-primary block mb-1">
-                          Your Shop Name (दुकान का नाम):
+                          Business / Shop Name:
                         </label>
                         <input
                           type="text"
-                          placeholder={`e.g. ${currentShopTypeObj.sampleName}`}
-                          value={shopName}
-                          onChange={(e) => setShopName(e.target.value)}
+                          placeholder={`e.g. ${currentCategoryObj.sampleName}`}
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
                           className="w-full px-3.5 py-2.5 bg-surface-alt border border-gray-200 rounded-btn text-xs font-body text-primary outline-none focus:border-accent"
                         />
                       </div>
 
                       <div>
                         <label className="font-heading font-bold text-xs text-primary block mb-1">
-                          Mobile / WhatsApp Number:
+                          WhatsApp / Mobile Number:
                         </label>
                         <input
                           type="tel"
@@ -511,14 +514,14 @@ Chosen Features: ${featureNames || 'Standard Features'}
                   <span>100% 🔋</span>
                 </div>
 
-                {/* Shop Header Banner */}
+                {/* Business Header Banner */}
                 <div className="px-4 py-4 bg-gradient-to-r from-primary via-primary-dark to-primary text-white text-center space-y-1 relative">
-                  <span className="text-3xl block">{currentShopTypeObj.icon}</span>
+                  <span className="text-3xl block">{currentCategoryObj.icon}</span>
                   <h3 className="font-heading font-extrabold text-base leading-tight">
-                    {shopName.trim() || currentShopTypeObj.sampleName}
+                    {businessName.trim() || currentCategoryObj.sampleName}
                   </h3>
                   <span className="text-[10px] text-accent font-heading font-semibold uppercase tracking-wider block">
-                    {currentShopTypeObj.title}
+                    {currentCategoryObj.title}
                   </span>
                 </div>
 
@@ -533,7 +536,7 @@ Chosen Features: ${featureNames || 'Standard Features'}
                       {selectedFeatures.includes('whatsapp') && (
                         <div className="p-2.5 rounded-xl bg-emerald-500 text-white font-heading font-bold text-xs flex items-center justify-between shadow-xs">
                           <span className="flex items-center gap-1.5">
-                            <MessageCircle size={14} /> Order on WhatsApp
+                            <MessageCircle size={14} /> Order / Inquiry via WhatsApp
                           </span>
                           <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded">Active</span>
                         </div>
@@ -542,19 +545,19 @@ Chosen Features: ${featureNames || 'Standard Features'}
                       {selectedFeatures.includes('maps') && (
                         <div className="p-2 rounded-xl bg-white border border-gray-200 text-xs flex items-center justify-between text-primary font-semibold">
                           <span className="flex items-center gap-1.5">
-                            <MapPin size={14} className="text-accent" /> Shop Location on Maps
+                            <MapPin size={14} className="text-accent" /> Location on Google Maps
                           </span>
-                          <span className="text-[9px] text-emerald-600 font-bold">Patna, Bihar</span>
+                          <span className="text-[9px] text-emerald-600 font-bold">Directions</span>
                         </div>
                       )}
 
                       {selectedFeatures.includes('gallery') && (
                         <div className="p-2.5 rounded-xl bg-white border border-gray-200 space-y-1">
                           <span className="text-[10px] font-bold text-muted flex items-center gap-1">
-                            <Camera size={12} /> Product Gallery (4 Photos)
+                            <Camera size={12} /> Photo Showcase (4 Photos)
                           </span>
                           <div className="grid grid-cols-4 gap-1">
-                            {['📦', '📦', '📦', '📦'].map((p, i) => (
+                            {['✨', '✨', '✨', '✨'].map((p, i) => (
                               <div key={i} className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-xs">
                                 {p}
                               </div>
@@ -566,11 +569,11 @@ Chosen Features: ${featureNames || 'Standard Features'}
                       {selectedFeatures.includes('pricelist') && (
                         <div className="p-2 rounded-xl bg-white border border-gray-200 text-[11px] space-y-1">
                           <span className="font-bold text-primary flex items-center gap-1">
-                            <FileText size={12} /> Price & Rate List
+                            <FileText size={12} /> Services & Rate Card
                           </span>
                           <div className="flex justify-between text-muted text-[10px]">
-                            <span>Item / Service A</span>
-                            <span className="font-bold text-primary">₹250</span>
+                            <span>Service Package A</span>
+                            <span className="font-bold text-primary">₹500</span>
                           </div>
                         </div>
                       )}
@@ -580,14 +583,14 @@ Chosen Features: ${featureNames || 'Standard Features'}
                           <span className="flex items-center gap-1">
                             <Star size={12} className="fill-amber-500 text-amber-500" /> 4.9 ★ Google Reviews
                           </span>
-                          <span className="text-[9px] font-bold text-amber-700">120+ Ratings</span>
+                          <span className="text-[9px] font-bold text-amber-700">120+ Testimonials</span>
                         </div>
                       )}
 
                       {selectedFeatures.includes('upi') && (
                         <div className="p-2 rounded-xl bg-purple-50 border border-purple-200 text-[11px] flex items-center justify-between text-purple-900 font-semibold">
                           <span className="flex items-center gap-1">
-                            <QrCode size={12} /> Pay via UPI QR Code
+                            <QrCode size={12} /> Online Payments & UPI
                           </span>
                           <span className="text-[9px] font-bold text-purple-700">Instant</span>
                         </div>
