@@ -103,10 +103,23 @@ export default function AdminPage() {
       .catch((err) => console.error('Failed to load 2FA setup:', err));
   }, []);
 
+  // Helper to get Authorization headers for API calls
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = sessionStorage.getItem('dev_krafters_admin_token');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  };
+
   // Load leads from MongoDB Cloud API
   const loadLeads = async () => {
     try {
-      const res = await fetch('/api/leads', { cache: 'no-store' });
+      const res = await fetch('/api/leads', {
+        cache: 'no-store',
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
 
       if (res.ok && data.success) {
@@ -172,6 +185,9 @@ export default function AdminPage() {
       const data = await res.json();
 
       if (data.success) {
+        if (data.token) {
+          sessionStorage.setItem('dev_krafters_admin_token', data.token);
+        }
         setIsAuthenticated(true);
         sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
         setError('');
@@ -254,7 +270,7 @@ export default function AdminPage() {
       for (const lead of demoLeads) {
         await fetch('/api/leads', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(lead),
         });
       }
@@ -272,7 +288,7 @@ export default function AdminPage() {
     try {
       await fetch('/api/leads', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           id: selectedLead.id,
           status: leadStatusInput,
@@ -301,7 +317,10 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to clear ALL lead data?')) return;
     setIsClearing(true);
     try {
-      await fetch('/api/leads', { method: 'DELETE' });
+      await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
     } catch (err) {
       console.error('Failed to clear DB:', err);
     }

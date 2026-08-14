@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyTotpCode, DEFAULT_ADMIN_TOTP_SECRET, getAuthenticatorQrCodeUrl } from '@/lib/totp';
+import { createAdminToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,25 +26,45 @@ export async function POST(request: Request) {
     const secret = process.env.ADMIN_TOTP_SECRET || DEFAULT_ADMIN_TOTP_SECRET;
     const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
 
+    let isAuthenticated = false;
+    let method = '';
+
     // 1. Check fallback PIN / passcode if submitted
     if (pin && (pin === adminPasscode || pin === '1234' || pin === 'admin' || pin === 'devkrafters')) {
-      return NextResponse.json({
-        success: true,
-        method: 'passcode',
-        message: 'Unlocked via Passcode PIN',
-      });
+      isAuthenticated = true;
+      method = 'passcode';
     }
 
     // 2. Check 6-digit Google Authenticator TOTP token
-    if (code) {
+    if (!isAuthenticated && code) {
       const isValidTotp = await verifyTotpCode(code, secret);
       if (isValidTotp) {
-        return NextResponse.json({
-          success: true,
-          method: 'google_authenticator',
-          message: 'Unlocked via Google Authenticator 2FA',
-        });
+        isAuthenticated = true;
+        method = 'google_authenticator';
       }
+    }
+
+    if (isAuthenticated) {
+      const token = await createAdminToken();
+      const response = NextResponse.json({
+        success: true,
+        method,
+        token,
+        message: `Unlocked via ${method === 'passcode' ? 'Passcode PIN' : 'Google Authenticator 2FA'}`,
+      });
+
+      // Also set httpOnly cookie for extra browser security
+      response.cookies.set({
+        name: 'admin_token',
+        value: token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 24 hours
+      });
+
+      return response;
     }
 
     return NextResponse.json(
