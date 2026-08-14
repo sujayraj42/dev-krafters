@@ -37,6 +37,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export interface LeadRecord {
   id: string;
@@ -531,8 +532,14 @@ export default function AdminPage() {
 
               {qrCodeUrl ? (
                 <div className="p-3 bg-white rounded-2xl inline-block border-4 border-slate-800 shadow-md">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qrCodeUrl} alt="Google Authenticator QR Code" className="w-44 h-44 mx-auto rounded-lg" />
+                  <Image
+                    src={qrCodeUrl}
+                    alt="Google Authenticator QR Code"
+                    width={176}
+                    height={176}
+                    unoptimized
+                    className="w-44 h-44 mx-auto rounded-lg"
+                  />
                 </div>
               ) : (
                 <div className="py-10 text-slate-500">Generating QR Code...</div>
@@ -967,8 +974,14 @@ export default function AdminPage() {
 
             {qrCodeUrl ? (
               <div className="p-3 bg-white rounded-2xl inline-block border-4 border-slate-800 shadow-md">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrCodeUrl} alt="Google Authenticator QR Code" className="w-44 h-44 mx-auto rounded-lg" />
+                <Image
+                  src={qrCodeUrl}
+                  alt="Google Authenticator QR Code"
+                  width={176}
+                  height={176}
+                  unoptimized
+                  className="w-44 h-44 mx-auto rounded-lg"
+                />
               </div>
             ) : (
               <div className="py-10 text-slate-500">Generating QR Code...</div>
