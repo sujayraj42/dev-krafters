@@ -56,8 +56,6 @@ function getLocalFallbackReply(lastUserMessage: string): string {
 }
 
 export async function POST(request: Request) {
-  console.log('[Chat API Route] POST /api/chat request received at', new Date().toISOString());
-
   try {
     const body = await request.json();
     const { messages } = body;
@@ -78,7 +76,6 @@ export async function POST(request: Request) {
 
     if (isGeminiKeySet) {
       try {
-        console.log('[Chat API Route] Attempting Gemini API call with model: gemini-2.0-flash');
         const ai = new GoogleGenAI({ apiKey });
 
         // Filter out initial welcome message from assistant to ensure strict user/model role alternation
@@ -101,7 +98,6 @@ export async function POST(request: Request) {
         });
 
         botReply = response.text || '';
-        console.log('[Chat API Route] Gemini API response generated successfully');
       } catch (geminiError: unknown) {
         console.error('=================== [GEMINI API ERROR LOG] ===================');
         console.error('Gemini API call failed with error:', geminiError);
@@ -113,7 +109,6 @@ export async function POST(request: Request) {
         botReply = getLocalFallbackReply(lastUserMessage);
       }
     } else {
-      console.log('[Chat API Route] GEMINI_API_KEY is not configured. Using free local rule engine.');
       botReply = getLocalFallbackReply(lastUserMessage);
     }
 
