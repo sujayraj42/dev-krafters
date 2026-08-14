@@ -20,7 +20,7 @@ export const NewsletterSignup: React.FC = () => {
 
     try {
       // Save to database API
-      await fetch('/api/leads', {
+      const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -29,6 +29,10 @@ export const NewsletterSignup: React.FC = () => {
           date: new Date().toISOString(),
         }),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to save lead');
+      }
 
       // Also keep in localStorage for offline access
       const leads = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
