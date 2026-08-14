@@ -66,7 +66,7 @@ export default function AdminPage() {
   // 2FA Setup Modal
   const [show2FASetup, setShow2FASetup] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [totpSecret, setTotpSecret] = useState('DEVKRAFTERS2FASECRET32');
+  const [totpSecret, setTotpSecret] = useState('');
 
   // Leads Data State
   const [leads, setLeads] = useState<LeadRecord[]>([]);
@@ -543,7 +543,7 @@ export default function AdminPage() {
                   Manual Secret Key
                 </span>
                 <code className="text-amber-400 font-mono font-bold text-sm tracking-wider block">
-                  {totpSecret}
+                  {totpSecret || 'NOT CONFIGURED'}
                 </code>
               </div>
 

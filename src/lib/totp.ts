@@ -101,6 +101,3 @@ export function getAuthenticatorQrCodeUrl(
   const totpUri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
   return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(totpUri)}`;
 }
-
-// Default TOTP secret key for Dev Krafters Admin (Can be overridden via ADMIN_TOTP_SECRET env var)
-export const DEFAULT_ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET || 'DEVKRAFTERS2FASECRET32';

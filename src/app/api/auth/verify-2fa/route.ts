@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
-import { verifyTotpCode, DEFAULT_ADMIN_TOTP_SECRET, getAuthenticatorQrCodeUrl } from '@/lib/totp';
+import { verifyTotpCode, getAuthenticatorQrCodeUrl } from '@/lib/totp';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/auth/verify-2fa - Returns QR code URL & secret for setup
 export async function GET() {
-  const secret = process.env.ADMIN_TOTP_SECRET || DEFAULT_ADMIN_TOTP_SECRET;
+  const secret = process.env.ADMIN_TOTP_SECRET;
+  if (!secret) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'ADMIN_TOTP_SECRET environment variable is not configured.',
+      },
+      { status: 500 }
+    );
+  }
+
   const qrCodeUrl = getAuthenticatorQrCodeUrl(secret);
 
   return NextResponse.json({
@@ -22,7 +32,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { code, pin } = body;
 
-    const secret = process.env.ADMIN_TOTP_SECRET || DEFAULT_ADMIN_TOTP_SECRET;
+    const secret = process.env.ADMIN_TOTP_SECRET;
     const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
 
     // 1. Check fallback PIN / passcode if submitted
@@ -36,6 +46,16 @@ export async function POST(request: Request) {
 
     // 2. Check 6-digit Google Authenticator TOTP token
     if (code) {
+      if (!secret) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'ADMIN_TOTP_SECRET environment variable is not configured on server.',
+          },
+          { status: 500 }
+        );
+      }
+
       const isValidTotp = await verifyTotpCode(code, secret);
       if (isValidTotp) {
         return NextResponse.json({
