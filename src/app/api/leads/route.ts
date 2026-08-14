@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync, updateLeadAsync } from '@/lib/db';
+import { verifyTotpCode, DEFAULT_ADMIN_TOTP_SECRET } from '@/lib/totp';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -105,8 +106,30 @@ export async function PATCH(request: Request) {
 }
 
 // DELETE /api/leads - Clear leads database
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Authentication token required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7).trim();
+    const secret = process.env.ADMIN_TOTP_SECRET || DEFAULT_ADMIN_TOTP_SECRET;
+    const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
+
+    const isValidPin = Boolean(adminPasscode && token === adminPasscode);
+    const isValidTotp = token ? await verifyTotpCode(token, secret) : false;
+
+    if (!isValidPin && !isValidTotp) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Invalid authentication credentials' },
+        { status: 401 }
+      );
+    }
+
     await clearLeadsAsync();
     return NextResponse.json({ success: true, message: 'Leads database cleared successfully' });
   } catch (error: unknown) {

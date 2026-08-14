@@ -301,7 +301,24 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to clear ALL lead data?')) return;
     setIsClearing(true);
     try {
-      await fetch('/api/leads', { method: 'DELETE' });
+      const authToken = totpCode || pin;
+      if (!authToken) {
+        alert('Authentication code or PIN is required to clear lead data.');
+        setIsClearing(false);
+        return;
+      }
+      const res = await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Failed to clear leads database due to authorization failure.');
+        setIsClearing(false);
+        return;
+      }
     } catch (err) {
       console.error('Failed to clear DB:', err);
     }
