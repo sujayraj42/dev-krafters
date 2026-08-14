@@ -74,9 +74,11 @@ export default function AdminPage() {
   const [dbError, setDbError] = useState('');
   const [dbName, setDbName] = useState('Dev_Krafters');
 
+  type StatusFilter = 'all' | 'new' | 'in_progress' | 'converted';
+
   // Filters & Selection
   const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'newsletter' | 'estimate' | 'chatbot'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'in_progress' | 'converted'>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -786,7 +788,7 @@ export default function AdminPage() {
             {/* Status Filter Dropdown */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
               className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-heading font-bold focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="all">All Statuses</option>
