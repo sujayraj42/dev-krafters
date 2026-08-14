@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { validateUrlForSsrf } from '@/lib/ssrf';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,12 @@ export async function POST(request: Request) {
 
     const targetUrl = parsedUrl.toString();
 
+    // 2b. Validate against Server-Side Request Forgery (SSRF)
+    const ssrfError = await validateUrlForSsrf(targetUrl);
+    if (ssrfError) {
+      return NextResponse.json({ error: ssrfError }, { status: 400 });
+    }
+
     // 3. Server-side Fetch Target Website HTML
     const startTime = Date.now();
     const controller = new AbortController();
@@ -58,15 +65,52 @@ export async function POST(request: Request) {
     let html = '';
 
     try {
-      response = await fetch(targetUrl, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DevKraftersHealthCheck/1.0',
-          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        redirect: 'follow',
-      });
+      let currentUrl = targetUrl;
+      let redirectCount = 0;
+      const maxRedirects = 5;
+
+      while (true) {
+        response = await fetch(currentUrl, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DevKraftersHealthCheck/1.0',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+          redirect: 'manual',
+        });
+
+        // Check for HTTP redirects
+        if ([301, 302, 303, 307, 308].includes(response.status)) {
+          const location = response.headers.get('location');
+          if (!location) {
+            break;
+          }
+          redirectCount++;
+          if (redirectCount > maxRedirects) {
+            clearTimeout(timeoutId);
+            return NextResponse.json(
+              { error: 'Too many redirects encountered while inspecting website.' },
+              { status: 422 }
+            );
+          }
+
+          const redirectUrl = new URL(location, currentUrl).toString();
+          const redirectSsrfError = await validateUrlForSsrf(redirectUrl);
+          if (redirectSsrfError) {
+            clearTimeout(timeoutId);
+            return NextResponse.json(
+              { error: `Redirect to restricted destination blocked: ${redirectSsrfError}` },
+              { status: 400 }
+            );
+          }
+          currentUrl = redirectUrl;
+          parsedUrl = new URL(currentUrl);
+        } else {
+          break;
+        }
+      }
+
       clearTimeout(timeoutId);
       html = await response.text();
     } catch (err: unknown) {
