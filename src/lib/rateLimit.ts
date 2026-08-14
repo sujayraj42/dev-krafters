@@ -4,20 +4,67 @@ interface RateLimitRecord {
 
 const rateLimitStore = new Map<string, RateLimitRecord>();
 
-// Clean up expired records every 5 minutes to avoid memory leaks
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    const windowMs = 60 * 1000;
-    for (const [ip, record] of rateLimitStore.entries()) {
-      const validTimestamps = record.timestamps.filter((ts) => now - ts < windowMs);
-      if (validTimestamps.length === 0) {
+/**
+ * Binary search helper to find the index of the first timestamp > cutoff.
+ * Since timestamps are appended chronologically, the array is strictly sorted.
+ */
+function findFirstValidIndex(timestamps: number[], cutoff: number): number {
+  let low = 0;
+  let high = timestamps.length - 1;
+  let result = timestamps.length;
+
+  while (low <= high) {
+    const mid = (low + high) >>> 1;
+    if (timestamps[mid] > cutoff) {
+      result = mid;
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return result;
+}
+
+/**
+ * Clean up expired records across the store in O(1) boundary checks per entry
+ * without array allocation overhead.
+ */
+export function cleanupRateLimits(now: number = Date.now(), windowMs: number = 60 * 1000): void {
+  const cutoff = now - windowMs;
+  for (const [ip, record] of rateLimitStore.entries()) {
+    const timestamps = record.timestamps;
+    const len = timestamps.length;
+
+    // Fast O(1) checks using array boundary timestamps
+    if (len === 0 || timestamps[len - 1] <= cutoff) {
+      rateLimitStore.delete(ip);
+    } else if (timestamps[0] <= cutoff) {
+      const validIndex = findFirstValidIndex(timestamps, cutoff);
+      if (validIndex >= len) {
         rateLimitStore.delete(ip);
       } else {
-        rateLimitStore.set(ip, { timestamps: validTimestamps });
+        timestamps.splice(0, validIndex);
       }
     }
+    // If timestamps[0] > cutoff, all entries are valid, so no work is needed.
+  }
+}
+
+/**
+ * Utility function to reset store (used for tests/benchmarks).
+ */
+export function clearRateLimitStore(): void {
+  rateLimitStore.clear();
+}
+
+// Clean up expired records every 5 minutes to avoid memory leaks
+if (typeof setInterval !== 'undefined') {
+  const timer = setInterval(() => {
+    cleanupRateLimits();
   }, 5 * 60 * 1000);
+  if (timer && typeof timer === 'object' && 'unref' in timer && typeof timer.unref === 'function') {
+    timer.unref();
+  }
 }
 
 export function getClientIp(request: Request): string {
@@ -38,13 +85,35 @@ export function checkRateLimit(
   windowMs: number = 60 * 1000
 ): { success: boolean; limit: number; remaining: number; resetMs: number } {
   const now = Date.now();
-  const record = rateLimitStore.get(identifier) || { timestamps: [] };
+  const cutoff = now - windowMs;
+  let record = rateLimitStore.get(identifier);
 
-  // Remove timestamps outside window
-  const validTimestamps = record.timestamps.filter((ts) => now - ts < windowMs);
+  if (!record) {
+    record = { timestamps: [now] };
+    rateLimitStore.set(identifier, record);
+    return {
+      success: true,
+      limit,
+      remaining: limit - 1,
+      resetMs: windowMs,
+    };
+  }
 
-  if (validTimestamps.length >= limit) {
-    const oldestTimestamp = validTimestamps[0];
+  const timestamps = record.timestamps;
+
+  if (timestamps.length > 0) {
+    if (timestamps[timestamps.length - 1] <= cutoff) {
+      // Fast O(1): all timestamps expired
+      timestamps.length = 0;
+    } else if (timestamps[0] <= cutoff) {
+      // Mixed: find first valid index and prune expired elements
+      const validIndex = findFirstValidIndex(timestamps, cutoff);
+      timestamps.splice(0, validIndex);
+    }
+  }
+
+  if (timestamps.length >= limit) {
+    const oldestTimestamp = timestamps[0];
     const resetMs = windowMs - (now - oldestTimestamp);
     return {
       success: false,
@@ -54,13 +123,12 @@ export function checkRateLimit(
     };
   }
 
-  validTimestamps.push(now);
-  rateLimitStore.set(identifier, { timestamps: validTimestamps });
+  timestamps.push(now);
 
   return {
     success: true,
     limit,
-    remaining: limit - validTimestamps.length,
+    remaining: limit - timestamps.length,
     resetMs: windowMs,
   };
 }
