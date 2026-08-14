@@ -222,6 +222,15 @@ export const CATEGORIES: TemplateCategory[] = Array.from(
   new Set(TEMPLATES.map((t) => t.category))
 ) as TemplateCategory[];
 
+// ─── Precomputed category counts for O(1) lookup ───
+export const CATEGORY_COUNTS: Record<TemplateCategory, number> = TEMPLATES.reduce(
+  (acc, t) => {
+    acc[t.category] = (acc[t.category] || 0) + 1;
+    return acc;
+  },
+  {} as Record<TemplateCategory, number>
+);
+
 const templateComponents: Record<string, ComponentType> = {
   ascend: Ascend,
   'studio-noir': StudioNoir,
