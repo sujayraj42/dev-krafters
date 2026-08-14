@@ -7,7 +7,7 @@ import { Button } from '@/components/Button';
 import { ArrowRight, Sparkles, LayoutGrid, Eye, Search, Layers, CheckCircle2 } from 'lucide-react';
 import { AnimateOnScroll, FloatingParticles } from '@/components/ScrollAnimations';
 import { BorderBeam, GlowCard, LiveTemplatePreviewModal } from '@/components/PremiumEffects';
-import { TEMPLATES, CATEGORIES, type TemplateCategory } from './templates';
+import { TEMPLATES, CATEGORIES, CATEGORY_COUNTS, type TemplateCategory } from './templates';
 
 // ─── Existing client projects ───
 interface PortfolioItem {
@@ -138,7 +138,7 @@ export default function ShowcasePage() {
                 All ({TEMPLATES.length})
               </button>
               {CATEGORIES.map((cat) => {
-                const count = TEMPLATES.filter((t) => t.category === cat).length;
+                const count = CATEGORY_COUNTS[cat] || 0;
                 return (
                   <button
                     key={cat}
