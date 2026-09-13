@@ -7,7 +7,6 @@ import { Card } from '@/components/Card';
 import { Input, Textarea, FileDropzone } from '@/components/FormControls';
 import { Button } from '@/components/Button';
 import { Alert } from '@/components/Alert';
-import { FloatingParticles } from '@/components/ScrollAnimations';
 import {
   Mail,
   User,
@@ -1022,8 +1021,7 @@ Notes: ${notes.trim() || 'None'}
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-surface-alt relative overflow-hidden py-12 sm:py-20">
-      <FloatingParticles count={15} />
+    <div className="site-page contact-page min-h-screen bg-surface-alt relative overflow-hidden py-12 sm:py-20">
 
       <div className="max-w-content mx-auto px-6 relative z-10 space-y-10">
         <Suspense

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Palette, Sun, Moon, Flame, Sparkles, Check, X } from 'lucide-react';
 
 export type ThemeId = 'light' | 'dark' | 'copper' | 'emerald';
+type DensityId = 'minimal' | 'studio';
 
 interface ThemeOption {
   id: ThemeId;
@@ -51,6 +52,7 @@ const themeOptions: ThemeOption[] = [
 
 export const ThemeSwitcher: React.FC = () => {
   const [currentTheme, setCurrentTheme] = useState<ThemeId>('light');
+  const [density, setDensity] = useState<DensityId>('minimal');
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -61,6 +63,14 @@ export const ThemeSwitcher: React.FC = () => {
       setCurrentTheme(savedTheme);
       document.documentElement.setAttribute('data-theme', savedTheme);
     }
+
+    const savedDensity = localStorage.getItem('devkrafters_density') as DensityId | null;
+    if (savedDensity === 'studio') {
+      setDensity('studio');
+      document.documentElement.setAttribute('data-density', 'studio');
+    } else {
+      document.documentElement.setAttribute('data-density', 'minimal');
+    }
   }, []);
 
   const changeTheme = (themeId: ThemeId) => {
@@ -68,6 +78,12 @@ export const ThemeSwitcher: React.FC = () => {
     document.documentElement.setAttribute('data-theme', themeId);
     localStorage.setItem('devkrafters_theme', themeId);
     setIsOpen(false);
+  };
+
+  const changeDensity = (nextDensity: DensityId) => {
+    setDensity(nextDensity);
+    document.documentElement.setAttribute('data-density', nextDensity);
+    localStorage.setItem('devkrafters_density', nextDensity);
   };
 
   if (!mounted) return null;
@@ -150,8 +166,39 @@ export const ThemeSwitcher: React.FC = () => {
             })}
           </div>
 
-          <div className="text-[10px] text-center text-muted pt-1 border-t border-gray-100">
-            ✨ Themes apply instantly across all pages & components
+          <div className="space-y-2 border-t border-gray-100 pt-3">
+            <div className="flex items-center justify-between text-[10px] font-heading font-extrabold uppercase tracking-wider text-muted">
+              <span>Experience density</span>
+              <span className="text-accent">{density === 'minimal' ? 'Minimal' : 'Studio'}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => changeDensity('minimal')}
+                className={`rounded-xl border px-3 py-2 text-left transition-all ${
+                  density === 'minimal'
+                    ? 'border-accent bg-accent/10 text-primary'
+                    : 'border-gray-200 text-muted hover:border-gray-300'
+                }`}
+              >
+                <span className="block font-heading text-[11px] font-bold">Minimal</span>
+                <span className="block text-[9px] leading-tight">Quiet, compact, focused</span>
+              </button>
+              <button
+                onClick={() => changeDensity('studio')}
+                className={`rounded-xl border px-3 py-2 text-left transition-all ${
+                  density === 'studio'
+                    ? 'border-accent bg-accent/10 text-primary'
+                    : 'border-gray-200 text-muted hover:border-gray-300'
+                }`}
+              >
+                <span className="block font-heading text-[11px] font-bold">Studio</span>
+                <span className="block text-[9px] leading-tight">More depth and motion</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-center text-muted pt-1">
+            Color and density apply instantly across the site.
           </div>
         </div>
       )}

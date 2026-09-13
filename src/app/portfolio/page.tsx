@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Button } from '@/components/Button';
 import { ArrowRight, Sparkles, LayoutGrid, Eye, Search, Layers, CheckCircle2 } from 'lucide-react';
-import { AnimateOnScroll, FloatingParticles } from '@/components/ScrollAnimations';
+import { AnimateOnScroll } from '@/components/ScrollAnimations';
 import { BorderBeam, GlowCard, LiveTemplatePreviewModal } from '@/components/PremiumEffects';
 import { TEMPLATES, CATEGORIES, type TemplateCategory } from './templates';
 
@@ -67,10 +67,9 @@ export default function ShowcasePage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen font-body bg-white text-gray-900">
+    <div className="site-page flex flex-col min-h-screen font-body bg-white text-gray-900">
       {/* ─── HERO (DEV KRAFTERS BRANDED SURFACE-ALT BG) ─── */}
       <section className="bg-surface-alt py-16 sm:py-24 border-b border-gray-200/60 relative overflow-hidden">
-        <FloatingParticles count={14} />
         {/* Subtle background brand glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 

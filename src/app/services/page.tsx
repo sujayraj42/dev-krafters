@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Badge } from '@/components/Badge';
-import { AnimateOnScroll, FloatingParticles } from '@/components/ScrollAnimations';
+import { AnimateOnScroll } from '@/components/ScrollAnimations';
 import { BorderBeam, GlowCard, AnimatedTextShimmer } from '@/components/PremiumEffects';
 import {
   Globe,
@@ -372,10 +372,9 @@ export default function ServicesPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen font-body bg-white text-gray-900">
+    <div className="site-page flex flex-col min-h-screen font-body bg-white text-gray-900">
       {/* ─── HERO SECTION (SURFACE-ALT BG WITH GLOW) ─── */}
       <section className="bg-surface-alt py-16 sm:py-24 border-b border-gray-200/60 relative overflow-hidden">
-        <FloatingParticles count={14} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative max-w-content mx-auto px-6 text-center space-y-5">

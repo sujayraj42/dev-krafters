@@ -21,7 +21,7 @@ export const Header: React.FC = () => {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-xl border-b border-gray-200/60 shadow-xs transition-all duration-300">
+    <header className="sticky top-0 z-50 border-b border-gray-200/70 bg-surface/95 shadow-sm backdrop-blur-xl transition-all duration-300">
       <div className="max-w-content mx-auto px-6 h-20 flex items-center justify-between">
         {/* Brand Logo + Status Dot */}
         <div className="flex items-center gap-3">
@@ -33,14 +33,14 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-7" aria-label="Main Navigation">
+        <nav className="hidden lg:flex items-center gap-5" aria-label="Main Navigation">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`font-heading font-semibold text-xs uppercase tracking-wide transition-colors duration-200 relative py-1.5 ${
+                className={`font-heading font-semibold text-xs uppercase tracking-wide transition-colors duration-200 relative py-2 ${
                   isActive
                     ? 'text-accent'
                     : 'text-primary hover:text-accent'
@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
               >
                 {link.name}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-accent rounded-full animate-fade-in-up" />
+                  <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-accent animate-fade-in-up" />
                 )}
               </Link>
             );
@@ -56,8 +56,8 @@ export const Header: React.FC = () => {
         </nav>
 
         {/* Desktop CTA Button */}
-        <div className="hidden md:flex items-center gap-4">
-          <Button href="/contact" variant="primary" size="sm" className="bg-accent hover:bg-accent-dark border-none shadow-md shadow-accent/20">
+        <div className="hidden lg:flex items-center gap-4">
+          <Button href="/contact" variant="primary" size="sm" className="border border-accent/40 bg-accent text-white shadow-[0_3px_0_#b43f2c,0_8px_18px_rgba(232,90,60,0.16)] hover:-translate-y-0.5 hover:bg-accent-dark hover:shadow-[0_5px_0_#b43f2c,0_11px_22px_rgba(232,90,60,0.2)]">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Start a Project</span>
             <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
@@ -68,7 +68,7 @@ export const Header: React.FC = () => {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 rounded-xl text-primary hover:bg-surface-alt transition-colors focus-ring"
+          className="lg:hidden p-2 rounded-xl text-primary hover:bg-surface-alt transition-colors focus-ring"
           aria-label="Toggle Navigation Menu"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -77,7 +77,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-surface/98 backdrop-blur-2xl border-b border-gray-200 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200 shadow-2xl">
+        <div className="lg:hidden border-b border-gray-200 bg-surface/98 px-6 py-6 space-y-4 backdrop-blur-2xl animate-fade-in-up duration-200 shadow-xl">
           <nav className="flex flex-col space-y-2">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;

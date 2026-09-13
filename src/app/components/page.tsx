@@ -10,7 +10,6 @@ import { Modal } from '@/components/Modal';
 import { Toggle } from '@/components/Toggle';
 import {
   AnimateOnScroll,
-  FloatingParticles,
   TiltCard,
   AnimatedStatCounter,
 } from '@/components/ScrollAnimations';
@@ -95,10 +94,9 @@ export default function ComponentsShowcasePage() {
   }, 1499); // Base website package price
 
   return (
-    <div className="flex flex-col min-h-screen bg-surface text-gray-900 font-body overflow-x-hidden">
+    <div className="site-page flex flex-col min-h-screen bg-surface text-gray-900 font-body overflow-x-hidden">
       {/* ─── 1. ULTRA-PREMIUM HERO SECTION WITH PARTICLES & SHIMMER ─── */}
       <section className="relative bg-gradient-to-b from-primary-dark via-primary to-primary-dark text-white py-20 sm:py-28 overflow-hidden">
-        <FloatingParticles count={25} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-accent/15 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="relative max-w-content mx-auto px-6 text-center space-y-6">

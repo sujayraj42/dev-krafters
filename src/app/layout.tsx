@@ -148,7 +148,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${montserrat.variable} ${poppins.variable} scroll-smooth`}>
+    <html lang="en" data-density="minimal" suppressHydrationWarning className={`${montserrat.variable} ${poppins.variable} scroll-smooth`}>
       <head>
         {/* Google Site Verification Meta Tag */}
         <meta name="google-site-verification" content="Eh4xhceo_dAvFd6_X_Dmdne78NrmHEVh3s66vj99Tt0" />

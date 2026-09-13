@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { HealthCheck } from '@/app/components/HealthCheck';
 import { TEMPLATES } from '@/app/portfolio/templates';
-import { AnimateOnScroll, FloatingParticles, TiltCard } from '@/components/ScrollAnimations';
-import { BorderBeam, InfiniteMarquee, GlowCard, AnimatedTextShimmer } from '@/components/PremiumEffects';
-import { TestimonialCarousel } from '@/components/TestimonialCarousel';
+import { AnimateOnScroll } from '@/components/ScrollAnimations';
+import { HeroExperience } from '@/components/HeroExperience';
 import { FAQAccordion } from '@/components/FAQAccordion';
 import { ClientLogoMarquee } from '@/components/ClientLogoMarquee';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
@@ -21,14 +20,10 @@ import {
   CheckCircle2,
   Sparkles,
   Bot,
-  Gauge,
-  Search,
   Layers,
   Eye,
   TrendingUp,
   XCircle,
-  Clock,
-  MessageCircle,
 } from 'lucide-react';
 
 export default function Home() {
@@ -92,156 +87,68 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen font-body bg-white text-gray-900">
-      {/* ─── SECTION 1: HERO (HIGH-IMPACT VISUAL & AMBIENT GLOW) ─── */}
-      <section className="relative pt-12 pb-20 md:pt-24 md:pb-28 overflow-hidden bg-surface-alt border-b border-gray-200/60">
-        <FloatingParticles count={16} />
-        {/* Background Glow Blobs */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-
+    <div className="site-page flex flex-col min-h-screen font-body bg-white text-gray-900">
+      {/* ─── SECTION 1: IMMERSIVE 3D HERO ─── */}
+      <section className="hero-shell">
+        <div className="hero-shell__noise" />
         <div className="max-w-content mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Content */}
-            <AnimateOnScroll animation="slide-right" duration={700} className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-accent font-heading text-xs font-bold tracking-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
+            <AnimateOnScroll animation="slide-right" duration={700} className="lg:col-span-7 py-16 sm:py-20 lg:py-28 text-center lg:text-left">
+              <div className="hero-kicker">
+                <span className="hero-kicker__pulse" />
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Affordable Web & AI Studio for Small Businesses</span>
+                <span>Digital experiences for ambitious local brands</span>
               </div>
 
-              {/* Main Headline */}
-              <h1 className="font-heading font-extrabold text-4xl sm:text-5xl lg:text-6xl text-primary leading-[1.15] tracking-tight">
-                High-Converting Websites{' '}
-                <span className="text-accent">Built for Business Growth.</span>
+              <h1 className="hero-title mt-6">
+                Websites that feel
+                <span className="hero-title__highlight"> alive.</span>
               </h1>
 
-              {/* Subheadline */}
-              <p className="font-body text-base sm:text-lg text-muted max-w-2xl leading-relaxed mx-auto lg:mx-0">
-                Dev Krafters builds fast, affordable, AI-powered websites, landing pages, and automated tools for clinics, salons, restaurants, and local services.
+              <p className="hero-copy">
+                We create high-converting websites, AI tools and brand experiences with the polish of a big studio and the speed of a focused partner.
               </p>
 
-              {/* CTAs */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <Button href="/contact" variant="primary" size="lg" className="w-full sm:w-auto bg-accent hover:bg-accent-dark border-none shadow-lg shadow-accent/25">
-                  <span>Start Your Project</span>
-                  <ArrowRight className="w-5 h-5 ml-1.5" />
+              <div className="pt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
+                <Button href="/contact" variant="primary" size="lg" className="hero-primary-cta w-full sm:w-auto">
+                  <span>Build something remarkable</span>
+                  <ArrowRight className="w-5 h-5 ml-1" />
                 </Button>
-                <Button href="/portfolio" variant="secondary" size="lg" className="w-full sm:w-auto bg-white border-gray-200">
-                  <Eye className="w-4 h-4 mr-1.5 text-accent" />
-                  <span>Browse 20 Web Templates</span>
+                <Button href="/portfolio" variant="secondary" size="lg" className="hero-secondary-cta w-full sm:w-auto">
+                  <Eye className="w-4 h-4 mr-1" />
+                  <span>Explore our work</span>
                 </Button>
               </div>
 
-              {/* Key Highlights Pill Row */}
-              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-xs font-heading font-semibold text-primary/80">
-                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-2xs">
-                  <CheckCircle2 className="w-4 h-4 text-accent" />
-                  <span>No agency overhead</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-2xs">
-                  <CheckCircle2 className="w-4 h-4 text-accent" />
-                  <span>95+ PageSpeed Score</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-2xs">
-                  <CheckCircle2 className="w-4 h-4 text-accent" />
-                  <span>100% Fixed Quote</span>
-                </div>
+              <div className="hero-proof-row">
+                <div className="hero-proof"><CheckCircle2 className="w-4 h-4" /><span>Fixed, transparent pricing</span></div>
+                <div className="hero-proof"><CheckCircle2 className="w-4 h-4" /><span>3–10 day build time</span></div>
+                <div className="hero-proof"><CheckCircle2 className="w-4 h-4" /><span>Built to convert</span></div>
               </div>
             </AnimateOnScroll>
 
-            {/* Right Visual Graphic / Mockup Card */}
-            <AnimateOnScroll animation="slide-left" duration={700} delay={150} className="lg:col-span-5">
-              <TiltCard className="mx-auto max-w-md lg:max-w-none rounded-card">
-                {/* Outer Glow Frame */}
-                <div className="absolute -inset-2 bg-gradient-to-r from-primary/20 via-accent/30 to-primary/20 rounded-card blur-2xl opacity-70 animate-pulse" />
-
-                {/* Card Showcase Frame */}
-                <div className="relative bg-white rounded-card shadow-2xl border border-gray-200/80 overflow-hidden">
-                  <BorderBeam duration={5} colorFrom="#E85A3C" colorTo="#0F4C4C" size={280} />
-                  {/* Browser Bar Header */}
-                  <div className="bg-primary px-4 py-3 flex items-center justify-between border-b border-primary-dark">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-400" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                      <div className="w-3 h-3 rounded-full bg-green-400" />
-                    </div>
-                    <div className="bg-primary-dark/80 px-3.5 py-1 rounded-md text-[11px] font-mono text-gray-200 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                      <span>devkrafters.com</span>
-                    </div>
-                    <div className="w-4" />
-                  </div>
-
-                  {/* Mock Site Content */}
-                  <div className="p-6 space-y-5 bg-surface-alt/60">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <div className="h-4 w-36 bg-primary/80 rounded" />
-                        <div className="h-2.5 w-24 bg-accent/40 rounded" />
-                      </div>
-                      <div className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-heading font-bold flex items-center gap-1">
-                        <Gauge className="w-3.5 h-3.5 text-emerald-600" /> 99 Performance
-                      </div>
-                    </div>
-
-                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-3">
-                      <div className="h-3.5 w-3/4 bg-primary/90 rounded" />
-                      <div className="h-2.5 w-full bg-gray-200 rounded" />
-                      <div className="h-2.5 w-5/6 bg-gray-200 rounded" />
-                      <div className="pt-2 flex items-center justify-between">
-                        <div className="px-4 py-2 bg-accent text-white text-xs font-heading font-bold rounded-lg shadow-sm">
-                          Book Consultation
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-heading font-medium text-emerald-600">
-                          <Bot className="w-4 h-4 text-accent" />
-                          <span>AI Chatbot Active</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Features Micro Pills */}
-                    <div className="grid grid-cols-3 gap-2.5 text-center text-[11px] font-heading font-bold text-primary">
-                      <div className="bg-white p-2.5 rounded-lg border border-gray-200 shadow-2xs">
-                        <Search className="w-4 h-4 text-accent mx-auto mb-1" />
-                        Google Ranked
-                      </div>
-                      <div className="bg-white p-2.5 rounded-lg border border-gray-200 shadow-2xs">
-                        <Zap className="w-4 h-4 text-accent mx-auto mb-1" />
-                        Mobile-First
-                      </div>
-                      <div className="bg-white p-2.5 rounded-lg border border-gray-200 shadow-2xs">
-                        <Bot className="w-4 h-4 text-accent mx-auto mb-1" />
-                        24/7 Leads
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TiltCard>
+            <AnimateOnScroll animation="slide-left" duration={800} delay={120} className="lg:col-span-5">
+              <HeroExperience />
             </AnimateOnScroll>
           </div>
+        </div>
+
+        <div className="hero-bottom-stats max-w-content mx-auto px-6 relative z-10">
+          <div><span>Built for</span><strong>Clarity</strong></div>
+          <i />
+          <div><span>Designed for</span><strong>Conversion</strong></div>
+          <i />
+          <div><span>Powered by</span><strong>Modern tech</strong></div>
+          <i />
+          <div><span>Focused on</span><strong>Your growth</strong></div>
         </div>
       </section>
 
       {/* ─── CLIENT LOGO MARQUEE (TRUSTED BY) ─── */}
       <ClientLogoMarquee />
 
-      {/* ─── INFINITE MARQUEE TICKER ─── */}
-      <InfiniteMarquee
-        items={[
-          { icon: Sparkles, text: '95+ Google PageSpeed Score Guarantee', highlight: 'Lightning Fast' },
-          { icon: Zap, text: '3 to 10-Day Rapid AI-Assisted Build', highlight: 'Fast Turnaround' },
-          { icon: ShieldCheck, text: '100% Fixed Price Quote • 0% Hidden Line Items', highlight: 'Transparent' },
-          { icon: Bot, text: 'Integrated AI Lead Chatbot Trained On Your Business', highlight: '24/7 Leads' },
-          { icon: UserCheck, text: 'Direct Access to Senior Developer (No Middlemen)', highlight: 'Direct Support' },
-        ]}
-      />
-
-      {/* ─── SECTION 2: LIVE 8-PARAMETER WEBSITE HEALTH CHECK ─── */}
-      <HealthCheck />
-
       {/* ─── FEATURED TEMPLATES SHOWCASE RIBBON ─── */}
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-[#f8fbfb]">
         <div className="max-w-content mx-auto px-6 space-y-10">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-gray-100 pb-4">
             <div>
@@ -265,7 +172,7 @@ export default function Home() {
               <Link
                 key={template.slug}
                 href={`/portfolio/${template.slug}`}
-                className="group flex flex-col justify-between bg-white rounded-card border border-gray-200/80 overflow-hidden hover:border-accent/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="lift-card group flex flex-col justify-between bg-white rounded-card border border-gray-200/80 overflow-hidden hover:border-accent/40 transition-all duration-300"
               >
                 <div
                   className="h-32 relative overflow-hidden flex items-center justify-center"
@@ -326,7 +233,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto overflow-hidden rounded-card border border-gray-200 shadow-md bg-white">
+          <div className="max-w-4xl mx-auto overflow-hidden rounded-card border border-gray-200 elevated-card bg-white">
             <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-gray-200">
               {/* Header Titles */}
               <div className="md:col-span-4 p-6 bg-gray-50 flex items-center font-heading font-extrabold text-base text-primary">
@@ -379,7 +286,7 @@ export default function Home() {
               return (
                 <div
                   key={idx}
-                  className="bg-surface-alt p-8 rounded-card border border-gray-200/80 shadow-xs hover:shadow-md hover:border-accent/40 transition-all duration-200 flex flex-col justify-between group"
+                  className="lift-card bg-surface-alt p-8 rounded-card border border-gray-200/80 transition-all duration-300 flex flex-col justify-between group"
                 >
                   <div>
                     <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-6 group-hover:bg-accent group-hover:text-white transition-colors">
@@ -420,7 +327,7 @@ export default function Home() {
             {testimonials.map((t, idx) => (
               <div
                 key={idx}
-                className="bg-white p-8 rounded-card border border-gray-200/80 shadow-sm flex flex-col justify-between space-y-6 relative overflow-hidden"
+                className="lift-card bg-white p-8 rounded-card border border-gray-200/80 flex flex-col justify-between space-y-6 relative overflow-hidden"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -453,9 +360,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ─── CLIENT TESTIMONIALS ─── */}
-      <TestimonialCarousel />
 
       {/* ─── FAQ SECTION ─── */}
       <FAQAccordion />

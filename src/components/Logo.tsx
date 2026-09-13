@@ -5,12 +5,14 @@ interface LogoProps {
   className?: string;
   showWordmark?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  tone?: 'default' | 'light';
 }
 
 export const Logo: React.FC<LogoProps> = ({
   className = '',
   showWordmark = true,
   size = 'md',
+  tone = 'default',
 }) => {
   const iconSizes = {
     sm: 'w-7 h-7',
@@ -41,7 +43,7 @@ export const Logo: React.FC<LogoProps> = ({
             width="34"
             height="24"
             rx="4"
-            className="fill-primary stroke-primary-dark"
+            className={tone === 'light' ? 'fill-white stroke-white/80' : 'fill-primary stroke-primary-dark'}
             strokeWidth="2"
           />
           {/* Screen Inner */}
@@ -51,7 +53,7 @@ export const Logo: React.FC<LogoProps> = ({
             width="29"
             height="19"
             rx="2.5"
-            className="fill-primary-dark"
+            className={tone === 'light' ? 'fill-[#08282a]' : 'fill-primary-dark'}
           />
           {/* Bracket Code Symbol </ > */}
           <path
@@ -64,7 +66,7 @@ export const Logo: React.FC<LogoProps> = ({
           {/* Monitor Stand */}
           <path
             d="M 16 28 L 24 28 M 20 28 L 20 32 M 15 32 L 25 32"
-            stroke="#0F4C4C"
+            stroke={tone === 'light' ? '#E8F7F6' : '#0F4C4C'}
             strokeWidth="2.5"
             strokeLinecap="round"
           />
@@ -80,7 +82,7 @@ export const Logo: React.FC<LogoProps> = ({
       </div>
 
       {showWordmark && (
-        <span className={`font-heading font-extrabold tracking-tight ${textSizes[size]} text-primary flex items-center`}>
+        <span className={`font-heading font-extrabold tracking-tight ${textSizes[size]} ${tone === 'light' ? 'text-white' : 'text-primary'} flex items-center`}>
           <span>Dev</span>
           <span className="text-accent ml-1">Krafters</span>
         </span>

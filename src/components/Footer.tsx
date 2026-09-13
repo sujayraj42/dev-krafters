@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="md:col-span-5 space-y-4">
             <div className="inline-block bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-              <Logo showWordmark={true} className="[&_span]:text-white [&_span.text-accent]:text-accent" />
+              <Logo tone="light" showWordmark={true} className="[&_span.text-accent]:text-accent" />
             </div>
             <p className="font-body text-gray-300 text-sm max-w-sm leading-relaxed">
               Affordable AI-powered websites for local businesses. A one-person AI studio helping small businesses build, automate, and grow online.
