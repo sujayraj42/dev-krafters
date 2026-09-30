@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { validateUrlForSSRF } from '@/lib/ssrf';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,26 +50,83 @@ export async function POST(request: Request) {
 
     const targetUrl = parsedUrl.toString();
 
-    // 3. Server-side Fetch Target Website HTML
+    // Validate initial URL for SSRF vulnerabilities
+    const initialSsrfCheck = await validateUrlForSSRF(targetUrl);
+    if (!initialSsrfCheck.valid) {
+      return NextResponse.json(
+        { error: initialSsrfCheck.reason || 'Target URL is not permitted for health checks.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Server-side Fetch Target Website HTML with SSRF Protection and Manual Redirect Handling
     const startTime = Date.now();
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-    let response: Response;
+    let currentUrl = targetUrl;
+    let redirects = 0;
+    const maxRedirects = 5;
+    let response: Response | null = null;
     let html = '';
 
     try {
-      response = await fetch(targetUrl, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DevKraftersHealthCheck/1.0',
-          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        redirect: 'follow',
-      });
+      while (redirects <= maxRedirects) {
+        // Re-validate each redirect destination against SSRF rules
+        if (redirects > 0) {
+          const redirectSsrfCheck = await validateUrlForSSRF(currentUrl);
+          if (!redirectSsrfCheck.valid) {
+            clearTimeout(timeoutId);
+            return NextResponse.json(
+              { error: `Redirect destination blocked: ${redirectSsrfCheck.reason}` },
+              { status: 422 }
+            );
+          }
+        }
+
+        response = await fetch(currentUrl, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DevKraftersHealthCheck/1.0',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+          redirect: 'manual',
+        });
+
+        // Handle HTTP redirects (301, 302, 303, 307, 308)
+        if (response.status >= 300 && response.status < 400) {
+          const location = response.headers.get('location');
+          if (!location) {
+            break;
+          }
+          redirects++;
+          if (redirects > maxRedirects) {
+            clearTimeout(timeoutId);
+            return NextResponse.json(
+              { error: `Too many redirects (exceeded limit of ${maxRedirects}).` },
+              { status: 422 }
+            );
+          }
+          currentUrl = new URL(location, currentUrl).toString();
+          continue;
+        }
+
+        break;
+      }
+
       clearTimeout(timeoutId);
+
+      if (!response) {
+        return NextResponse.json(
+          { error: `Could not reach ${parsedUrl.hostname}. No response received.` },
+          { status: 422 }
+        );
+      }
+
       html = await response.text();
+      // Update parsedUrl to final URL destination for accurate protocol checks
+      parsedUrl = new URL(currentUrl);
     } catch (err: unknown) {
       clearTimeout(timeoutId);
       const isAbort = err instanceof Error && err.name === 'AbortError';
@@ -205,7 +263,7 @@ Write a 2-3 sentence plain-English summary for the business owner. Highlight mis
       if (issues.length === 0) {
         aiSummary = `Great job! Your website scored ${score}/10 on our 8-parameter health check. To double your leads, consider adding custom AI booking widgets and local SEO optimizations.`;
       } else {
-        aiSummary = `Your website scored ${score}/10, with room for improvement in ${issues.slice(0, 3).join(', ')}. Fixing these will significantly boost your Google ranking and customer conversion rate.`;
+        aiSummary = `Your website scored ${score}/10, with room for improvement in ${issues.slice(0, 3).join(', ')}. Fixing these will significantly boost your Google ranking and conversion rate.`;
       }
     }
 
@@ -236,7 +294,7 @@ Write a 2-3 sentence plain-English summary for the business owner. Highlight mis
         title: {
           pass: hasTitle,
           label: 'Google Title Tag',
-          statusText: hasTitle ? 'HTML Title tag found for Google Search' : 'Missing <title> tag (Invisble in Google search results)',
+          statusText: hasTitle ? 'HTML Title tag found for Google Search' : 'Missing <title> tag (Invisible in Google search results)',
         },
         metaDescription: {
           pass: hasMetaDescription,
