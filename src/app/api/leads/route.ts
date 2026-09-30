@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync, updateLeadAsync } from '@/lib/db';
+import { isAuthorizedAdminRequest } from '@/lib/totp';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -104,9 +105,17 @@ export async function PATCH(request: Request) {
   }
 }
 
-// DELETE /api/leads - Clear leads database
-export async function DELETE() {
+// DELETE /api/leads - Clear leads database (Protected: Requires Admin Authorization)
+export async function DELETE(request: Request) {
   try {
+    const authorized = await isAuthorizedAdminRequest(request);
+    if (!authorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authorization required' },
+        { status: 401 }
+      );
+    }
+
     await clearLeadsAsync();
     return NextResponse.json({ success: true, message: 'Leads database cleared successfully' });
   } catch (error: unknown) {

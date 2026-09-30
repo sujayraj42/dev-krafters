@@ -26,10 +26,11 @@ export async function POST(request: Request) {
     const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
 
     // 1. Check fallback PIN / passcode if submitted
-    if (pin && (pin === adminPasscode || pin === '1234' || pin === 'admin' || pin === 'devkrafters')) {
+    if (pin && pin === adminPasscode) {
       return NextResponse.json({
         success: true,
         method: 'passcode',
+        token: adminPasscode,
         message: 'Unlocked via Passcode PIN',
       });
     }
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
           success: true,
           method: 'google_authenticator',
+          token: adminPasscode,
           message: 'Unlocked via Google Authenticator 2FA',
         });
       }
