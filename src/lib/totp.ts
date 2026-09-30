@@ -102,5 +102,11 @@ export function getAuthenticatorQrCodeUrl(
   return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(totpUri)}`;
 }
 
-// Default TOTP secret key for Dev Krafters Admin (Can be overridden via ADMIN_TOTP_SECRET env var)
-export const DEFAULT_ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET || 'DEVKRAFTERS2FASECRET32';
+// Get admin TOTP secret from environment variable. Throws an error if not configured.
+export function getAdminTotpSecret(): string {
+  const secret = process.env.ADMIN_TOTP_SECRET;
+  if (!secret) {
+    throw new Error('ADMIN_TOTP_SECRET environment variable is not configured');
+  }
+  return secret;
+}
