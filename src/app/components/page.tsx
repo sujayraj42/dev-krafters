@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { Input, Select, Textarea } from '@/components/FormControls';
@@ -50,6 +50,19 @@ import {
   CheckSquare,
 } from 'lucide-react';
 
+const TOOL_CATALOG = [
+  { id: 'whatsapp', label: '1-Click WhatsApp Quick-Connect', icon: MessageCircle, cost: 0, tag: 'Included' },
+  { id: 'maps', label: 'Google Maps Directions Widget', icon: MapPin, cost: 0, tag: 'Included' },
+  { id: 'reviews', label: '5-Star Google Reviews Carousel', icon: Star, cost: 0, tag: 'Included' },
+  { id: 'form', label: 'Instant Lead Capture Form', icon: Send, cost: 0, tag: 'Included' },
+  { id: 'booking', label: 'Interactive Appointment Booking Modal', icon: Calendar, cost: 499, tag: 'Popular Addon' },
+  { id: 'calculator', label: 'Custom Price Quote Calculator', icon: Zap, cost: 999, tag: 'Pro Feature' },
+  { id: 'theme', label: 'Dynamic Dark/Light Mode Switcher', icon: Palette, cost: 299, tag: 'UI Polish' },
+  { id: 'marquee', label: 'Trust Badges & Partner Logo Ribbon', icon: ShieldCheck, cost: 199, tag: 'Social Proof' },
+];
+
+const TOOL_COST_MAP = new Map(TOOL_CATALOG.map((t) => [t.id, t.cost]));
+
 export default function ComponentsShowcasePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFeature, setActiveFeature] = useState<'whatsapp' | 'maps' | 'reviews' | 'banner'>('whatsapp');
@@ -71,16 +84,7 @@ export default function ComponentsShowcasePage() {
     'form',
   ]);
 
-  const toolCatalog = [
-    { id: 'whatsapp', label: '1-Click WhatsApp Quick-Connect', icon: MessageCircle, cost: 0, tag: 'Included' },
-    { id: 'maps', label: 'Google Maps Directions Widget', icon: MapPin, cost: 0, tag: 'Included' },
-    { id: 'reviews', label: '5-Star Google Reviews Carousel', icon: Star, cost: 0, tag: 'Included' },
-    { id: 'form', label: 'Instant Lead Capture Form', icon: Send, cost: 0, tag: 'Included' },
-    { id: 'booking', label: 'Interactive Appointment Booking Modal', icon: Calendar, cost: 499, tag: 'Popular Addon' },
-    { id: 'calculator', label: 'Custom Price Quote Calculator', icon: Zap, cost: 999, tag: 'Pro Feature' },
-    { id: 'theme', label: 'Dynamic Dark/Light Mode Switcher', icon: Palette, cost: 299, tag: 'UI Polish' },
-    { id: 'marquee', label: 'Trust Badges & Partner Logo Ribbon', icon: ShieldCheck, cost: 199, tag: 'Social Proof' },
-  ];
+  const toolCatalog = TOOL_CATALOG;
 
   const toggleTool = (id: string) => {
     setSelectedTools((prev) =>
@@ -88,10 +92,13 @@ export default function ComponentsShowcasePage() {
     );
   };
 
-  const calculatedTotal = selectedTools.reduce((acc, id) => {
-    const item = toolCatalog.find((t) => t.id === id);
-    return acc + (item ? item.cost : 0);
-  }, 1499); // Base website package price
+  const calculatedTotal = useMemo(
+    () =>
+      selectedTools.reduce((acc, id) => {
+        return acc + (TOOL_COST_MAP.get(id) ?? 0);
+      }, 1499), // Base website package price
+    [selectedTools]
+  );
 
   return (
     <div className="site-page flex flex-col min-h-screen bg-surface text-gray-900 font-body overflow-x-hidden">
