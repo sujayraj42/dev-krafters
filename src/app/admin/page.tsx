@@ -92,16 +92,30 @@ export default function AdminPage() {
   const [leadNoteInput, setLeadNoteInput] = useState('');
   const [leadStatusInput, setLeadStatusInput] = useState<'new' | 'in_progress' | 'converted'>('new');
 
-  // Load 2FA QR Code & Secret info
+  // Load 2FA QR Code & Secret info securely using token
+  const load2FAInfo = async (passcode?: string) => {
+    const token = passcode || sessionStorage.getItem('dev_krafters_admin_passcode');
+    if (!token) return;
+
+    try {
+      const res = await fetch('/api/auth/verify-2fa', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.qrCodeUrl) setQrCodeUrl(data.qrCodeUrl);
+      if (data.secret) setTotpSecret(data.secret);
+    } catch (err) {
+      console.error('Failed to load 2FA setup:', err);
+    }
+  };
+
   useEffect(() => {
-    fetch('/api/auth/verify-2fa')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.qrCodeUrl) setQrCodeUrl(data.qrCodeUrl);
-        if (data.secret) setTotpSecret(data.secret);
-      })
-      .catch((err) => console.error('Failed to load 2FA setup:', err));
-  }, []);
+    if (isAuthenticated) {
+      load2FAInfo();
+    }
+  }, [isAuthenticated]);
 
   // Load leads from MongoDB Cloud API
   const loadLeads = async () => {
@@ -172,10 +186,13 @@ export default function AdminPage() {
       const data = await res.json();
 
       if (data.success) {
+        const token = authMode === 'totp' ? totpCode : pin;
         setIsAuthenticated(true);
         sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
+        sessionStorage.setItem('dev_krafters_admin_passcode', token);
         setError('');
         loadLeads();
+        load2FAInfo(token);
       } else {
         setError(data.error || 'Invalid authentication code. Check Google Authenticator or PIN.');
       }
@@ -498,7 +515,13 @@ export default function AdminPage() {
 
           <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
             <button
-              onClick={() => setShow2FASetup(true)}
+              onClick={() => {
+                const token = authMode === 'totp' ? totpCode : pin;
+                if (token) {
+                  load2FAInfo(token);
+                }
+                setShow2FASetup(true);
+              }}
               className="text-slate-400 hover:text-accent font-heading font-semibold transition-colors flex items-center gap-1 mx-auto cursor-pointer"
             >
               <QrCode className="w-3.5 h-3.5 text-accent" />

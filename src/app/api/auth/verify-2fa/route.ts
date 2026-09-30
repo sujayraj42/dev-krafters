@@ -4,15 +4,33 @@ import { verifyTotpCode, DEFAULT_ADMIN_TOTP_SECRET, getAuthenticatorQrCodeUrl } 
 export const dynamic = 'force-dynamic';
 
 // GET /api/auth/verify-2fa - Returns QR code URL & secret for setup
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.substring(7).trim()
+    : authHeader.trim();
+
   const secret = process.env.ADMIN_TOTP_SECRET || DEFAULT_ADMIN_TOTP_SECRET;
+  const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
+
+  const isPasscodeValid = Boolean(token) && token === adminPasscode;
+
+  const isTotpValid = Boolean(token) && (await verifyTotpCode(token, secret));
+
+  if (!token || (!isPasscodeValid && !isTotpValid)) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized: Valid passcode or TOTP token required.' },
+      { status: 401 }
+    );
+  }
+
   const qrCodeUrl = getAuthenticatorQrCodeUrl(secret);
 
   return NextResponse.json({
     success: true,
     secret,
     qrCodeUrl,
-    passcodeDefault: process.env.ADMIN_PASSCODE || '1234',
+    passcodeDefault: adminPasscode,
   });
 }
 
@@ -26,7 +44,7 @@ export async function POST(request: Request) {
     const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
 
     // 1. Check fallback PIN / passcode if submitted
-    if (pin && (pin === adminPasscode || pin === '1234' || pin === 'admin' || pin === 'devkrafters')) {
+    if (pin && pin === adminPasscode) {
       return NextResponse.json({
         success: true,
         method: 'passcode',
