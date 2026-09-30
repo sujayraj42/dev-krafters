@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Mail, ArrowRight, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
+import { saveLocalLead } from '@/lib/leadsStorage';
 
 export const NewsletterSignup: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -19,21 +20,22 @@ export const NewsletterSignup: React.FC = () => {
     setStatus('loading');
 
     try {
+      const date = new Date().toISOString();
+      const payload = {
+        type: 'newsletter',
+        email,
+        date,
+      };
+
       // Save to database API
       await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'newsletter',
-          email,
-          date: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       // Also keep in localStorage for offline access
-      const leads = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
-      const newLead = { email, date: new Date().toISOString(), source: 'newsletter' };
-      localStorage.setItem('dev_krafters_leads', JSON.stringify([newLead, ...leads]));
+      saveLocalLead({ email, date, source: 'newsletter' });
 
       setStatus('success');
       setMessage('Success! You are subscribed to web growth insights.');

@@ -2,27 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { Database, Download, Trash2, X, Sparkles, Check } from 'lucide-react';
-
-interface Lead {
-  email?: string;
-  projectType?: string;
-  pages?: number;
-  totalEstimate?: number;
-  date: string;
-  source?: string;
-}
+import { getLocalLeads, clearLocalLeads, ESTIMATES_STORAGE_KEY, LocalLead } from '@/lib/leadsStorage';
 
 export const LeadsManagerModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   isOpen,
   onClose,
 }) => {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [estimates, setEstimates] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<LocalLead[]>([]);
+  const [estimates, setEstimates] = useState<LocalLead[]>([]);
   const [copied, setCopied] = useState(false);
 
   const loadData = () => {
-    const storedLeads = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
-    const storedEstimates = JSON.parse(localStorage.getItem('dev_krafters_estimates') || '[]');
+    const storedLeads = getLocalLeads();
+    const storedEstimates = typeof window !== 'undefined'
+      ? JSON.parse(localStorage.getItem(ESTIMATES_STORAGE_KEY) || '[]')
+      : [];
     setLeads(storedLeads);
     setEstimates(storedEstimates);
   };
@@ -35,8 +29,7 @@ export const LeadsManagerModal: React.FC<{ isOpen: boolean; onClose: () => void 
 
   const clearAll = () => {
     if (confirm('Are you sure you want to clear saved leads in this browser session?')) {
-      localStorage.removeItem('dev_krafters_leads');
-      localStorage.removeItem('dev_krafters_estimates');
+      clearLocalLeads();
       setLeads([]);
       setEstimates([]);
     }
