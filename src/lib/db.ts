@@ -5,7 +5,7 @@
 // NO filesystem (fs) operations — everything goes to MongoDB Atlas.
 
 import { ObjectId } from 'mongodb';
-import dns from 'dns';
+import { configureDns } from './dns-config';
 
 export interface LeadRecord {
   id: string;
@@ -29,9 +29,7 @@ export interface LeadRecord {
 // MONGODB ATLAS CONNECTION HELPER
 // ─────────────────────────────────────────────
 async function getMongoDb() {
-  try {
-    dns.setServers(['8.8.8.8', '1.1.1.1']);
-  } catch {}
+  configureDns();
 
   const uri = process.env.MONGODB_URI;
   if (!uri || uri.includes('<db_password>')) {

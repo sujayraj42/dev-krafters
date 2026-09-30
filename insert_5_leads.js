@@ -1,10 +1,8 @@
 const { MongoClient } = require('mongodb');
-const dns = require('dns');
+const { configureDns } = require('./src/lib/dns-config');
 
-// Ensure DNS SRV record resolution succeeds
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
-} catch {}
+// Ensure DNS SRV record resolution succeeds across environments
+configureDns();
 
 const uri = "mongodb+srv://sujayraj7003:abcd@cluster0.qfy0wqt.mongodb.net/Dev_Krafters?retryWrites=true&w=majority&appName=Cluster0";
 
