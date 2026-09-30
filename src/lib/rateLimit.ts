@@ -6,7 +6,7 @@ const rateLimitStore = new Map<string, RateLimitRecord>();
 
 // Clean up expired records every 5 minutes to avoid memory leaks
 if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
+  const cleanupInterval = setInterval(() => {
     const now = Date.now();
     const windowMs = 60 * 1000;
     for (const [ip, record] of rateLimitStore.entries()) {
@@ -18,6 +18,10 @@ if (typeof setInterval !== 'undefined') {
       }
     }
   }, 5 * 60 * 1000);
+
+  if (cleanupInterval.unref) {
+    cleanupInterval.unref();
+  }
 }
 
 export function getClientIp(request: Request): string {
