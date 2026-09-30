@@ -262,39 +262,53 @@ const processSteps = [
 ];
 
 // ─────────────────────────────────────────────
-// INTERACTIVE SERVICE RECOMMENDER WIDGET
+// INTERACTIVE SERVICE RECOMMENDER DATA & WIDGET
 // ─────────────────────────────────────────────
+interface GoalRecommendation {
+  service: string;
+  price: string;
+  link: string;
+  reason: string;
+}
+
+const GOAL_RECOMMENDATIONS: Record<string, GoalRecommendation> = {
+  budget: {
+    service: 'Starter Single-Page',
+    price: '₹5,000',
+    link: '/contact?service=starter-page',
+    reason: 'Ideal for getting your business online fast with a sleek single-page layout and WhatsApp button.',
+  },
+  business: {
+    service: 'Business Website',
+    price: '₹25,000',
+    link: '/contact?service=business-website',
+    reason: 'Our most popular 5–8 page package for clinics, salons, restaurants, and local service professionals.',
+  },
+  sales: {
+    service: 'E-commerce Storefront',
+    price: '₹75,000',
+    link: '/contact?service=ecommerce',
+    reason: 'Complete online store with catalog setup, shopping cart, and Razorpay/Stripe payment gateways.',
+  },
+  chatbot: {
+    service: 'AI Chatbot Integration',
+    price: '₹8,000',
+    link: '/contact?service=ai-chatbot',
+    reason: 'A 24/7 AI assistant that answers visitor questions, provides pricing, and captures lead emails automatically.',
+  },
+};
+
+const GOAL_OPTIONS = [
+  { id: 'budget', label: '1. Fast 1-Page on Budget' },
+  { id: 'business', label: '2. Multi-Page Business Site' },
+  { id: 'sales', label: '3. Sell Products Online' },
+  { id: 'chatbot', label: '4. Automated 24/7 Leads' },
+];
+
 function ServiceRecommenderWidget() {
   const [selectedGoal, setSelectedGoal] = useState<string>('business');
 
-  const goalRecommendations: Record<string, { service: string; price: string; link: string; reason: string }> = {
-    budget: {
-      service: 'Starter Single-Page',
-      price: '₹5,000',
-      link: '/contact?service=starter-page',
-      reason: 'Ideal for getting your business online fast with a sleek single-page layout and WhatsApp button.',
-    },
-    business: {
-      service: 'Business Website',
-      price: '₹25,000',
-      link: '/contact?service=business-website',
-      reason: 'Our most popular 5–8 page package for clinics, salons, restaurants, and local service professionals.',
-    },
-    sales: {
-      service: 'E-commerce Storefront',
-      price: '₹75,000',
-      link: '/contact?service=ecommerce',
-      reason: 'Complete online store with catalog setup, shopping cart, and Razorpay/Stripe payment gateways.',
-    },
-    chatbot: {
-      service: 'AI Chatbot Integration',
-      price: '₹8,000',
-      link: '/contact?service=ai-chatbot',
-      reason: 'A 24/7 AI assistant that answers visitor questions, provides pricing, and captures lead emails automatically.',
-    },
-  };
-
-  const rec = goalRecommendations[selectedGoal];
+  const rec = GOAL_RECOMMENDATIONS[selectedGoal] ?? GOAL_RECOMMENDATIONS.business;
 
   return (
     <div className="glass-card rounded-card p-6 sm:p-10 border border-gray-200/80 shadow-xl relative overflow-hidden">
@@ -316,12 +330,7 @@ function ServiceRecommenderWidget() {
 
         {/* Goal Selector Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-heading font-semibold">
-          {[
-            { id: 'budget', label: '1. Fast 1-Page on Budget' },
-            { id: 'business', label: '2. Multi-Page Business Site' },
-            { id: 'sales', label: '3. Sell Products Online' },
-            { id: 'chatbot', label: '4. Automated 24/7 Leads' },
-          ].map((goal) => (
+          {GOAL_OPTIONS.map((goal) => (
             <button
               key={goal.id}
               type="button"
