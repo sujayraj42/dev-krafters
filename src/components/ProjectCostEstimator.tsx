@@ -106,6 +106,8 @@ const ADDONS: AddonOption[] = [
   },
 ];
 
+const ADDONS_MAP = new Map<string, AddonOption>(ADDONS.map((a) => [a.id, a]));
+
 export const ProjectCostEstimator: React.FC = () => {
   const [selectedPackageId, setSelectedPackageId] = useState<string>('business');
   const [selectedAddons, setSelectedAddons] = useState<string[]>(['chatbot', 'seo']);
@@ -120,7 +122,7 @@ export const ProjectCostEstimator: React.FC = () => {
 
   // One-time addons cost
   const oneTimeAddonsCost = selectedAddons.reduce((sum, addonId) => {
-    const addon = ADDONS.find((a) => a.id === addonId);
+    const addon = ADDONS_MAP.get(addonId);
     return sum + (addon && !addon.isMonthly ? addon.price : 0);
   }, 0);
 
@@ -348,7 +350,7 @@ export const ProjectCostEstimator: React.FC = () => {
                 )}
 
                 {selectedAddons.map((addonId) => {
-                  const addon = ADDONS.find((a) => a.id === addonId);
+                  const addon = ADDONS_MAP.get(addonId);
                   if (!addon) return null;
                   return (
                     <div key={addon.id} className="flex justify-between items-center text-emerald-300">
