@@ -101,13 +101,14 @@ export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
 // SAVE A SINGLE LEAD
 // ─────────────────────────────────────────────
 export async function saveLeadAsync(
-  lead: Omit<LeadRecord, 'id' | 'date'> & { date?: string }
+  lead: Omit<LeadRecord, 'id' | 'date' | 'type'> & { type?: string; date?: string }
 ): Promise<LeadRecord> {
   try {
     const db = await getMongoDb();
 
     const newDoc = {
       ...lead,
+      type: lead.type || 'contact',
       status: lead.status || 'new',
       date: lead.date || new Date().toISOString(),
       createdAt: new Date(),
