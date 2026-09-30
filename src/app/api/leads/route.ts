@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync, updateLeadAsync } from '@/lib/db';
+import { verifyAdminAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// GET /api/leads - Retrieve all leads from MongoDB
-export async function GET() {
+// GET /api/leads - Retrieve all leads from MongoDB (Admin Authentication Required)
+export async function GET(request: Request) {
   try {
+    const isAuthorized = await verifyAdminAuth(request);
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required' },
+        { status: 401 }
+      );
+    }
+
     const uri = process.env.MONGODB_URI;
     if (!uri || uri.includes('<db_password>')) {
       return NextResponse.json(
@@ -46,7 +55,7 @@ export async function GET() {
   }
 }
 
-// POST /api/leads - Save a new lead to MongoDB
+// POST /api/leads - Save a new lead to MongoDB (Public access for inquiries/estimates, or Admin seeded leads)
 export async function POST(request: Request) {
   try {
     const uri = process.env.MONGODB_URI;
@@ -86,9 +95,17 @@ export async function POST(request: Request) {
   }
 }
 
-// PATCH /api/leads - Update lead status or notes
+// PATCH /api/leads - Update lead status or notes (Admin Authentication Required)
 export async function PATCH(request: Request) {
   try {
+    const isAuthorized = await verifyAdminAuth(request);
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { id, status, notes } = body;
 
@@ -104,9 +121,17 @@ export async function PATCH(request: Request) {
   }
 }
 
-// DELETE /api/leads - Clear leads database
-export async function DELETE() {
+// DELETE /api/leads - Clear leads database (Admin Authentication Required)
+export async function DELETE(request: Request) {
   try {
+    const isAuthorized = await verifyAdminAuth(request);
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required' },
+        { status: 401 }
+      );
+    }
+
     await clearLeadsAsync();
     return NextResponse.json({ success: true, message: 'Leads database cleared successfully' });
   } catch (error: unknown) {

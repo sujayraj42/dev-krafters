@@ -106,7 +106,11 @@ export default function AdminPage() {
   // Load leads from MongoDB Cloud API
   const loadLeads = async () => {
     try {
-      const res = await fetch('/api/leads', { cache: 'no-store' });
+      const storedPasscode = sessionStorage.getItem('dev_krafters_admin_passcode') || '';
+      const res = await fetch('/api/leads', {
+        cache: 'no-store',
+        headers: { 'x-admin-passcode': storedPasscode },
+      });
       const data = await res.json();
 
       if (res.ok && data.success) {
@@ -174,6 +178,11 @@ export default function AdminPage() {
       if (data.success) {
         setIsAuthenticated(true);
         sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
+        if (authMode === 'totp' && totpCode) {
+          sessionStorage.setItem('dev_krafters_admin_passcode', totpCode);
+        } else if (authMode === 'pin' && pin) {
+          sessionStorage.setItem('dev_krafters_admin_passcode', pin);
+        }
         setError('');
         loadLeads();
       } else {
@@ -251,10 +260,14 @@ export default function AdminPage() {
     });
 
     try {
+      const storedPasscode = sessionStorage.getItem('dev_krafters_admin_passcode') || '';
       for (const lead of demoLeads) {
         await fetch('/api/leads', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-passcode': storedPasscode,
+          },
           body: JSON.stringify(lead),
         });
       }
@@ -270,9 +283,13 @@ export default function AdminPage() {
     setIsSavingNote(true);
 
     try {
+      const storedPasscode = sessionStorage.getItem('dev_krafters_admin_passcode') || '';
       await fetch('/api/leads', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passcode': storedPasscode,
+        },
         body: JSON.stringify({
           id: selectedLead.id,
           status: leadStatusInput,
@@ -301,7 +318,11 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to clear ALL lead data?')) return;
     setIsClearing(true);
     try {
-      await fetch('/api/leads', { method: 'DELETE' });
+      const storedPasscode = sessionStorage.getItem('dev_krafters_admin_passcode') || '';
+      await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: { 'x-admin-passcode': storedPasscode },
+      });
     } catch (err) {
       console.error('Failed to clear DB:', err);
     }
