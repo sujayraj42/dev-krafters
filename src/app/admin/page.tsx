@@ -174,6 +174,7 @@ export default function AdminPage() {
       if (data.success) {
         setIsAuthenticated(true);
         sessionStorage.setItem('dev_krafters_admin_unlocked', 'true');
+        sessionStorage.setItem('dev_krafters_admin_token', data.token || (authMode === 'pin' ? pin : ''));
         setError('');
         loadLeads();
       } else {
@@ -301,7 +302,27 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to clear ALL lead data?')) return;
     setIsClearing(true);
     try {
-      await fetch('/api/leads', { method: 'DELETE' });
+      const token = sessionStorage.getItem('dev_krafters_admin_token') || '';
+      if (!token) {
+        alert('Unauthorized: Missing admin session token.');
+        setIsClearing(false);
+        return;
+      }
+
+      const res = await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'x-admin-code': token,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to clear database: Unauthorized');
+        setIsClearing(false);
+        return;
+      }
     } catch (err) {
       console.error('Failed to clear DB:', err);
     }

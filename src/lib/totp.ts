@@ -104,3 +104,62 @@ export function getAuthenticatorQrCodeUrl(
 
 // Default TOTP secret key for Dev Krafters Admin (Can be overridden via ADMIN_TOTP_SECRET env var)
 export const DEFAULT_ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET || 'DEVKRAFTERS2FASECRET32';
+
+// Check if incoming request carries valid Admin authorization (Passcode PIN or Google Authenticator TOTP)
+export async function isAuthorizedAdminRequest(request: Request): Promise<boolean> {
+  const secret = process.env.ADMIN_TOTP_SECRET || DEFAULT_ADMIN_TOTP_SECRET;
+  const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
+  const allowedPasscodes = [adminPasscode];
+  if (process.env.ADMIN_SECRET) {
+    allowedPasscodes.push(process.env.ADMIN_SECRET);
+  }
+
+  // 1. Extract token from Authorization header or custom headers
+  const authHeader =
+    request.headers.get('authorization') ||
+    request.headers.get('x-admin-code') ||
+    request.headers.get('x-admin-passcode') ||
+    request.headers.get('x-admin-key');
+
+  let token = '';
+  if (authHeader) {
+    token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  }
+
+  // 2. Query parameters fallback
+  if (!token) {
+    try {
+      const url = new URL(request.url);
+      token = url.searchParams.get('code') || url.searchParams.get('pin') || url.searchParams.get('passcode') || '';
+    } catch {
+      // Invalid URL or relative URL handling
+    }
+  }
+
+  // 3. Request body fallback if JSON
+  if (!token) {
+    try {
+      const clonedReq = request.clone();
+      const body = await clonedReq.json();
+      token = body?.code || body?.pin || body?.passcode || body?.adminCode || '';
+    } catch {
+      // Body not JSON or already consumed
+    }
+  }
+
+  if (!token) {
+    return false;
+  }
+
+  // Validate fallback passcode PIN
+  if (allowedPasscodes.includes(token)) {
+    return true;
+  }
+
+  // Validate Google Authenticator TOTP token
+  if (await verifyTotpCode(token, secret)) {
+    return true;
+  }
+
+  return false;
+}
