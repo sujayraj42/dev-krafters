@@ -73,6 +73,10 @@ const BUSINESS_FEATURES: BusinessFeature[] = [
   { id: 'multilang', name: 'Hindi & English Dual Mode', icon: '🌐', description: 'Bilingual support for local & national clients' },
 ];
 
+const FEATURE_NAME_MAP = new Map<string, string>(
+  BUSINESS_FEATURES.map((f) => [f.id, f.name])
+);
+
 const BUSINESS_CATEGORIES = [
   { value: 'retail', title: 'Local Business & Retail', icon: '🏪', sampleName: 'Amrjeet Hardware Store' },
   { value: 'salon', title: 'Salon, Beauty & Wellness', icon: '💇', sampleName: 'Aura Hair & Beauty Studio' },
@@ -217,7 +221,7 @@ function MasterFormContent() {
     setIsSubmitting(true);
 
     const featureNames = selectedFeatures
-      .map((fid) => BUSINESS_FEATURES.find((f) => f.id === fid)?.name)
+      .map((fid) => FEATURE_NAME_MAP.get(fid))
       .filter(Boolean)
       .join(', ');
 
