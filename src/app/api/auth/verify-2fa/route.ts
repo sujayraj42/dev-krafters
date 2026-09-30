@@ -12,7 +12,6 @@ export async function GET() {
     success: true,
     secret,
     qrCodeUrl,
-    passcodeDefault: process.env.ADMIN_PASSCODE || '1234',
   });
 }
 
@@ -26,7 +25,7 @@ export async function POST(request: Request) {
     const adminPasscode = process.env.ADMIN_PASSCODE || '1234';
 
     // 1. Check fallback PIN / passcode if submitted
-    if (pin && (pin === adminPasscode || pin === '1234' || pin === 'admin' || pin === 'devkrafters')) {
+    if (pin && pin === adminPasscode) {
       return NextResponse.json({
         success: true,
         method: 'passcode',
