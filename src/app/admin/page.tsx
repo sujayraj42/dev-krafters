@@ -251,13 +251,11 @@ export default function AdminPage() {
     });
 
     try {
-      for (const lead of demoLeads) {
-        await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(lead),
-        });
-      }
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(demoLeads),
+      });
     } catch (err) {
       console.error('Failed to post seeded leads to MongoDB:', err);
     }

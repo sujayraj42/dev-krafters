@@ -98,6 +98,47 @@ export async function getAllLeadsAsync(): Promise<LeadRecord[]> {
 }
 
 // ─────────────────────────────────────────────
+// SAVE MULTIPLE LEADS (BULK)
+// ─────────────────────────────────────────────
+export async function saveManyLeadsAsync(
+  leads: (Omit<LeadRecord, 'id' | 'date'> & { date?: string })[]
+): Promise<LeadRecord[]> {
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  try {
+    const db = await getMongoDb();
+
+    const newDocs = leads.map((lead) => ({
+      ...lead,
+      status: lead.status || 'new',
+      date: lead.date || new Date().toISOString(),
+      createdAt: new Date(),
+    }));
+
+    const res = await db.collection('leads').insertMany(newDocs);
+
+    return newDocs.map((doc, idx) => ({
+      ...doc,
+      id: res.insertedIds[idx] ? res.insertedIds[idx].toString() : `fallback_${Date.now()}_${idx}`,
+    }));
+  } catch (error) {
+    console.error(
+      '[MongoDB SaveMany Error]',
+      error instanceof Error ? error.message : error
+    );
+    return leads.map((lead, idx) => ({
+      ...lead,
+      id: `fallback_${Date.now()}_${idx}`,
+      type: lead.type || 'contact',
+      status: lead.status || 'new',
+      date: lead.date || new Date().toISOString(),
+    }));
+  }
+}
+
+// ─────────────────────────────────────────────
 // SAVE A SINGLE LEAD
 // ─────────────────────────────────────────────
 export async function saveLeadAsync(
