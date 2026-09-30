@@ -1,12 +1,8 @@
 import { MongoClient } from 'mongodb';
-import dns from 'dns';
+import { configureDns } from './dns-config';
 
-// Ensure DNS SRV record resolution succeeds across Windows & Vercel environments
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
-} catch {
-  // Ignore in environments where custom DNS servers cannot be set
-}
+// Ensure DNS SRV record resolution succeeds across environments
+configureDns();
 
 const uri = process.env.MONGODB_URI;
 const options = {
