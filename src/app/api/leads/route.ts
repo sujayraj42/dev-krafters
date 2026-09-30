@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllLeadsAsync, saveLeadAsync, clearLeadsAsync, updateLeadAsync } from '@/lib/db';
+import { getAllLeadsAsync, saveLeadAsync, saveManyLeadsAsync, clearLeadsAsync, updateLeadAsync } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,7 +46,7 @@ export async function GET() {
   }
 }
 
-// POST /api/leads - Save a new lead to MongoDB
+// POST /api/leads - Save a new lead or multiple leads to MongoDB
 export async function POST(request: Request) {
   try {
     const uri = process.env.MONGODB_URI;
@@ -58,6 +58,31 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
+    if (Array.isArray(body)) {
+      if (body.length === 0) {
+        return NextResponse.json({ success: true, leads: [] });
+      }
+
+      const leadsToSave = body.map((item) => ({
+        type: item.type || 'contact',
+        name: item.name || '',
+        email: item.email || '',
+        phone: item.phone || '',
+        projectType: item.projectType || '',
+        pages: item.pages,
+        budget: item.budget || '',
+        totalEstimateFormatted: item.totalEstimateFormatted || '',
+        totalEstimateInr: item.totalEstimateInr,
+        message: item.message || '',
+        status: item.status || 'new',
+        notes: item.notes || '',
+        date: item.date,
+      }));
+
+      const savedRecords = await saveManyLeadsAsync(leadsToSave);
+      return NextResponse.json({ success: true, leads: savedRecords });
+    }
 
     if (!body.email && !body.name) {
       return NextResponse.json({ success: false, error: 'Email or name is required' }, { status: 400 });
