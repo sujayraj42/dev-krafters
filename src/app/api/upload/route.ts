@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/svg+xml',
+  'application/pdf',
+]);
+
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -11,16 +21,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
     }
 
-    // On Vercel (serverless), we can't write to the filesystem.
-    // Store file metadata in MongoDB and return a reference.
-    // For production file storage, integrate Cloudinary, AWS S3, or Vercel Blob.
+    // 1. File size enforcement
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: 'File exceeds maximum allowed size of 5 MB.' },
+        { status: 413 }
+      );
+    }
+
+    // 2. MIME type validation
+    const mimeType = (file.type || '').toLowerCase();
+    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unsupported file type. Only JPG, PNG, WebP, SVG, and PDF files are allowed.',
+        },
+        { status: 415 }
+      );
+    }
+
+    // 3. Sanitize filename
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
 
     const bytes = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString('base64');
-    const mimeType = file.type || 'application/octet-stream';
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    // Save file reference to MongoDB
+    // Save file metadata reference to MongoDB
     try {
       const clientPromise = (await import('@/lib/mongodb')).default;
       if (clientPromise) {
@@ -28,10 +56,10 @@ export async function POST(request: Request) {
         const dbName = process.env.MONGODB_DB || 'Dev_Krafters';
         const db = client.db(dbName);
         await db.collection('uploads').insertOne({
-          fileName: file.name,
+          fileName: sanitizedFileName,
           fileSize: file.size,
-          mimeType: file.type,
-          dataUrl: dataUrl.length < 5_000_000 ? dataUrl : undefined, // Only store if < 5MB
+          mimeType,
+          dataUrl,
           uploadedAt: new Date(),
         });
       }
@@ -41,12 +69,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      fileUrl: dataUrl.length < 5_000_000 ? dataUrl : undefined,
-      fileName: file.name,
+      fileUrl: dataUrl,
+      fileName: sanitizedFileName,
       fileSize: file.size,
-      message: dataUrl.length >= 5_000_000
-        ? 'File too large for inline storage. Integrate cloud storage (S3/Cloudinary) for production.'
-        : 'File uploaded successfully.',
+      message: 'File uploaded successfully.',
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'File upload failed';

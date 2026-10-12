@@ -5,9 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChatWidget } from '@/components/ChatWidget';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
-import { ScrollProgressBar } from '@/components/ScrollProgressBar';
 import { BackToTop } from '@/components/BackToTop';
-import { LiveVisitorCounter } from '@/components/LiveVisitorCounter';
 import { CookieConsent } from '@/components/CookieConsent';
 
 const montserrat = Montserrat({
@@ -24,7 +22,7 @@ const poppins = Poppins({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devkrafters.linkpc.net';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devkrafters.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -33,46 +31,44 @@ export const metadata: Metadata = {
     template: '%s | Dev Krafters',
   },
   description:
-    'Dev Krafters is an AI-assisted web development studio crafting fast, modern websites, e-commerce stores, SEO optimization, AI chatbots, and workflow automation starting at ₹5,000.',
+    'Dev Krafters is an AI-assisted web development studio. We build fast, high-converting websites, e-commerce stores, and AI chatbots with transparent fixed pricing.',
   keywords: [
-    'Dev Krafters',
-    'web development studio',
+    'web development',
+    'AI website builder',
+    'freelance web developer',
+    'small business website',
+    'Next.js website',
+    'SEO optimization',
+    'e-commerce website',
+    'Patna web developer',
     'affordable website design',
-    'local business websites',
-    'AI chatbot integration',
-    'Google SEO optimization',
-    'e-commerce store development',
-    'fixed price web packages',
-    'Next.js web developer',
+    'local business digital presence',
   ],
-  authors: [{ name: 'Dev Krafters Studio', url: siteUrl }],
-  creator: 'Dev Krafters Studio',
-  publisher: 'Dev Krafters Studio',
+  authors: [{ name: 'Dev Krafters', url: siteUrl }],
+  creator: 'Dev Krafters',
+  publisher: 'Dev Krafters',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  alternates: {
-    canonical: '/',
-  },
   verification: {
     google: 'Eh4xhceo_dAvFd6_X_Dmdne78NrmHEVh3s66vj99Tt0',
   },
   openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: siteUrl,
     title: 'Dev Krafters — Affordable AI-Powered Websites for Local Businesses',
     description:
-      'Fast, modern websites, e-commerce stores, SEO optimization, and AI chatbots for local businesses with 100% fixed transparent pricing.',
-    url: siteUrl,
+      'Fast, modern, high-converting websites and digital solutions for local and small businesses. Fixed packages starting from ₹5,000.',
     siteName: 'Dev Krafters',
-    locale: 'en_US',
-    type: 'website',
     images: [
       {
-        url: '/og-image.png',
+        url: `${siteUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'Dev Krafters Web Development Studio',
+        alt: 'Dev Krafters — Web Development Studio',
       },
     ],
   },
@@ -80,8 +76,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Dev Krafters — Affordable AI-Powered Websites for Local Businesses',
     description:
-      'Fast, modern websites, e-commerce stores, SEO optimization, and AI chatbots with 100% fixed transparent pricing.',
-    images: ['/og-image.png'],
+      'Fast, modern, high-converting websites and digital solutions for local businesses. Fixed pricing from ₹5,000.',
+    images: [`${siteUrl}/og-image.png`],
+    creator: '@devkrafters',
   },
   robots: {
     index: true,
@@ -133,11 +130,6 @@ const jsonLdSchema = {
       publisher: {
         '@id': `${siteUrl}/#organization`,
       },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${siteUrl}/?s={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
     },
   ],
 };
@@ -150,9 +142,6 @@ export default function RootLayout({
   return (
     <html lang="en" data-density="minimal" suppressHydrationWarning className={`${montserrat.variable} ${poppins.variable} scroll-smooth`}>
       <head>
-        {/* Google Site Verification Meta Tag */}
-        <meta name="google-site-verification" content="Eh4xhceo_dAvFd6_X_Dmdne78NrmHEVh3s66vj99Tt0" />
-
         {/* JSON-LD Schema Markup */}
         <script
           type="application/ld+json"
@@ -165,9 +154,7 @@ export default function RootLayout({
         <Footer />
         <ChatWidget />
         <ThemeSwitcher />
-        <ScrollProgressBar />
         <BackToTop />
-        <LiveVisitorCounter />
         <CookieConsent />
       </body>
     </html>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -151,8 +152,8 @@ export async function POST(request: Request) {
             html: `
               <div style="font-family: Arial, sans-serif; padding: 20px; color: #0F4C4C;">
                 <h2>New Lead Captured via Floating AI Chatbot</h2>
-                <p><strong>Captured Email:</strong> ${leadEmailMatch[0]}</p>
-                <p><strong>Full User Message:</strong> ${lastUserMessage}</p>
+                <p><strong>Captured Email:</strong> ${escapeHtml(leadEmailMatch[0])}</p>
+                <p><strong>Full User Message:</strong> ${escapeHtml(lastUserMessage)}</p>
               </div>
             `,
           });

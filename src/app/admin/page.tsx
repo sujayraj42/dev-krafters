@@ -35,6 +35,7 @@ import {
   Tag,
   Shield,
   Smartphone,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -92,35 +93,45 @@ export default function AdminPage() {
   const [leadNoteInput, setLeadNoteInput] = useState('');
   const [leadStatusInput, setLeadStatusInput] = useState<'new' | 'in_progress' | 'converted'>('new');
 
-  // Load 2FA QR Code & Secret info securely using token
-  const load2FAInfo = async (passcode?: string) => {
-    const token = passcode || sessionStorage.getItem('dev_krafters_admin_passcode');
-    if (!token) return;
-
+  // Open 2FA setup modal and fetch QR setup details on demand
+  const open2FASetupModal = async (passcode?: string) => {
+    setShow2FASetup(true);
+    const token = passcode || (authMode === 'totp' ? totpCode : pin);
     try {
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch('/api/auth/verify-2fa', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
+        credentials: 'include',
       });
-      const data = await res.json();
-      if (data.qrCodeUrl) setQrCodeUrl(data.qrCodeUrl);
-      if (data.secret) setTotpSecret(data.secret);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.qrCodeUrl) setQrCodeUrl(data.qrCodeUrl);
+        if (data.secret) setTotpSecret(data.secret);
+      }
     } catch (err) {
       console.error('Failed to load 2FA setup:', err);
     }
   };
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      load2FAInfo();
-    }
-  }, [isAuthenticated]);
-
   // Load leads from MongoDB Cloud API
   const loadLeads = async () => {
     try {
-      const res = await fetch('/api/leads', { cache: 'no-store' });
+      const res = await fetch('/api/leads', {
+        cache: 'no-store',
+        credentials: 'include',
+      });
+
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        sessionStorage.removeItem('dev_krafters_admin_unlocked');
+        setDbStatus('error');
+        setError('Session expired or unauthorized. Please authenticate to continue.');
+        return;
+      }
+
       const data = await res.json();
 
       if (res.ok && data.success) {
@@ -131,8 +142,7 @@ export default function AdminPage() {
         if (Array.isArray(data.leads) && data.leads.length > 0) {
           setLeads(data.leads);
         } else {
-          const localBackup: LeadRecord[] = JSON.parse(localStorage.getItem('dev_krafters_leads_backup') || '[]');
-          setLeads(localBackup);
+          setLeads([]);
         }
         return;
       }
@@ -154,7 +164,7 @@ export default function AdminPage() {
 
       const interval = setInterval(() => {
         loadLeads();
-      }, 6000);
+      }, 45000); // Poll every 45s instead of hammering DB every 6s
 
       return () => clearInterval(interval);
     }
@@ -177,6 +187,7 @@ export default function AdminPage() {
       const res = await fetch('/api/auth/verify-2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           code: authMode === 'totp' ? totpCode : undefined,
           pin: authMode === 'pin' ? pin : undefined,
@@ -192,13 +203,23 @@ export default function AdminPage() {
         sessionStorage.setItem('dev_krafters_admin_passcode', token);
         setError('');
         loadLeads();
-        load2FAInfo(token);
       } else {
         setError(data.error || 'Invalid authentication code. Check Google Authenticator or PIN.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication verification failed.');
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/verify-2fa', { method: 'DELETE', credentials: 'include' });
+    } catch (err) {
+      console.error('Failed to call logout API:', err);
+    }
+    sessionStorage.removeItem('dev_krafters_admin_unlocked');
+    setIsAuthenticated(false);
+    setLeads([]);
   };
 
   const seed5SampleLeads = async () => {
@@ -272,6 +293,7 @@ export default function AdminPage() {
         await fetch('/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(lead),
         });
       }
@@ -290,6 +312,7 @@ export default function AdminPage() {
       await fetch('/api/leads', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           id: selectedLead.id,
           status: leadStatusInput,
@@ -318,7 +341,7 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to clear ALL lead data?')) return;
     setIsClearing(true);
     try {
-      await fetch('/api/leads', { method: 'DELETE' });
+      await fetch('/api/leads', { method: 'DELETE', credentials: 'include' });
     } catch (err) {
       console.error('Failed to clear DB:', err);
     }
@@ -515,13 +538,7 @@ export default function AdminPage() {
 
           <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
             <button
-              onClick={() => {
-                const token = authMode === 'totp' ? totpCode : pin;
-                if (token) {
-                  load2FAInfo(token);
-                }
-                setShow2FASetup(true);
-              }}
+              onClick={() => open2FASetupModal()}
               className="text-slate-400 hover:text-accent font-heading font-semibold transition-colors flex items-center gap-1 mx-auto cursor-pointer"
             >
               <QrCode className="w-3.5 h-3.5 text-accent" />
@@ -658,11 +675,20 @@ export default function AdminPage() {
           {/* Action Toolbar */}
           <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => setShow2FASetup(true)}
+              onClick={() => open2FASetupModal()}
               className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-heading font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <QrCode className="w-4 h-4 text-accent" />
               <span>2FA QR</span>
+            </button>
+
+            <button
+              onClick={loadLeads}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-heading font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Refresh leads list"
+            >
+              <RefreshCw className="w-4 h-4 text-teal-400" />
+              <span>Refresh</span>
             </button>
 
             <button
@@ -699,6 +725,15 @@ export default function AdminPage() {
             >
               View Site
             </Link>
+
+            <button
+              onClick={handleLogout}
+              className="px-3.5 py-2.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 hover:bg-rose-900 hover:text-white font-heading font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Lock & Logout Admin Session"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
 

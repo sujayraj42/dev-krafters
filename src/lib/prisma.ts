@@ -1,2 +1,0 @@
-// Database Client Configuration
-export {};

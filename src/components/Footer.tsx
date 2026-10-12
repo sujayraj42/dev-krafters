@@ -1,14 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { Logo } from './Logo';
-import { Mail, Linkedin, Instagram, Twitter } from 'lucide-react';
+import { Mail, Linkedin, Instagram, Twitter, Github } from 'lucide-react';
 
 const footerNav = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Showcase', href: '/portfolio' },
-  { name: 'Components', href: '/components' },
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -79,13 +78,13 @@ export const Footer: React.FC = () => {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://github.com/sujayraj42/dev-krafters"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-gray-300 hover:bg-accent hover:text-white transition-all duration-200"
-                aria-label="Twitter/X"
+                aria-label="GitHub"
               >
-                <Twitter className="w-5 h-5" />
+                <Github className="w-5 h-5" />
               </a>
             </div>
           </div>

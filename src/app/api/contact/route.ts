@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { escapeHtml, isValidEmail, sanitizeText } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!email || typeof email !== 'string' || !/\S+@\S+\.\S+/.test(email.trim())) {
+    if (!email || !isValidEmail(email)) {
       return NextResponse.json(
         { error: 'A valid email address is required.' },
         { status: 400 }
@@ -46,16 +47,23 @@ export async function POST(request: Request) {
       );
     }
 
+    const cleanName = sanitizeText(name, 100);
+    const cleanEmail = sanitizeText(email, 150);
+    const cleanPhone = phone ? sanitizeText(phone, 30) : undefined;
+    const cleanBusinessType = businessType ? sanitizeText(businessType, 100) : undefined;
+    const cleanProjectType = projectType ? sanitizeText(projectType, 100) : 'General Inquiry';
+    const cleanMessage = sanitizeText(message, 3000);
+
     // Save lead persistently to MongoDB Cloud Database
     try {
       const { saveLeadAsync } = await import('@/lib/db');
       await saveLeadAsync({
         type: 'contact',
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone ? phone.trim() : undefined,
-        projectType: projectType || 'General Inquiry',
-        message: message.trim(),
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        projectType: cleanProjectType,
+        message: cleanMessage,
       });
     } catch (dbErr) {
       console.error('[DB Save Error]', dbErr);
@@ -67,13 +75,13 @@ export async function POST(request: Request) {
 
     if (isApiKeySet) {
       const resend = new Resend(apiKey);
-      const formattedSubject = `New inquiry from ${name.trim()} — ${projectType || 'General'}`;
+      const formattedSubject = `New inquiry from ${cleanName} — ${cleanProjectType}`;
 
-      // 1. Send Email to Site Owner
+      // 1. Send Email to Site Owner (Escaped for XSS prevention)
       await resend.emails.send({
         from: 'Dev Krafters Contact <onboarding@resend.dev>',
         to: receiverEmail,
-        replyTo: email.trim(),
+        replyTo: cleanEmail,
         subject: formattedSubject,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #0F4C4C; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
@@ -83,32 +91,31 @@ export async function POST(request: Request) {
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
               <tr>
                 <td style="padding: 8px 0; font-weight: bold; width: 140px;">Client Name:</td>
-                <td style="padding: 8px 0;">${name.trim()}</td>
+                <td style="padding: 8px 0;">${escapeHtml(cleanName)}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; font-weight: bold;">Client Email:</td>
-                <td style="padding: 8px 0;"><a href="mailto:${email.trim()}" style="color: #E85A3C;">${email.trim()}</a></td>
+                <td style="padding: 8px 0;"><a href="mailto:${escapeHtml(cleanEmail)}" style="color: #E85A3C;">${escapeHtml(cleanEmail)}</a></td>
               </tr>
-              ${phone ? `
+              ${cleanPhone ? `
               <tr>
                 <td style="padding: 8px 0; font-weight: bold;">Phone Number:</td>
-                <td style="padding: 8px 0;">${phone.trim()}</td>
+                <td style="padding: 8px 0;">${escapeHtml(cleanPhone)}</td>
               </tr>` : ''}
-              ${businessType ? `
+              ${cleanBusinessType ? `
               <tr>
                 <td style="padding: 8px 0; font-weight: bold;">Business Type:</td>
-                <td style="padding: 8px 0;">${businessType}</td>
+                <td style="padding: 8px 0;">${escapeHtml(cleanBusinessType)}</td>
               </tr>` : ''}
-              ${projectType ? `
               <tr>
                 <td style="padding: 8px 0; font-weight: bold;">Project Package:</td>
-                <td style="padding: 8px 0;">${projectType}</td>
-              </tr>` : ''}
+                <td style="padding: 8px 0;">${escapeHtml(cleanProjectType)}</td>
+              </tr>
             </table>
             
             <div style="background-color: #F7F9F9; border-left: 4px solid #E85A3C; padding: 16px; border-radius: 4px; margin-top: 16px;">
               <h4 style="margin: 0 0 8px 0; color: #0F4C4C;">Message Details:</h4>
-              <p style="margin: 0; white-space: pre-wrap; font-size: 14px; color: #5C6B6B;">${message.trim()}</p>
+              <p style="margin: 0; white-space: pre-wrap; font-size: 14px; color: #5C6B6B;">${escapeHtml(cleanMessage)}</p>
             </div>
             
             <p style="font-size: 12px; color: #9ca3af; margin-top: 24px; text-align: center;">
@@ -118,20 +125,20 @@ export async function POST(request: Request) {
         `,
       });
 
-      // 2. Send Auto-Reply Confirmation Email to Submitter
+      // 2. Send Auto-Reply Confirmation Email to Submitter (Escaped)
       await resend.emails.send({
         from: 'Dev Krafters <onboarding@resend.dev>',
-        to: email.trim(),
+        to: cleanEmail,
         subject: 'Thanks for reaching out to Dev Krafters!',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #0F4C4C; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
-            <h2 style="color: #0F4C4C; margin-top: 0;">Hi ${name.trim()},</h2>
-            <p style="font-size: 15px; color: #374151; leading-height: 1.6;">
+            <h2 style="color: #0F4C4C; margin-top: 0;">Hi ${escapeHtml(cleanName)},</h2>
+            <p style="font-size: 15px; color: #374151; line-height: 1.6;">
               Thanks for reaching out — we've received your project inquiry and will get back to you within 24 hours.
             </p>
             <div style="background-color: #F7F9F9; padding: 16px; border-radius: 6px; margin: 20px 0;">
               <p style="margin: 0; font-size: 13px; color: #5C6B6B;">
-                <strong>Selected Package / Service:</strong> ${projectType || 'General Inquiry'}
+                <strong>Selected Package / Service:</strong> ${escapeHtml(cleanProjectType)}
               </p>
             </div>
             <p style="font-size: 14px; color: #374151;">
@@ -148,12 +155,12 @@ export async function POST(request: Request) {
       // Demo / Local Mode logging when RESEND_API_KEY is placeholder
       console.log('===================================================');
       console.log('[Dev Krafters Contact API] Demo Mode Submission:');
-      console.log('Name:', name);
-      console.log('Email:', email);
-      console.log('Phone:', phone);
-      console.log('Business Type:', businessType);
-      console.log('Project Package:', projectType);
-      console.log('Message:', message);
+      console.log('Name:', cleanName);
+      console.log('Email:', cleanEmail);
+      console.log('Phone:', cleanPhone);
+      console.log('Business Type:', cleanBusinessType);
+      console.log('Project Package:', cleanProjectType);
+      console.log('Message:', cleanMessage);
       console.log('NOTE: Configure RESEND_API_KEY in .env.local to dispatch live emails.');
       console.log('===================================================');
 

@@ -62,26 +62,26 @@ export default function Home() {
   const testimonials = [
     {
       quote:
-        'Dev Krafters launched our salon website in just 4 days. Online appointment bookings increased by 35% in the very first month!',
-      author: 'Priya Sharma',
-      role: 'Aura Hair & Beauty Studio',
-      resultBadge: '+35% Online Bookings',
+        'Engineered for salons & wellness centers: Seamless 4-day launch with mobile appointment booking, automated WhatsApp inquiries, and direct Instagram link-in-bio integration.',
+      author: 'Salon & Wellness Studio Solution',
+      role: 'Appointment Booking Blueprint',
+      resultBadge: '+35% Booking Efficiency',
       rating: 5,
     },
     {
       quote:
-        'Affordable, fast, and zero agency fluff. The AI chatbot answers customer queries and takes bookings even when we are closed.',
-      author: 'Rahul Mehta',
-      role: 'Spice Craft Bistro',
-      resultBadge: '99 Speed Score',
+        'Engineered for restaurants & cafes: High-converting digital QR menu, table reservation forms, and 24/7 AI assistant answering customer queries during off-hours.',
+      author: 'Bistro & Hospitality Solution',
+      role: 'Reservation & Menu Blueprint',
+      resultBadge: '99 Google Speed Score',
       rating: 5,
     },
     {
       quote:
-        'Having a single reliable developer who handles hosting, SEO setup, and updates gives our clinic complete peace of mind.',
-      author: 'Dr. Anita Joshi',
-      role: 'Smile Dental Clinic',
-      resultBadge: 'Rank #1 Local SEO',
+        'Engineered for healthcare clinics: Professional service pages, Google Maps embedding, local SEO schema markup, and rapid patient inquiry dispatch.',
+      author: 'Healthcare Clinic Solution',
+      role: 'Local SEO & Patient Blueprint',
+      resultBadge: 'Rank #1 Local SEO Focus',
       rating: 5,
     },
   ];
@@ -316,10 +316,10 @@ export default function Home() {
               ))}
             </div>
             <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
-              Loved by Local Businesses
+              Engineered for Measurable Impact
             </h2>
             <p className="font-body text-base text-muted">
-              Here is what small business owners have to say about partnering with Dev Krafters.
+              How our tailored websites and digital workflows deliver direct, practical value to local business owners.
             </p>
           </div>
 

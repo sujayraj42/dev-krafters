@@ -20,7 +20,7 @@ export const NewsletterSignup: React.FC = () => {
 
     try {
       // Save to database API
-      await fetch('/api/leads', {
+      const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -30,17 +30,17 @@ export const NewsletterSignup: React.FC = () => {
         }),
       });
 
-      // Also keep in localStorage for offline access
-      const leads = JSON.parse(localStorage.getItem('dev_krafters_leads') || '[]');
-      const newLead = { email, date: new Date().toISOString(), source: 'newsletter' };
-      localStorage.setItem('dev_krafters_leads', JSON.stringify([newLead, ...leads]));
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Subscription failed');
+      }
 
       setStatus('success');
       setMessage('Success! You are subscribed to web growth insights.');
       setEmail('');
-    } catch {
+    } catch (err) {
       setStatus('error');
-      setMessage('Something went wrong. Please try again.');
+      setMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   };
 
