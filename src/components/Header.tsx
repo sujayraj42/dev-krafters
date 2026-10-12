@@ -12,7 +12,8 @@ const navLinks = [
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Showcase', href: '/portfolio' },
-  { name: 'Programs', href: '/winter-internship' },
+  { name: 'Internship', href: '/winter-internship' },
+  { name: 'Learning Hub', href: '/learning', isSpecial: true },
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -33,20 +34,25 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-5" aria-label="Main Navigation">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-5" aria-label="Main Navigation">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`font-heading font-semibold text-xs uppercase tracking-wide transition-colors duration-200 relative py-2 ${
+                className={`font-heading font-semibold text-xs uppercase tracking-wide transition-colors duration-200 relative py-2 inline-flex items-center gap-1.5 ${
                   isActive
                     ? 'text-accent'
                     : 'text-primary hover:text-accent'
                 }`}
               >
-                {link.name}
+                <span>{link.name}</span>
+                {link.isSpecial && (
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold tracking-normal normal-case">
+                    Portal
+                  </span>
+                )}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-accent animate-fade-in-up" />
                 )}

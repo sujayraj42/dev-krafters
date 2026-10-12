@@ -24,6 +24,10 @@ import {
   Eye,
   TrendingUp,
   XCircle,
+  GraduationCap,
+  Laptop,
+  BookOpen,
+  Code2,
 } from 'lucide-react';
 
 export default function Home() {
@@ -210,6 +214,99 @@ export default function Home() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── INTERNSHIP & LEARNING HUB SECTION ─── */}
+      <section className="py-20 sm:py-28 bg-[#0D3028] text-white relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#10B981]/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#E85A3C]/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-content mx-auto px-6 relative z-10">
+          <div className="text-center space-y-4 max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-emerald-300 font-heading text-xs font-bold border border-white/15">
+              <GraduationCap className="w-4 h-4 text-[#10B981]" />
+              <span>Winter 2026 Cohort • Applications Open</span>
+            </div>
+            <h2 className="font-heading font-extrabold text-3xl sm:text-5xl text-white tracking-tight leading-tight">
+              Learn. Build. Become a Developer.
+            </h2>
+            <p className="font-body text-base sm:text-lg text-emerald-100/90 leading-relaxed">
+              A 45-day intensive Full-Stack Web Development Internship designed for BCA and B.Tech students across all academic years. Write client-grade code with Next.js 15, TypeScript, databases, and AI APIs under senior engineering mentorship.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-4">
+                <Code2 className="w-5 h-5" />
+              </div>
+              <h3 className="font-heading font-bold text-lg text-white mb-2">Production Architecture</h3>
+              <p className="font-body text-sm text-gray-300 leading-relaxed">
+                Learn modern component systems, RESTful API route handlers, MongoDB Atlas, PostgreSQL, and strict TypeScript patterns. Zero outdated theory.
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-4">
+                <Laptop className="w-5 h-5" />
+              </div>
+              <h3 className="font-heading font-bold text-lg text-white mb-2">Real PR Workflows</h3>
+              <p className="font-body text-sm text-gray-300 leading-relaxed">
+                Submit pull requests, receive line-by-line feedback from practicing engineers, and collaborate using standard Git branch dynamics.
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <h3 className="font-heading font-bold text-lg text-white mb-2">Verifiable Credentials</h3>
+              <p className="font-body text-sm text-gray-300 leading-relaxed">
+                Earn a verifiable digital certificate recognized by colleges and recruiters, plus a personalized Letter of Recommendation for top 20% contributors.
+              </p>
+            </div>
+          </div>
+
+          {/* Program highlights strip */}
+          <div className="bg-white/10 border border-white/15 rounded-2xl p-6 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 w-full lg:w-auto text-left">
+              <div>
+                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Format</span>
+                <span className="font-heading font-bold text-white text-base">Online Live</span>
+              </div>
+              <div>
+                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Duration</span>
+                <span className="font-heading font-bold text-white text-base">45 Days</span>
+              </div>
+              <div>
+                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Target Students</span>
+                <span className="font-heading font-bold text-white text-base">BCA & B.Tech (All Years)</span>
+              </div>
+              <div>
+                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Program Fee</span>
+                <span className="font-heading font-bold text-emerald-400 text-base">100% Free / Merit</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
+              <Link
+                href="/winter-internship#apply"
+                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-dark text-white font-heading font-bold text-sm shadow-md transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2"
+              >
+                <span>Apply for Cohort</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/learning"
+                className="px-6 py-3 rounded-xl bg-white text-[#0D3028] hover:bg-gray-100 font-heading font-bold text-sm shadow-sm transition-colors inline-flex items-center gap-2"
+              >
+                <BookOpen className="w-4 h-4 text-[#10B981]" />
+                <span>Open Learning Hub</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

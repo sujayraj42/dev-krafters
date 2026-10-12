@@ -400,6 +400,14 @@ export default function WinterInternshipPage() {
               <span>View Curriculum</span>
               <ChevronDown size={18} />
             </a>
+
+            <Link
+              href="/learning"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-[#0F4C4C] hover:bg-[#0A3838] text-white font-heading font-semibold text-base shadow-xs transition-all hover:bg-black/90 hover:-translate-y-0.5"
+            >
+              <BookOpen size={18} className="text-emerald-400" />
+              <span>Explore Learning Hub</span>
+            </Link>
           </div>
 
           {/* Key Metadata Strip */}
