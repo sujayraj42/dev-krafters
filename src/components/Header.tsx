@@ -92,13 +92,18 @@ export const Header: React.FC = () => {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`font-heading font-bold text-sm py-3 px-4 rounded-xl transition-colors ${
+                  className={`font-heading font-bold text-sm py-3 px-4 rounded-xl transition-colors flex items-center justify-between ${
                     isActive
                       ? 'bg-accent/10 text-accent'
                       : 'text-primary hover:bg-surface-alt'
                   }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {link.isSpecial && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      Student Portal
+                    </span>
+                  )}
                 </Link>
               );
             })}
