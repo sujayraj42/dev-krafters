@@ -67,7 +67,7 @@ export const ChatWidget: React.FC = () => {
           id: Date.now().toString(),
           role: 'assistant',
           content:
-            "Session message limit reached for cost safety. Please fill out our contact form at /contact to discuss your project directly with our developer!",
+            "Session message limit reached for cost safety. Please fill out our contact form at /contact to discuss your project directly with our engineering team!",
         },
       ]);
       setInputValue('');

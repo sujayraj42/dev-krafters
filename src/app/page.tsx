@@ -40,8 +40,8 @@ export default function Home() {
     },
     {
       icon: UserCheck,
-      title: 'Direct Developer Access',
-      description: 'You communicate directly with the engineer building your site — no account managers or delays.',
+      title: 'Direct Engineering Access',
+      description: 'You communicate directly with the engineering team building your site — no account managers or delays.',
     },
     {
       icon: ShieldCheck,
@@ -53,7 +53,7 @@ export default function Home() {
   const agencyComparison = [
     { feature: 'Pricing Model', agency: '₹1,50,000+ (Unpredictable hourly billing)', devkrafters: '₹5,000 – ₹25,000 (100% Fixed Price)' },
     { feature: 'Turnaround Time', agency: '6 to 12 Weeks (Slow agency pipeline)', devkrafters: '3 to 10 Days (Rapid AI-assisted build)' },
-    { feature: 'Point of Contact', agency: 'Account Manager (Middleman delays)', devkrafters: 'Direct Access to Developer' },
+    { feature: 'Point of Contact', agency: 'Account Manager (Middleman delays)', devkrafters: 'Direct Access to Our Engineering Team' },
     { feature: 'Post-Launch Support', agency: 'Billed per bug fix & email', devkrafters: '15-30 Days Free Warranty Included' },
   ];
 

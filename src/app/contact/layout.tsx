@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   description:
     'Start your web development project with Dev Krafters. Request a custom proposal, fixed price quote, or consultation within 24 hours.',
   keywords: [
-    'contact web developer',
+    'contact web development team',
     'request website quote',
-    'hire Next.js developer',
+    'hire Next.js developers',
     'Dev Krafters contact',
     'website inquiry desk',
   ],

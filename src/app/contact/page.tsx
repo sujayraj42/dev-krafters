@@ -314,7 +314,7 @@ Notes: ${notes.trim() || 'None'}
       {
         id: Date.now() + 1,
         sender: 'bot',
-        text: 'Excellent! Please enter your WhatsApp or Mobile number so our lead developer can send you live design demos:',
+        text: 'Excellent! Please enter your WhatsApp or Mobile number so our engineering team can send you live design demos:',
       },
     ]);
   };
@@ -330,7 +330,7 @@ Notes: ${notes.trim() || 'None'}
       {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Thank you! We've saved your contact (${val}). Our lead developer will call or message you on WhatsApp within 2 hours! 🚀`,
+        text: `Thank you! We've saved your contact (${val}). Our team will call or message you on WhatsApp within 2 hours! 🚀`,
       },
     ]);
 

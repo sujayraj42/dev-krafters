@@ -244,7 +244,7 @@ const processSteps = [
   {
     step: '02',
     title: 'Design & Rapid Build',
-    desc: 'You work directly with the developer building your site. Using our AI-assisted workflow and modern component library, we build your site in 3 to 10 days.',
+    desc: 'You work directly with the engineering team building your site. Using our AI-assisted workflow and modern component library, we build your site in 3 to 10 days.',
     icon: Code2,
   },
   {
@@ -395,7 +395,7 @@ export default function ServicesPage() {
           {/* Quick stats pills */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-3 text-xs font-heading font-semibold text-primary/80">
             <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
-              <UserCheck size={15} className="text-accent" /> Work Directly With Developer
+              <UserCheck size={15} className="text-accent" /> Work Directly With Our Team
             </span>
             <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs">
               <Zap size={15} className="text-accent" /> 3 to 10-Day Turnaround
@@ -568,7 +568,7 @@ export default function ServicesPage() {
               How We Build Your Website (4 Simple Steps)
             </h2>
             <p className="font-body text-sm sm:text-base text-muted max-w-xl mx-auto">
-              No complex corporate hierarchy. Direct access to your developer from day 1 to launch.
+              No complex corporate hierarchy. Direct access to our engineering team from day 1 to launch.
             </p>
           </div>
 

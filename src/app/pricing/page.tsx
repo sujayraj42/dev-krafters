@@ -633,7 +633,7 @@ export default function PricingPage() {
               Ready to launch your high-converting website?
             </h3>
             <p className="font-body text-sm sm:text-base text-gray-200 max-w-xl mx-auto leading-relaxed">
-              Start with a free inquiry or schedule a 15-minute consultation with our lead developer today.
+              Start with a free inquiry or schedule a 15-minute consultation with our engineering team today.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
               <Button href="/contact" variant="primary" size="lg" className="bg-accent hover:bg-accent-dark border-none">

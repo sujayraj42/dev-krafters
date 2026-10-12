@@ -8,6 +8,7 @@ const footerNav = [
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Showcase', href: '/portfolio' },
+  { name: 'Programs', href: '/winter-internship' },
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -22,7 +23,7 @@ export const Footer: React.FC = () => {
               <Logo tone="light" showWordmark={true} className="[&_span.text-accent]:text-accent" />
             </div>
             <p className="font-body text-gray-300 text-sm max-w-sm leading-relaxed">
-              Affordable AI-powered websites for local businesses. A one-person AI studio helping small businesses build, automate, and grow online.
+              Affordable AI-powered websites for growing businesses. A digital engineering team helping companies build, automate, and scale online.
             </p>
             <div className="pt-2 flex items-center gap-3">
               <a
@@ -92,9 +93,9 @@ export const Footer: React.FC = () => {
 
         {/* Copyright Footer */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-body">
-          <p suppressHydrationWarning>© {new Date().getFullYear()} Dev Krafters. All rights reserved.</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} Dev Krafters • hello@devkrafters.com. All rights reserved.</p>
           <p className="text-gray-400">
-            Crafted with precision & AI power.
+            Crafted with precision & AI power by the Dev Krafters team.
           </p>
         </div>
       </div>
