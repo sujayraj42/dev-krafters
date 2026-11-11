@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Cookie, X, Check, Shield } from 'lucide-react';
 
 export const CookieConsent: React.FC = () => {
   const [show, setShow] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const consent = localStorage.getItem('dev_krafters_cookie_consent');
@@ -13,6 +15,10 @@ export const CookieConsent: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   const accept = () => {
     localStorage.setItem('dev_krafters_cookie_consent', 'accepted');
@@ -27,7 +33,7 @@ export const CookieConsent: React.FC = () => {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-[60] max-w-sm bg-surface/95 border border-gray-200/80 rounded-2xl shadow-2xl p-5 backdrop-blur-xl animate-fade-in-up space-y-4">
+    <div className="fixed bottom-24 left-4 right-4 sm:right-auto sm:left-6 z-[60] sm:max-w-sm bg-surface/95 border border-gray-200/80 rounded-2xl shadow-2xl p-5 backdrop-blur-xl animate-fade-in-up space-y-4 cookie-consent-root">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center text-accent">

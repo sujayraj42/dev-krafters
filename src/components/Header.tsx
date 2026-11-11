@@ -12,8 +12,6 @@ const navLinks = [
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Showcase', href: '/portfolio' },
-  { name: 'Internship', href: '/winter-internship' },
-  { name: 'Learning Hub', href: '/learning', isSpecial: true },
   { name: 'Contact', href: '/contact' },
 ];
 
@@ -48,11 +46,6 @@ export const Header: React.FC = () => {
                 }`}
               >
                 <span>{link.name}</span>
-                {link.isSpecial && (
-                  <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold tracking-normal normal-case">
-                    Portal
-                  </span>
-                )}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-accent animate-fade-in-up" />
                 )}
@@ -99,11 +92,6 @@ export const Header: React.FC = () => {
                   }`}
                 >
                   <span>{link.name}</span>
-                  {link.isSpecial && (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                      Student Portal
-                    </span>
-                  )}
                 </Link>
               );
             })}

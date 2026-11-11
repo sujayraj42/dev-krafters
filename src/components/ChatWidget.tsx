@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Bot, MessageSquare, X, Send, Sparkles, Loader2 } from 'lucide-react';
 
 interface ChatMessage {
@@ -13,6 +14,7 @@ const MAX_SESSION_MESSAGES = 15;
 
 export const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-1',
@@ -126,8 +128,16 @@ export const ChatWidget: React.FC = () => {
     }
   };
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 font-body">
+    <div
+      className={`fixed bottom-6 right-6 ${
+        isOpen ? 'z-[60]' : 'z-50'
+      } font-body chat-widget-root`}
+    >
       {/* FLOATING CHAT PANEL */}
       {isOpen && (
         <div className="mb-4 w-[340px] sm:w-[380px] h-[500px] bg-white rounded-card shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">

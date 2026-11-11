@@ -67,7 +67,7 @@ export default function ShowcasePage() {
   });
 
   return (
-    <div className="site-page flex flex-col min-h-screen font-body bg-white text-gray-900">
+    <div className="site-page flex flex-col min-h-screen font-body bg-surface text-primary transition-colors duration-300">
       {/* ─── HERO (DEV KRAFTERS BRANDED SURFACE-ALT BG) ─── */}
       <section className="bg-surface-alt py-16 sm:py-24 border-b border-gray-200/60 relative overflow-hidden">
         {/* Subtle background brand glow */}
@@ -161,11 +161,16 @@ export default function ShowcasePage() {
               {filteredTemplates.map((template) => (
                 <GlowCard key={template.slug} className="h-full">
                   <div className="group flex flex-col justify-between h-full bg-white rounded-card border border-gray-200/90 overflow-hidden hover:border-accent/60 hover:shadow-2xl hover:shadow-accent/15 transition-all duration-300 ease-out relative">
-                    {/* Color Banner with Animated Shimmer */}
+                    {/* Color Banner with Animated Shimmer & Dynamic Accent Gradient */}
                     <div
-                      className="h-40 relative overflow-hidden flex items-center justify-center cursor-pointer"
+                      className="h-44 relative overflow-hidden flex items-center justify-center cursor-pointer transition-transform duration-300 group-hover:scale-[1.01]"
+                      style={{
+                        background: `linear-gradient(135deg, ${template.accentColor}, ${template.secondaryColor || template.accentColor}cc)`,
+                      }}
                       onClick={() => setPreviewTemplate(template)}
                     >
+                      {/* Ambient lighting orb */}
+                      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-white/20 blur-2xl pointer-events-none" />
                       {/* Shimmer Light Beam */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none z-10" />
 
@@ -220,19 +225,19 @@ export default function ShowcasePage() {
                       </div>
 
                       {/* Action Link Footer */}
-                      <div className="pt-3 border-t border-gray-100 flex items-center justify-between font-heading text-xs font-bold text-accent">
+                      <div className="pt-3 border-t border-gray-100 flex items-center justify-between font-heading text-xs font-bold">
                         <button
                           onClick={() => setPreviewTemplate(template)}
-                          className="hover:underline flex items-center gap-1"
+                          className="text-gray-500 hover:text-primary transition flex items-center gap-1 cursor-pointer"
                         >
-                          <Eye size={13} /> Live Modal
+                          <Eye size={13} /> Quick Look
                         </button>
                         <Link
                           href={`/portfolio/${template.slug}`}
-                          className="flex items-center gap-1 hover:underline group-hover:text-accent-dark"
+                          className="inline-flex items-center gap-1 text-accent hover:text-accent-dark transition group-hover:translate-x-0.5"
                         >
-                          <span>Demo</span>
-                          <ArrowRight size={15} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+                          <span>Device Studio</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
                         </Link>
                       </div>
                     </div>

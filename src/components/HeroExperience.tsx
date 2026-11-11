@@ -43,6 +43,14 @@ export function HeroExperience() {
       <div className="hero-scene__orb hero-scene__orb--bottom" />
 
       <div className="hero-scene__device">
+        {/* Dynamic specular glass sheen with pointer-tracked reflection */}
+        <div
+          className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(circle at ${(pointer.x + 1) * 50}% ${(pointer.y + 1) * 50}%, rgba(255, 255, 255, 0.22) 0%, transparent 65%)`,
+          }}
+          aria-hidden="true"
+        />
         <div className="hero-scene__device-topbar">
           <div className="flex items-center gap-1.5">
             <i className="hero-scene__dot hero-scene__dot--coral" />

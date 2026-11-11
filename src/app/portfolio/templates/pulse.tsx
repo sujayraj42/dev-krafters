@@ -10,16 +10,32 @@ const fadeUp = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5 } }),
 };
 
-const TRAFFIC_DATA = Array.from({ length: 14 }, (_, i) => ({
-  day: `${i + 1}`,
-  visitors: Math.floor(2000 + Math.random() * 3000),
-  pageViews: Math.floor(5000 + Math.random() * 8000),
-}));
+const TRAFFIC_DATA = [
+  { day: '1', visitors: 2420, pageViews: 6840 },
+  { day: '2', visitors: 2890, pageViews: 7320 },
+  { day: '3', visitors: 3150, pageViews: 8460 },
+  { day: '4', visitors: 3620, pageViews: 9280 },
+  { day: '5', visitors: 3080, pageViews: 7950 },
+  { day: '6', visitors: 2940, pageViews: 7600 },
+  { day: '7', visitors: 3410, pageViews: 8750 },
+  { day: '8', visitors: 3870, pageViews: 9920 },
+  { day: '9', visitors: 4230, pageViews: 10600 },
+  { day: '10', visitors: 4050, pageViews: 10180 },
+  { day: '11', visitors: 4520, pageViews: 11450 },
+  { day: '12', visitors: 4310, pageViews: 10920 },
+  { day: '13', visitors: 4760, pageViews: 11840 },
+  { day: '14', visitors: 4920, pageViews: 12300 },
+];
 
-const CONVERSION_DATA = Array.from({ length: 7 }, (_, i) => ({
-  day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-  rate: +(2 + Math.random() * 4).toFixed(1),
-}));
+const CONVERSION_DATA = [
+  { day: 'Mon', rate: 3.2 },
+  { day: 'Tue', rate: 3.8 },
+  { day: 'Wed', rate: 4.5 },
+  { day: 'Thu', rate: 4.1 },
+  { day: 'Fri', rate: 5.2 },
+  { day: 'Sat', rate: 4.8 },
+  { day: 'Sun', rate: 5.6 },
+];
 
 const SOURCE_DATA = [
   { name: 'Organic', value: 42, color: '#22D3EE' },

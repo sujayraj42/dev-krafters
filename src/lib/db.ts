@@ -8,7 +8,7 @@ import { ObjectId } from 'mongodb';
 
 export interface LeadRecord {
   id: string;
-  type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | 'internship' | string;
+  type: 'contact' | 'newsletter' | 'estimate' | 'chatbot' | string;
   name?: string;
   email?: string;
   phone?: string;

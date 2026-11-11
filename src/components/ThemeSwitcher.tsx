@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Palette, Sun, Moon, Flame, Sparkles, Check, X } from 'lucide-react';
 
 export type ThemeId = 'light' | 'dark' | 'copper' | 'emerald';
@@ -55,6 +56,7 @@ export const ThemeSwitcher: React.FC = () => {
   const [density, setDensity] = useState<DensityId>('minimal');
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -86,13 +88,13 @@ export const ThemeSwitcher: React.FC = () => {
     localStorage.setItem('devkrafters_density', nextDensity);
   };
 
-  if (!mounted) return null;
+  if (!mounted || pathname?.startsWith('/admin')) return null;
 
   const activeThemeObj = themeOptions.find((t) => t.id === currentTheme) || themeOptions[0];
   const ActiveIcon = activeThemeObj.icon;
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 select-none">
+    <div className="fixed bottom-6 left-6 z-50 select-none theme-switcher-root">
       {/* Floating Theme Switcher Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}

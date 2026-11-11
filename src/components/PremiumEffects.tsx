@@ -106,24 +106,31 @@ export function ShimmerButton({ children, href, variant = 'accent', className = 
     glass: 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/20',
   }[variant];
 
-  const content = (
+  const shimmerBar = (
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
+  );
+
+  const innerClasses = `relative z-10 px-6 py-3 font-heading font-bold text-sm flex items-center gap-2 transition-all duration-300 group-hover:scale-[1.02] active:scale-[0.98] ${bgClasses} ${className}`;
+
+  if (href) {
+    return (
+      <div className="relative overflow-hidden group rounded-btn inline-flex items-center justify-center">
+        <Link href={href} className={innerClasses}>
+          {children}
+          {shimmerBar}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
     <div className="relative overflow-hidden group rounded-btn inline-flex items-center justify-center">
-      <button
-        className={`relative z-10 px-6 py-3 font-heading font-bold text-sm flex items-center gap-2 transition-all duration-300 group-hover:scale-[1.02] active:scale-[0.98] ${bgClasses} ${className}`}
-        {...props}
-      >
+      <button className={innerClasses} {...props}>
         {children}
-        {/* Shimmer Light Bar */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
+        {shimmerBar}
       </button>
     </div>
   );
-
-  if (href) {
-    return <Link href={href}>{content}</Link>;
-  }
-
-  return content;
 }
 
 // ─── 4. GLOW CARD WITH REAL-TIME CURSOR LIGHT TRACKING ───

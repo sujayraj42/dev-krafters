@@ -15,10 +15,10 @@ export const metadata: Metadata = {
     title: 'Interactive UI Components Showcase | Dev Krafters',
     description:
       'Test drive 60 FPS micro-animations, 3D cards, and custom website stack calculators.',
-    url: 'https://devkrafters.linkpc.net/components',
+    url: 'https://devkrafters.com/components',
   },
   alternates: {
-    canonical: 'https://devkrafters.linkpc.net/components',
+    canonical: 'https://devkrafters.com/components',
   },
 };
 

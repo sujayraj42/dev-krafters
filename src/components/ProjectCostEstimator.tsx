@@ -201,15 +201,17 @@ export const ProjectCostEstimator: React.FC = () => {
                 Select Base Package Scope:
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Select Base Package Scope">
                 {PACKAGES.map((pkg) => {
                   const isSelected = selectedPackageId === pkg.id;
                   return (
                     <button
                       key={pkg.id}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => handlePackageSelect(pkg)}
-                      className={`p-4 rounded-2xl text-left border transition-all duration-200 cursor-pointer ${
+                      className={`p-4 rounded-2xl text-left border transition-all duration-200 cursor-pointer focus-ring ${
                         isSelected
                           ? 'border-accent bg-accent/5 ring-2 ring-accent/20 shadow-md'
                           : 'border-gray-200/80 bg-surface hover:border-gray-300'
@@ -269,15 +271,24 @@ export const ProjectCostEstimator: React.FC = () => {
                 Optional Enhancement Modules:
               </label>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2.5" role="group" aria-label="Optional Enhancement Modules">
                 {ADDONS.map((addon) => {
                   const isChecked = selectedAddons.includes(addon.id);
                   const IconComp = addon.icon;
                   return (
                     <div
                       key={addon.id}
+                      role="checkbox"
+                      tabIndex={0}
+                      aria-checked={isChecked}
                       onClick={() => toggleAddon(addon.id)}
-                      className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all duration-200 ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          toggleAddon(addon.id);
+                        }
+                      }}
+                      className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all duration-200 focus-ring ${
                         isChecked
                           ? 'border-accent bg-accent/5 shadow-xs'
                           : 'border-gray-200/80 bg-surface hover:border-gray-300'

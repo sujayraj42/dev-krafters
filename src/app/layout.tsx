@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Montserrat, Poppins } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -7,20 +6,7 @@ import { ChatWidget } from '@/components/ChatWidget';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { BackToTop } from '@/components/BackToTop';
 import { CookieConsent } from '@/components/CookieConsent';
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  weight: ['600', '700', '800'],
-  variable: '--font-montserrat',
-  display: 'swap',
-});
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-poppins',
-  display: 'swap',
-});
+import { ScrollProgress } from '@/components/ScrollProgress';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devkrafters.com';
 
@@ -140,7 +126,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-density="minimal" suppressHydrationWarning className={`${montserrat.variable} ${poppins.variable} scroll-smooth`}>
+    <html lang="en" data-density="minimal" suppressHydrationWarning className="scroll-smooth">
       <head>
         {/* JSON-LD Schema Markup */}
         <script
@@ -149,6 +135,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-surface text-primary selection:bg-accent selection:text-white relative transition-colors duration-300">
+        <ScrollProgress />
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />

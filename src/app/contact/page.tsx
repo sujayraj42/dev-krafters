@@ -100,11 +100,50 @@ const COLOR_THEMES = [
   { id: 'vibrant-purple', name: 'Vibrant Purple & Pink', bg: 'from-purple-800 to-indigo-950', accent: '#EC4899' },
 ];
 
-const PACKAGE_OPTIONS = [
-  { value: 'express', title: '1-Page Express Site', price: 5000, days: '3 Days', badge: 'Fast Launch' },
-  { value: 'standard', title: 'Full Business Website', price: 15000, days: '7 Days', badge: 'Most Popular', popular: true },
-  { value: 'store', title: 'E-commerce & Online Store', price: 35000, days: '14 Days', badge: 'Full Online Store' },
+interface PackageOption {
+  value: string;
+  title: string;
+  price: number;
+  days: string;
+  badge: string;
+  popular?: boolean;
+  recurring?: boolean;
+}
+
+const PACKAGE_OPTIONS: PackageOption[] = [
+  { value: 'starter-page', title: 'Starter Page', price: 5000, days: '3 Days', badge: 'Fast Launch' },
+  { value: 'landing-page', title: 'Landing Page', price: 9000, days: '5 Days', badge: 'High Conversion' },
+  { value: 'business-website', title: 'Full Business Website', price: 25000, days: '10 Days', badge: 'Most Popular', popular: true },
+  { value: 'ecommerce', title: 'E-commerce & Online Store', price: 75000, days: '20 Days', badge: 'Full Online Store' },
+  { value: 'maintenance', title: 'Monthly Care Plan', price: 3000, days: 'Ongoing', badge: 'Care Plan', recurring: true },
 ];
+
+const STUDIO_WHATSAPP_NUMBER = '919876543210';
+
+const mapPackageParam = (param: string | null): string | null => {
+  if (!param) return null;
+  const p = param.toLowerCase().trim();
+  if (p === 'starter' || p === 'starter-page' || p === 'express') return 'starter-page';
+  if (p === 'landing' || p === 'landing-page') return 'landing-page';
+  if (p === 'business' || p === 'business-website' || p === 'standard') return 'business-website';
+  if (p === 'store' || p === 'ecommerce' || p === 'e-commerce') return 'ecommerce';
+  if (p === 'maintenance' || p === 'care' || p === 'monthly') return 'maintenance';
+  return null;
+};
+
+const mapServiceParam = (serviceParam: string | null): string | null => {
+  if (!serviceParam) return null;
+  const s = serviceParam.toLowerCase().trim();
+  if (s.includes('clinic') || s.includes('doctor') || s.includes('health')) return 'clinic';
+  if (s.includes('salon') || s.includes('beauty')) return 'salon';
+  if (s.includes('food') || s.includes('restaurant') || s.includes('bistro') || s.includes('cafe')) return 'restaurant';
+  if (s.includes('estate') || s.includes('builder')) return 'realestate';
+  if (s.includes('ecom') || s.includes('store') || s === 'ecommerce-dev') return 'retail';
+  if (s.includes('saas') || s.includes('startup') || s.includes('creator') || s === 'web-app-saas' || s === 'ui-ux-design') return 'creator';
+  if (s.includes('legal') || s.includes('consulting') || s.includes('service') || s === 'custom-web-dev' || s === 'database-backend') return 'services';
+  if (BUSINESS_CATEGORIES.some((c) => c.value === s)) return s;
+  return null;
+};
 
 const STEPS = [
   { id: 1, label: 'Identity & Contact', icon: '👤' },
@@ -146,15 +185,50 @@ function MasterFormContent() {
   const [city, setCity] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState(() => searchParams?.get('url') || '');
   
-  const [businessCategory, setBusinessCategory] = useState('retail');
-  const [primaryGoal, setPrimaryGoal] = useState('calls');
-  const [existingSite, setExistingSite] = useState('new');
+  const [businessCategory, setBusinessCategory] = useState(() => {
+    const mapped = mapServiceParam(searchParams?.get('service'));
+    return mapped || 'retail';
+  });
+  const [primaryGoal, setPrimaryGoal] = useState(() => {
+    const s = searchParams?.get('service')?.toLowerCase().trim();
+    if (s && (s.includes('ecom') || s.includes('store') || s === 'ecommerce-dev')) return 'ecommerce';
+    return 'calls';
+  });
+  const [existingSite, setExistingSite] = useState(() => searchParams?.get('url') ? 'redesign' : 'new');
   
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['maps', 'whatsapp', 'gallery']);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(() => {
+    const initial = ['maps', 'whatsapp', 'gallery'];
+    const s = searchParams?.get('service')?.toLowerCase().trim();
+    if (s === 'ai-chatbot' && !initial.includes('chatbot')) {
+      initial.push('chatbot');
+    }
+    return initial;
+  });
   const [selectedColor, setSelectedColor] = useState('teal-coral');
-  const [selectedPackage, setSelectedPackage] = useState('standard');
+  const [selectedPackage, setSelectedPackage] = useState(() => {
+    const mapped = mapPackageParam(searchParams?.get('package'));
+    if (mapped) return mapped;
+    const s = searchParams?.get('service')?.toLowerCase().trim();
+    if (s === 'starter-page') return 'starter-page';
+    if (s === 'landing-page-opt') return 'landing-page';
+    if (s === 'ecommerce' || s === 'ecommerce-dev') return 'ecommerce';
+    if (s === 'maintenance') return 'maintenance';
+    return 'business-website';
+  });
   
+  const [estimatedBudget, setEstimatedBudget] = useState(() => {
+    const total = searchParams?.get('total');
+    if (total) {
+      const cleanTotal = total.replace(/^INR_?/i, '');
+      const parsedNum = parseInt(cleanTotal, 10);
+      return !isNaN(parsedNum) ? `₹${parsedNum.toLocaleString('en-IN')}` : total;
+    }
+    return '';
+  });
+  const [customPages, setCustomPages] = useState(() => searchParams?.get('pages') || '');
+
   const [photoReadiness, setPhotoReadiness] = useState('whatsapp-later');
   const [notes, setNotes] = useState('');
   const [timeline, setTimeline] = useState('asap');
@@ -169,9 +243,62 @@ function MasterFormContent() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
+  // Sync incoming searchParams dynamically
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const urlParam = searchParams.get('url');
+    if (urlParam) {
+      setWebsiteUrl(urlParam);
+      setExistingSite('redesign');
+    }
+
+    const pkgParam = searchParams.get('package');
+    if (pkgParam) {
+      const mappedPkg = mapPackageParam(pkgParam);
+      if (mappedPkg) {
+        setSelectedPackage(mappedPkg);
+      }
+    }
+
+    const serviceParam = searchParams.get('service');
+    if (serviceParam) {
+      const mappedCat = mapServiceParam(serviceParam);
+      if (mappedCat) {
+        setBusinessCategory(mappedCat);
+      }
+      const s = serviceParam.toLowerCase().trim();
+      if (s === 'starter-page') setSelectedPackage('starter-page');
+      else if (s === 'landing-page-opt') setSelectedPackage('landing-page');
+      else if (s === 'ecommerce' || s === 'ecommerce-dev') {
+        setSelectedPackage('ecommerce');
+        setPrimaryGoal('ecommerce');
+      } else if (s === 'maintenance') setSelectedPackage('maintenance');
+      else if (s === 'ai-chatbot') {
+        setSelectedFeatures((prev) => prev.includes('chatbot') ? prev : [...prev, 'chatbot']);
+      }
+    }
+
+    const pagesParam = searchParams.get('pages');
+    if (pagesParam) {
+      setCustomPages(pagesParam);
+    }
+
+    const totalParam = searchParams.get('total');
+    if (totalParam) {
+      const cleanTotal = totalParam.replace(/^INR_?/i, '');
+      const parsedNum = parseInt(cleanTotal, 10);
+      if (!isNaN(parsedNum)) {
+        setEstimatedBudget(`₹${parsedNum.toLocaleString('en-IN')}`);
+      } else {
+        setEstimatedBudget(totalParam);
+      }
+    }
+  }, [searchParams]);
+
   const currentCategoryObj = BUSINESS_CATEGORIES.find((t) => t.value === businessCategory) || BUSINESS_CATEGORIES[0];
   const currentGoalObj = BUSINESS_GOALS.find((g) => g.value === primaryGoal) || BUSINESS_GOALS[0];
-  const currentPkgObj = PACKAGE_OPTIONS.find((p) => p.value === selectedPackage) || PACKAGE_OPTIONS[1];
+  const currentPkgObj = PACKAGE_OPTIONS.find((p) => p.value === selectedPackage) || PACKAGE_OPTIONS[2];
   const currentThemeObj = COLOR_THEMES.find((c) => c.id === selectedColor) || COLOR_THEMES[0];
 
   const toggleFeature = (id: string) => {
@@ -211,6 +338,7 @@ function MasterFormContent() {
     e.preventDefault();
     if (!phone.trim()) {
       setSubmitError('Please enter your Mobile or WhatsApp number.');
+      setCurrentStep(1);
       return;
     }
     setSubmitError('');
@@ -220,6 +348,9 @@ function MasterFormContent() {
       .map((fid) => BUSINESS_FEATURES.find((f) => f.id === fid)?.name)
       .filter(Boolean)
       .join(', ');
+
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const fallbackEmail = `${cleanPhone || 'contact'}@whatsapp.devkrafters.com`;
 
     const payloadMessage = `
 --- Comprehensive Master Website Brief ---
@@ -231,9 +362,10 @@ Email: ${email || 'None'}
 
 Category: ${currentCategoryObj.title}
 Primary Goal: ${currentGoalObj.title}
-Existing Site: ${existingSite}
+Existing Site: ${websiteUrl || existingSite}
 
-Selected Package: ${currentPkgObj.title} (₹${currentPkgObj.price})
+Selected Package: ${currentPkgObj.title} (₹${currentPkgObj.price.toLocaleString()}${currentPkgObj.recurring ? '/mo' : ''})
+${estimatedBudget ? `Estimated Budget: ${estimatedBudget}${customPages ? ` (${customPages} Pages)` : ''}` : ''}
 Color Theme: ${currentThemeObj.name}
 Chosen Features: ${featureNames || 'Standard Features'}
 
@@ -248,7 +380,7 @@ Notes: ${notes.trim() || 'None'}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: ownerName ? `${ownerName} (${businessName})` : businessName || 'Business Owner',
-          email: email.trim() || `${phone.trim()}@whatsapp.devkrafters.com`,
+          email: email.trim() || fallbackEmail,
           phone: phone.trim(),
           businessType: currentCategoryObj.title,
           projectType: currentPkgObj.title,
@@ -268,6 +400,34 @@ Notes: ${notes.trim() || 'None'}
       setIsSubmitting(false);
     }
   };
+
+  const handleChatPkgSelect = useCallback((sType: string, pkgTitle: string, pkgPrice: number) => {
+    setChatMessages((prev) => [
+      ...prev,
+      { id: Date.now(), sender: 'user', text: `Selected Package: ${pkgTitle} (₹${pkgPrice.toLocaleString()})` },
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: 'Excellent! Please enter your WhatsApp or Mobile number so our engineering team can send you live design demos:',
+      },
+    ]);
+  }, []);
+
+  const handleChatCategorySelect = useCallback((selectedType: string) => {
+    setChatMessages((prev) => [
+      ...prev,
+      { id: Date.now(), sender: 'user', text: `My business is: ${selectedType}` },
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: 'Great! Which website package fits your budget best?',
+        options: PACKAGE_OPTIONS.map((pkg) => ({
+          label: `${pkg.title} — ₹${pkg.price.toLocaleString()}${pkg.recurring ? '/mo' : ''} (${pkg.days})`,
+          action: () => handleChatPkgSelect(selectedType, pkg.title, pkg.price),
+        })),
+      },
+    ]);
+  }, [handleChatPkgSelect]);
 
   // Initialize Chat Conversation
   useEffect(() => {
@@ -289,35 +449,7 @@ Notes: ${notes.trim() || 'None'}
         },
       ]);
     }
-  }, [formMode, chatMessages]);
-
-  const handleChatCategorySelect = (selectedType: string) => {
-    setChatMessages((prev) => [
-      ...prev,
-      { id: Date.now(), sender: 'user', text: `My business is: ${selectedType}` },
-      {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: 'Great! Which website package fits your budget best?',
-        options: PACKAGE_OPTIONS.map((pkg) => ({
-          label: `${pkg.title} — ₹${pkg.price.toLocaleString()} (${pkg.days})`,
-          action: () => handleChatPkgSelect(selectedType, pkg.title, pkg.price),
-        })),
-      },
-    ]);
-  };
-
-  const handleChatPkgSelect = (sType: string, pkgTitle: string, pkgPrice: number) => {
-    setChatMessages((prev) => [
-      ...prev,
-      { id: Date.now(), sender: 'user', text: `Selected Package: ${pkgTitle} (₹${pkgPrice})` },
-      {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: 'Excellent! Please enter your WhatsApp or Mobile number so our engineering team can send you live design demos:',
-      },
-    ]);
-  };
+  }, [formMode, chatMessages.length, handleChatCategorySelect]);
 
   const handleChatInputSend = async () => {
     if (!chatInput.trim()) return;
@@ -334,13 +466,16 @@ Notes: ${notes.trim() || 'None'}
       },
     ]);
 
+    const cleanChatPhone = val.replace(/[^0-9]/g, '');
+    const chatFallbackEmail = `${cleanChatPhone || 'lead'}@chat.devkrafters.com`;
+
     try {
       await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'Chat Lead',
-          email: `${val}@chat.devkrafters.com`,
+          email: chatFallbackEmail,
           phone: val,
           businessType: 'Chat Inquiry',
           projectType: 'Website Inquiry',
@@ -415,7 +550,7 @@ Notes: ${notes.trim() || 'None'}
                     Thank you, <strong>{ownerName || businessName || 'Partner'}</strong>! We will deliver customized design samples for <strong>{businessName || currentCategoryObj.sampleName}</strong> directly to your WhatsApp number ({phone}).
                   </p>
                   <a
-                    href={`https://wa.me/919999999999?text=Hi%20Dev%20Krafters!%20I%20just%20submitted%20my%20website%20brief%20for%20${encodeURIComponent(
+                    href={`https://wa.me/${STUDIO_WHATSAPP_NUMBER}?text=Hi%20Dev%20Krafters!%20I%20just%20submitted%20my%20website%20brief%20for%20${encodeURIComponent(
                       businessName || currentCategoryObj.sampleName
                     )}.`}
                     target="_blank"
@@ -429,15 +564,24 @@ Notes: ${notes.trim() || 'None'}
                 <form onSubmit={handleMasterSubmit} className="space-y-6">
                   
                   {/* STEP PROGRESS BADGES */}
-                  <div className="grid grid-cols-4 gap-1.5 pb-2 border-b border-gray-100">
+                  <div role="tablist" aria-label="Configuration Steps" className="grid grid-cols-4 gap-1.5 pb-2 border-b border-gray-100">
                     {STEPS.map((s) => {
                       const isActive = currentStep === s.id;
                       const isDone = currentStep > s.id;
                       return (
                         <div
                           key={s.id}
+                          role="tab"
+                          tabIndex={0}
+                          aria-selected={isActive}
                           onClick={() => setCurrentStep(s.id)}
-                          className={`p-2 rounded-xl text-center cursor-pointer transition select-none ${
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setCurrentStep(s.id);
+                            }
+                          }}
+                          className={`p-2 rounded-xl text-center cursor-pointer transition select-none focus-ring ${
                             isActive
                               ? 'bg-accent/10 border-2 border-accent text-accent font-bold'
                               : isDone
@@ -526,14 +670,23 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           Select Your Business Category:
                         </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Business Category">
                           {BUSINESS_CATEGORIES.map((st) => {
                             const isSelected = businessCategory === st.value;
                             return (
                               <div
                                 key={st.value}
+                                role="radio"
+                                tabIndex={0}
+                                aria-checked={isSelected}
                                 onClick={() => setBusinessCategory(st.value)}
-                                className={`p-3 rounded-2xl border-2 transition-all cursor-pointer select-none text-center space-y-1 ${
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setBusinessCategory(st.value);
+                                  }
+                                }}
+                                className={`p-3 rounded-2xl border-2 transition-all cursor-pointer select-none text-center space-y-1 focus-ring ${
                                   isSelected
                                     ? 'border-accent bg-accent/5 shadow-md scale-[1.02]'
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -553,14 +706,23 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           What is your Primary Website Goal?
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Primary Website Goal">
                           {BUSINESS_GOALS.map((goal) => {
                             const isSelected = primaryGoal === goal.value;
                             return (
                               <div
                                 key={goal.value}
+                                role="radio"
+                                tabIndex={0}
+                                aria-checked={isSelected}
                                 onClick={() => setPrimaryGoal(goal.value)}
-                                className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-2.5 ${
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setPrimaryGoal(goal.value);
+                                  }
+                                }}
+                                className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-2.5 focus-ring ${
                                   isSelected
                                     ? 'border-accent bg-accent/5 font-bold shadow-xs'
                                     : 'border-gray-200 bg-white hover:border-gray-300'
@@ -581,7 +743,7 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           Do you have an existing website or social page?
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Existing Website Status">
                           {[
                             { value: 'new', label: '🆕 Brand New Business' },
                             { value: 'redesign', label: '🛠️ Have Old Site (Need Redesign)' },
@@ -589,8 +751,17 @@ Notes: ${notes.trim() || 'None'}
                           ].map((opt) => (
                             <div
                               key={opt.value}
+                              role="radio"
+                              tabIndex={0}
+                              aria-checked={existingSite === opt.value}
                               onClick={() => setExistingSite(opt.value)}
-                              className={`p-2.5 rounded-xl border-2 text-center text-xs font-heading font-bold cursor-pointer transition ${
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setExistingSite(opt.value);
+                                }
+                              }}
+                              className={`p-2.5 rounded-xl border-2 text-center text-xs font-heading font-bold cursor-pointer transition focus-ring ${
                                 existingSite === opt.value
                                   ? 'border-accent bg-accent/10 text-primary'
                                   : 'border-gray-200 bg-white text-muted'
@@ -601,6 +772,21 @@ Notes: ${notes.trim() || 'None'}
                           ))}
                         </div>
                       </div>
+
+                      {(existingSite === 'redesign' || websiteUrl) && (
+                        <div className="pt-2 animate-fade-in-up">
+                          <Input
+                            label="Current Website URL (वर्तमान वेबसाइट लिंक)"
+                            name="websiteUrl"
+                            type="url"
+                            icon={Globe}
+                            placeholder="e.g. https://yourbusiness.com"
+                            value={websiteUrl}
+                            onChange={(e) => setWebsiteUrl(e.target.value)}
+                            helperText="We'll audit your current website and propose direct speed, design, and conversion upgrades"
+                          />
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
@@ -611,14 +797,23 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           Select Features For Your Website (Updates Live Phone Preview):
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="group" aria-label="Website Features">
                           {BUSINESS_FEATURES.map((feat) => {
                             const isChecked = selectedFeatures.includes(feat.id);
                             return (
                               <div
                                 key={feat.id}
+                                role="checkbox"
+                                tabIndex={0}
+                                aria-checked={isChecked}
                                 onClick={() => toggleFeature(feat.id)}
-                                className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 select-none ${
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    toggleFeature(feat.id);
+                                  }
+                                }}
+                                className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-2 select-none focus-ring ${
                                   isChecked
                                     ? 'border-emerald-500 bg-emerald-50/50 shadow-xs'
                                     : 'border-gray-200 bg-white opacity-70 hover:opacity-100'
@@ -652,14 +847,23 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           Select Preferred Color & Visual Theme:
                         </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" role="radiogroup" aria-label="Preferred Color Theme">
                           {COLOR_THEMES.map((theme) => {
                             const isSelected = selectedColor === theme.id;
                             return (
                               <div
                                 key={theme.id}
+                                role="radio"
+                                tabIndex={0}
+                                aria-checked={isSelected}
                                 onClick={() => setSelectedColor(theme.id)}
-                                className={`p-2.5 rounded-xl border-2 cursor-pointer transition text-xs font-heading font-bold flex items-center gap-2 ${
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setSelectedColor(theme.id);
+                                  }
+                                }}
+                                className={`p-2.5 rounded-xl border-2 cursor-pointer transition text-xs font-heading font-bold flex items-center gap-2 focus-ring ${
                                   isSelected ? 'border-accent bg-accent/5' : 'border-gray-200 bg-white'
                                 }`}
                               >
@@ -672,24 +876,40 @@ Notes: ${notes.trim() || 'None'}
                       </div>
 
                       <div className="space-y-2 pt-2">
-                        <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
-                          Select Package & Price:
-                        </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="flex justify-between items-center">
+                          <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
+                            Select Package & Price:
+                          </label>
+                          {estimatedBudget && (
+                            <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                              Estimate: {estimatedBudget}
+                            </span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2" role="radiogroup" aria-label="Website Package">
                           {PACKAGE_OPTIONS.map((pkg) => {
                             const isSelected = selectedPackage === pkg.value;
                             return (
                               <div
                                 key={pkg.value}
+                                role="radio"
+                                tabIndex={0}
+                                aria-checked={isSelected}
                                 onClick={() => setSelectedPackage(pkg.value)}
-                                className={`p-3 rounded-2xl border-2 text-center transition-all cursor-pointer select-none space-y-1 ${
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setSelectedPackage(pkg.value);
+                                  }
+                                }}
+                                className={`p-3 rounded-2xl border-2 text-center transition-all cursor-pointer select-none space-y-1 focus-ring ${
                                   isSelected
                                     ? 'border-accent bg-accent/5 shadow-md ring-2 ring-accent/20'
                                     : 'border-gray-200 bg-white hover:border-gray-300'
                                 }`}
                               >
                                 <span className="font-heading font-extrabold text-sm text-accent block">
-                                  ₹{pkg.price.toLocaleString()}
+                                  ₹{pkg.price.toLocaleString()}{pkg.recurring ? '/mo' : ''}
                                 </span>
                                 <span className="font-heading font-bold text-[11px] text-primary block truncate">
                                   {pkg.title}
@@ -712,7 +932,7 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           Do you have photos & logo ready?
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Photo Readiness">
                           {[
                             { value: 'upload-now', label: '📤 Upload Files Now' },
                             { value: 'whatsapp-later', label: '📲 Will WhatsApp Photos Later' },
@@ -720,8 +940,17 @@ Notes: ${notes.trim() || 'None'}
                           ].map((opt) => (
                             <div
                               key={opt.value}
+                              role="radio"
+                              tabIndex={0}
+                              aria-checked={photoReadiness === opt.value}
                               onClick={() => setPhotoReadiness(opt.value)}
-                              className={`p-2.5 rounded-xl border-2 text-center text-xs font-heading font-bold cursor-pointer transition ${
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setPhotoReadiness(opt.value);
+                                }
+                              }}
+                              className={`p-2.5 rounded-xl border-2 text-center text-xs font-heading font-bold cursor-pointer transition focus-ring ${
                                 photoReadiness === opt.value
                                   ? 'border-accent bg-accent/10 text-primary'
                                   : 'border-gray-200 bg-white text-muted'
@@ -747,7 +976,7 @@ Notes: ${notes.trim() || 'None'}
                               key={idx}
                               type="button"
                               onClick={() => appendNoteChip(chip)}
-                              className="px-2.5 py-1 rounded-full bg-surface-alt hover:bg-accent/10 border border-gray-200 text-xs font-body font-medium text-primary transition"
+                              className="px-2.5 py-1 rounded-full bg-surface-alt hover:bg-accent/10 border border-gray-200 text-xs font-body font-medium text-primary transition focus-ring"
                             >
                               + {chip}
                             </button>
@@ -768,7 +997,7 @@ Notes: ${notes.trim() || 'None'}
                         <label className="font-heading font-bold text-xs text-primary uppercase tracking-wider block">
                           How fast do you need the website?
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Project Timeline">
                           {[
                             { value: 'asap', label: '⚡ Urgent (3-5 Days)' },
                             { value: '1-2-weeks', label: '🗓️ Within 1-2 Weeks' },
@@ -776,8 +1005,17 @@ Notes: ${notes.trim() || 'None'}
                           ].map((opt) => (
                             <div
                               key={opt.value}
+                              role="radio"
+                              tabIndex={0}
+                              aria-checked={timeline === opt.value}
                               onClick={() => setTimeline(opt.value)}
-                              className={`p-2.5 rounded-xl border-2 text-center text-xs font-heading font-bold cursor-pointer transition ${
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setTimeline(opt.value);
+                                }
+                              }}
+                              className={`p-2.5 rounded-xl border-2 text-center text-xs font-heading font-bold cursor-pointer transition focus-ring ${
                                 timeline === opt.value
                                   ? 'border-accent bg-accent/10 text-primary'
                                   : 'border-gray-200 bg-white text-muted'
@@ -817,7 +1055,7 @@ Notes: ${notes.trim() || 'None'}
                           <span>Submitting...</span>
                         ) : (
                           <>
-                            <span>Submit Project Brief (₹{currentPkgObj.price.toLocaleString()})</span>
+                            <span>Submit Project Brief (₹{currentPkgObj.price.toLocaleString()}{currentPkgObj.recurring ? '/mo' : ''})</span>
                             <Send size={16} className="ml-1.5" />
                           </>
                         )}
@@ -932,10 +1170,15 @@ Notes: ${notes.trim() || 'None'}
                   <div className="pt-2 border-t border-gray-200 text-center space-y-1">
                     <span className="text-[10px] text-muted block">Live Calculated Price</span>
                     <span className="font-heading font-extrabold text-xl text-accent block">
-                      ₹{currentPkgObj.price.toLocaleString()}
+                      ₹{currentPkgObj.price.toLocaleString()}{currentPkgObj.recurring ? '/mo' : ''}
                     </span>
+                    {estimatedBudget && (
+                      <span className="text-[10px] font-bold text-primary block">
+                        Estimated Budget: {estimatedBudget} {customPages ? `(${customPages} pages)` : ''}
+                      </span>
+                    )}
                     <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
-                      Ready in {currentPkgObj.days}
+                      {currentPkgObj.recurring ? 'Continuous Care' : `Ready in ${currentPkgObj.days}`}
                     </span>
                   </div>
                 </div>

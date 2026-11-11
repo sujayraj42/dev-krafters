@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Rocket } from 'lucide-react';
 
 export const BackToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +16,10 @@ export const BackToTop: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   const scrollToTop = () => {
     setIsLaunching(true);
@@ -26,7 +32,7 @@ export const BackToTop: React.FC = () => {
   return (
     <button
       onClick={scrollToTop}
-      className={`fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-accent text-white shadow-xl shadow-accent/30 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-accent/50 active:scale-95 focus-ring ${
+      className={`fixed bottom-24 right-6 z-50 w-12 h-12 rounded-full bg-accent text-white shadow-xl shadow-accent/30 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-accent/50 active:scale-95 focus-ring back-to-top-root ${
         isLaunching ? 'animate-rocket-launch' : 'animate-fade-in-up'
       }`}
       aria-label="Scroll back to top"

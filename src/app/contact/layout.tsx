@@ -15,10 +15,10 @@ export const metadata: Metadata = {
     title: 'Contact Us & Request Web Proposal | Dev Krafters',
     description:
       'Fill out our interactive proposal request form to receive your custom quote & timeline within 24 hours.',
-    url: 'https://devkrafters.linkpc.net/contact',
+    url: 'https://devkrafters.com/contact',
   },
   alternates: {
-    canonical: 'https://devkrafters.linkpc.net/contact',
+    canonical: 'https://devkrafters.com/contact',
   },
 };
 

@@ -8,8 +8,6 @@ const footerNav = [
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Showcase', href: '/portfolio' },
-  { name: 'Internship Program', href: '/winter-internship' },
-  { name: 'Intern Learning Hub', href: '/learning' },
   { name: 'Contact', href: '/contact' },
 ];
 

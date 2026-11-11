@@ -17,17 +17,17 @@ const faqData: FAQItem[] = [
   {
     question: 'How long does a typical project take?',
     answer:
-      'Timelines vary by scope. A landing page or portfolio site takes 1-2 weeks. A full SaaS platform typically takes 6-12 weeks. We provide detailed timelines during our free consultation and always include buffer for testing and polish.',
+      'Timelines vary by scope. A landing page or starter site takes 3 to 10 Days. Full business websites take 10 Days, while complex e-commerce platforms take up to 20 Days. We provide guaranteed delivery dates and daily progress updates throughout your sprint.',
   },
   {
     question: 'Do you offer ongoing maintenance and support?',
     answer:
-      'Yes! Every project includes 30 days of free post-launch support. We also offer monthly maintenance plans that include performance monitoring, security updates, bug fixes, and feature enhancements starting at $499/month.',
+      'Yes! Every project includes 30 days of free post-launch bug-fix warranty. We also offer monthly care plans that include 24/7 uptime monitoring, security patches, offsite backups, and content updates starting at ₹3,000/month.',
   },
   {
     question: 'What is your pricing structure?',
     answer:
-      'We offer both fixed-price projects and hourly engagements. Fixed-price works great for well-defined projects with clear requirements. Hourly is ideal for ongoing development and iterative work. All projects start with a free consultation and detailed proposal.',
+      'We provide a 100% Fixed-Price Guarantee — zero hourly billing. Every project has a locked-in upfront quote with clear milestones and deliverables so you never face surprise invoices or hidden charges. All packages include free post-launch warranty.',
   },
   {
     question: 'Can you work with our existing codebase?',

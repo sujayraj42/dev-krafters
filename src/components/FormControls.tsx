@@ -344,11 +344,20 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         <p className="font-heading font-semibold text-xs text-primary uppercase tracking-wider">{label}</p>
       )}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={label || 'File upload dropzone'}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => inputRef.current?.click()}
-        className={`flex flex-col items-center justify-center gap-2.5 p-6 rounded-2xl border-2 border-dashed cursor-pointer text-center transition-all duration-200 ${
+        className={`flex flex-col items-center justify-center gap-2.5 p-6 rounded-2xl border-2 border-dashed cursor-pointer text-center transition-all duration-200 focus-ring ${
           isDragOver
             ? 'border-accent bg-accent/10 shadow-lg scale-[1.01]'
             : selectedFile

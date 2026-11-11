@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
+import { MagneticButton } from '@/components/MagneticButton';
 import { HealthCheck } from '@/app/components/HealthCheck';
 import { TEMPLATES } from '@/app/portfolio/templates';
 import { AnimateOnScroll } from '@/components/ScrollAnimations';
@@ -10,6 +11,9 @@ import { HeroExperience } from '@/components/HeroExperience';
 import { FAQAccordion } from '@/components/FAQAccordion';
 import { ClientLogoMarquee } from '@/components/ClientLogoMarquee';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { BentoGrid } from '@/components/BentoGrid';
+import { AnimatedBeamPipeline } from '@/components/AnimatedBeam';
+import { MarqueeTestimonials } from '@/components/MarqueeTestimonials';
 import {
   ArrowRight,
   Zap,
@@ -19,15 +23,10 @@ import {
   Star,
   CheckCircle2,
   Sparkles,
-  Bot,
   Layers,
   Eye,
   TrendingUp,
   XCircle,
-  GraduationCap,
-  Laptop,
-  BookOpen,
-  Code2,
 } from 'lucide-react';
 
 export default function Home() {
@@ -91,7 +90,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="site-page flex flex-col min-h-screen font-body bg-white text-gray-900">
+    <div className="site-page flex flex-col min-h-screen font-body bg-surface text-primary transition-colors duration-300">
       {/* ─── SECTION 1: IMMERSIVE 3D HERO ─── */}
       <section className="hero-shell">
         <div className="hero-shell__noise" />
@@ -114,14 +113,14 @@ export default function Home() {
               </p>
 
               <div className="pt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
-                <Button href="/contact" variant="primary" size="lg" className="hero-primary-cta w-full sm:w-auto">
+                <MagneticButton href="/contact" variant="primary" size="lg" className="hero-primary-cta w-full sm:w-auto">
                   <span>Build something remarkable</span>
                   <ArrowRight className="w-5 h-5 ml-1" />
-                </Button>
-                <Button href="/portfolio" variant="secondary" size="lg" className="hero-secondary-cta w-full sm:w-auto">
+                </MagneticButton>
+                <MagneticButton href="/portfolio" variant="secondary" size="lg" className="hero-secondary-cta w-full sm:w-auto">
                   <Eye className="w-4 h-4 mr-1" />
                   <span>Explore our work</span>
-                </Button>
+                </MagneticButton>
               </div>
 
               <div className="hero-proof-row">
@@ -218,99 +217,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── INTERNSHIP & LEARNING HUB SECTION ─── */}
-      <section className="py-20 sm:py-28 bg-[#0D3028] text-white relative overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#10B981]/15 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#E85A3C]/10 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="max-w-content mx-auto px-6 relative z-10">
-          <div className="text-center space-y-4 max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-emerald-300 font-heading text-xs font-bold border border-white/15">
-              <GraduationCap className="w-4 h-4 text-[#10B981]" />
-              <span>Winter 2026 Cohort • Applications Open</span>
-            </div>
-            <h2 className="font-heading font-extrabold text-3xl sm:text-5xl text-white tracking-tight leading-tight">
-              Learn. Build. Become a Developer.
-            </h2>
-            <p className="font-body text-base sm:text-lg text-emerald-100/90 leading-relaxed">
-              A 45-day intensive Full-Stack Web Development Internship designed for BCA and B.Tech students across all academic years. Write client-grade code with Next.js 15, TypeScript, databases, and AI APIs under senior engineering mentorship.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-4">
-                <Code2 className="w-5 h-5" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-white mb-2">Production Architecture</h3>
-              <p className="font-body text-sm text-gray-300 leading-relaxed">
-                Learn modern component systems, RESTful API route handlers, MongoDB Atlas, PostgreSQL, and strict TypeScript patterns. Zero outdated theory.
-              </p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-4">
-                <Laptop className="w-5 h-5" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-white mb-2">Real PR Workflows</h3>
-              <p className="font-body text-sm text-gray-300 leading-relaxed">
-                Submit pull requests, receive line-by-line feedback from practicing engineers, and collaborate using standard Git branch dynamics.
-              </p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-white mb-2">Verifiable Credentials</h3>
-              <p className="font-body text-sm text-gray-300 leading-relaxed">
-                Earn a verifiable digital certificate recognized by colleges and recruiters, plus a personalized Letter of Recommendation for top 20% contributors.
-              </p>
-            </div>
-          </div>
-
-          {/* Program highlights strip */}
-          <div className="bg-white/10 border border-white/15 rounded-2xl p-6 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 w-full lg:w-auto text-left">
-              <div>
-                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Format</span>
-                <span className="font-heading font-bold text-white text-base">Online Live</span>
-              </div>
-              <div>
-                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Duration</span>
-                <span className="font-heading font-bold text-white text-base">45 Days</span>
-              </div>
-              <div>
-                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Target Students</span>
-                <span className="font-heading font-bold text-white text-base">BCA & B.Tech (All Years)</span>
-              </div>
-              <div>
-                <span className="block text-[11px] font-heading font-semibold text-emerald-300 uppercase tracking-wider">Program Fee</span>
-                <span className="font-heading font-bold text-emerald-400 text-base">100% Free / Merit</span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
-              <Link
-                href="/winter-internship#apply"
-                className="px-6 py-3 rounded-xl bg-accent hover:bg-accent-dark text-white font-heading font-bold text-sm shadow-md transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2"
-              >
-                <span>Apply for Cohort</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/learning"
-                className="px-6 py-3 rounded-xl bg-white text-[#0D3028] hover:bg-gray-100 font-heading font-bold text-sm shadow-sm transition-colors inline-flex items-center gap-2"
-              >
-                <BookOpen className="w-4 h-4 text-[#10B981]" />
-                <span>Open Learning Hub</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ─── WEBSITE HEALTH CHECK TOOL (LEAD MAGNET) ─── */}
       <HealthCheck />
 
@@ -365,7 +271,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── VALUE PROPS / WHY CHOOSE US ─── */}
+      {/* ─── VALUE PROPS / WHY CHOOSE US (MAGIC UI BENTO GRID) ─── */}
       <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-content mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
@@ -377,36 +283,21 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {valueProps.map((prop, idx) => {
-              const IconComponent = prop.icon;
-              return (
-                <div
-                  key={idx}
-                  className="lift-card bg-surface-alt p-8 rounded-card border border-gray-200/80 transition-all duration-300 flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-6 group-hover:bg-accent group-hover:text-white transition-colors">
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-heading font-bold text-xl text-primary mb-2">
-                      {prop.title}
-                    </h3>
-                    <p className="font-body text-xs text-muted leading-relaxed">
-                      {prop.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <BentoGrid />
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ─── */}
-      <section className="py-16 sm:py-24 bg-surface-alt border-t border-gray-200/60">
+      {/* ─── DIGITAL DELIVERY PIPELINE (ANIMATED BEAM) ─── */}
+      <section className="py-16 sm:py-24 bg-surface border-t border-gray-200/50">
         <div className="max-w-content mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
+          <AnimatedBeamPipeline />
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIALS (DUAL-ROW INFINITE MARQUEE) ─── */}
+      <section className="py-16 sm:py-24 bg-surface-alt border-t border-gray-200/60 overflow-hidden">
+        <div className="max-w-content mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto space-y-3 mb-12">
             <div className="inline-flex items-center gap-1 text-amber-500 justify-center">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
@@ -419,43 +310,9 @@ export default function Home() {
               How our tailored websites and digital workflows deliver direct, practical value to local business owners.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t, idx) => (
-              <div
-                key={idx}
-                className="lift-card bg-white p-8 rounded-card border border-gray-200/80 flex flex-col justify-between space-y-6 relative overflow-hidden"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-1 text-amber-400">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400" />
-                      ))}
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-heading text-[10px] font-bold">
-                      {t.resultBadge}
-                    </span>
-                  </div>
-                  <blockquote className="font-body text-xs sm:text-sm text-primary/90 italic leading-relaxed">
-                    &ldquo;{t.quote}&rdquo;
-                  </blockquote>
-                </div>
-                <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary text-white font-heading font-bold text-sm flex items-center justify-center shrink-0">
-                    {t.author.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-heading font-bold text-xs text-primary">
-                      {t.author}
-                    </p>
-                    <p className="font-body text-[11px] text-muted">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
+
+        <MarqueeTestimonials testimonials={testimonials} />
       </section>
 
       {/* ─── FAQ SECTION ─── */}
@@ -475,13 +332,13 @@ export default function Home() {
             Get a high-converting, fast, AI-powered website tailored to your business needs today.
           </p>
           <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
-            <Button href="/contact" variant="primary" size="lg" className="bg-accent hover:bg-accent-dark border-none shadow-lg">
+            <MagneticButton href="/contact" variant="primary" size="lg" className="bg-accent hover:bg-accent-dark border-none shadow-lg">
               <span>Start Your Project</span>
               <ArrowRight className="w-5 h-5 ml-1.5" />
-            </Button>
-            <Button href="/pricing" variant="secondary" size="lg" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+            </MagneticButton>
+            <MagneticButton href="/pricing" variant="secondary" size="lg" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
               <span>View Fixed Pricing</span>
-            </Button>
+            </MagneticButton>
           </div>
         </div>
       </section>

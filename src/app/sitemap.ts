@@ -1,10 +1,31 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devkrafters.linkpc.net';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://devkrafters.com';
   const currentDate = new Date();
 
-  const portfolioSlugs = ['haven', 'meridian', 'flux', 'pulse', 'nexus-summit', 'ledger'];
+  const portfolioSlugs = [
+    'ascend',
+    'studio-noir',
+    'pulse',
+    'loam',
+    'ember-and-oak',
+    'flux',
+    'kernel',
+    'ledger',
+    'roots',
+    'nexus-summit',
+    'the-margin',
+    'haven',
+    'lucent-academy',
+    'vault',
+    'meridian',
+    'wavelength',
+    'launchpad',
+    'ledgerline',
+    'aline-studio',
+    'bazaar',
+  ];
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
